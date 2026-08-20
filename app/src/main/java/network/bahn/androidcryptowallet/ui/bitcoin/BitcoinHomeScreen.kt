@@ -1,4 +1,4 @@
-package network.bahn.androidcryptowallet.ui.home
+package network.bahn.androidcryptowallet.ui.bitcoin
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,18 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,24 +47,28 @@ import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun BitcoinHomeScreen(viewModel: BitcoinHomeViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    HomeContent(
+    BitcoinHomeContent(
         uiState = uiState,
         onNetworkSelected = viewModel::onNetworkSelected,
         onRefresh = { viewModel.onRefresh(uiState.selectedNetwork) },
+        onCopyAddress = {},
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeContent(
-    uiState: HomeUiState,
+private fun BitcoinHomeContent(
+    uiState: BitcoinHomeUiState,
     onNetworkSelected: (BitcoinNetwork) -> Unit,
     onRefresh: () -> Unit,
+    onCopyAddress: () -> Unit,
 ) {
     var networkMenuExpanded by remember { mutableStateOf(false) }
+    val receiveAddressText = uiState.receiveAddress
+        ?: stringResource(R.string.receive_address_placeholder)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -135,51 +141,99 @@ private fun HomeContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            StatusCard(
+                title = stringResource(R.string.latest_block),
+                value = StringUtils.formatBlockHeight(uiState.blockHeight),
+                valueStyle = MaterialTheme.typography.displayMedium,
+                caption = StringUtils.formatLastUpdated(
+                    updatedAtMillis = uiState.updatedAtMillis,
+                    neverRefreshed = stringResource(R.string.last_updated_never),
+                    lastUpdatedPattern = stringResource(R.string.last_updated),
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.Start,
-                ) {
-                    Text(
-                        text = stringResource(R.string.latest_block),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = StringUtils.formatBlockHeight(uiState.blockHeight),
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = StringUtils.formatLastUpdated(
-                            updatedAtMillis = uiState.updatedAtMillis,
-                            neverRefreshed = stringResource(R.string.last_updated_never),
-                            lastUpdatedPattern = stringResource(R.string.last_updated),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Start,
-                    )
-                    uiState.errorMessage?.let { message ->
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
+                errorMessage = uiState.errorMessage,
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            StatusCard(
+                title = stringResource(R.string.receive_address),
+                value = receiveAddressText,
+                valueStyle = MaterialTheme.typography.headlineSmall,
+                caption = null,
+                errorMessage = null,
+                trailing = {
+                    IconButton(
+                        onClick = onCopyAddress,
+                        enabled = uiState.receiveAddress != null,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ContentCopy,
+                            contentDescription = stringResource(R.string.copy_receive_address),
                         )
                     }
-                }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatusCard(
+    title: String,
+    value: String,
+    valueStyle: TextStyle,
+    caption: String?,
+    errorMessage: String?,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                trailing?.invoke()
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = value,
+                style = valueStyle,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            if (caption != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = caption,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Start,
+                )
+            }
+            errorMessage?.let { message ->
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }
@@ -187,16 +241,17 @@ private fun HomeContent(
 
 @Preview(showBackground = true)
 @Composable
-private fun HomeScreenPreview() {
+private fun BitcoinHomeScreenPreview() {
     WalletTheme {
-        HomeContent(
-            uiState = HomeUiState(
+        BitcoinHomeContent(
+            uiState = BitcoinHomeUiState(
                 selectedNetwork = BitcoinNetwork.TESTNET4,
                 blockHeight = 894_623,
                 updatedAtMillis = 1_700_000_000_000L,
             ),
             onNetworkSelected = {},
             onRefresh = {},
+            onCopyAddress = {},
         )
     }
 }

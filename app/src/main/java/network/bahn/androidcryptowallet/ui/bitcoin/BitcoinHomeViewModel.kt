@@ -1,4 +1,4 @@
-package network.bahn.androidcryptowallet.ui.home
+package network.bahn.androidcryptowallet.ui.bitcoin
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -18,7 +18,7 @@ import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class BitcoinHomeViewModel @Inject constructor(
     observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
     observeBitcoinNetworkStatus: ObserveBitcoinNetworkStatusUseCase,
     private val setBitcoinNetwork: SetBitcoinNetworkUseCase,
@@ -27,23 +27,24 @@ class HomeViewModel @Inject constructor(
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<HomeUiState> = combine(
+    val uiState: StateFlow<BitcoinHomeUiState> = combine(
         observeSelectedBitcoinNetwork(),
         observeBitcoinNetworkStatus(),
         isRefreshing,
         errorMessage,
     ) { network, status, refreshing, error ->
-        HomeUiState(
+        BitcoinHomeUiState(
             selectedNetwork = network,
             blockHeight = status?.blockHeight,
             updatedAtMillis = status?.updatedAtMillis,
+            receiveAddress = null,
             isRefreshing = refreshing,
             errorMessage = error,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = HomeUiState(),
+        initialValue = BitcoinHomeUiState(),
     )
 
     fun onNetworkSelected(network: BitcoinNetwork) {

@@ -7,7 +7,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
-import network.bahn.androidcryptowallet.ui.home.HomeScreen
+import network.bahn.androidcryptowallet.ui.navigation.WalletNavHost
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 
 @AndroidEntryPoint
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             WalletTheme {
-                HomeScreen()
+                WalletNavHost()
             }
         }
     }
