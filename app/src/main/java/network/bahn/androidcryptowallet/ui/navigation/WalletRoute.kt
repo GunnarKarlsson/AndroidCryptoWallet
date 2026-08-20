@@ -16,3 +16,6 @@ data object BitcoinCreateWalletRoute
 
 @Serializable
 data object BitcoinConfirmMnemonicRoute
+
+@Serializable
+data object BitcoinNetworkStatusRoute

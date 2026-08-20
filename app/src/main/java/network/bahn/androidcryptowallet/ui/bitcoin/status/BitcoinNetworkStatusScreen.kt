@@ -1,6 +1,5 @@
-package network.bahn.androidcryptowallet.ui.bitcoin
+package network.bahn.androidcryptowallet.ui.bitcoin.status
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,27 +10,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,35 +36,50 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinNetworkDropdown
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
-fun BitcoinHomeScreen(viewModel: BitcoinHomeViewModel = hiltViewModel()) {
+fun BitcoinNetworkStatusScreen(
+    onBack: () -> Unit,
+    viewModel: BitcoinNetworkStatusViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    BitcoinHomeContent(
+    LaunchedEffect(viewModel) {
+        viewModel.onEnter()
+    }
+    BitcoinNetworkStatusContent(
         uiState = uiState,
         onNetworkSelected = viewModel::onNetworkSelected,
         onRefresh = { viewModel.onRefresh(uiState.selectedNetwork) },
-        onCopyAddress = {},
+        onBack = onBack,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BitcoinHomeContent(
-    uiState: BitcoinHomeUiState,
+private fun BitcoinNetworkStatusContent(
+    uiState: BitcoinNetworkStatusUiState,
     onNetworkSelected: (BitcoinNetwork) -> Unit,
     onRefresh: () -> Unit,
-    onCopyAddress: () -> Unit,
+    onBack: () -> Unit,
 ) {
-    var networkMenuExpanded by remember { mutableStateOf(false) }
-    val receiveAddressText = uiState.receiveAddress
-        ?: stringResource(R.string.receive_address_placeholder)
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.network_status_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back),
+                        )
+                    }
+                },
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -82,43 +90,12 @@ private fun BitcoinHomeContent(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                ExposedDropdownMenuBox(
-                    expanded = networkMenuExpanded,
-                    onExpandedChange = { networkMenuExpanded = it },
+                BitcoinNetworkDropdown(
+                    selectedNetwork = uiState.selectedNetwork,
+                    onNetworkSelected = onNetworkSelected,
                     modifier = Modifier.weight(1f),
-                ) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                            .fillMaxWidth(),
-                        readOnly = true,
-                        value = uiState.selectedNetwork.label,
-                        onValueChange = {},
-                        label = { Text(stringResource(R.string.network_label)) },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = networkMenuExpanded)
-                        },
-                        shape = RoundedCornerShape(4.dp),
-                    )
-                    ExposedDropdownMenu(
-                        expanded = networkMenuExpanded,
-                        onDismissRequest = { networkMenuExpanded = false },
-                    ) {
-                        BitcoinNetwork.entries.forEach { network ->
-                            DropdownMenuItem(
-                                text = { Text(network.label) },
-                                onClick = {
-                                    onNetworkSelected(network)
-                                    networkMenuExpanded = false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                            )
-                        }
-                    }
-                }
-
+                )
                 IconButton(
                     onClick = onRefresh,
                     enabled = !uiState.isRefreshing,
@@ -152,27 +129,6 @@ private fun BitcoinHomeContent(
                 ),
                 errorMessage = uiState.errorMessage,
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            StatusCard(
-                title = stringResource(R.string.receive_address),
-                value = receiveAddressText,
-                valueStyle = MaterialTheme.typography.headlineSmall,
-                caption = null,
-                errorMessage = null,
-                trailing = {
-                    IconButton(
-                        onClick = onCopyAddress,
-                        enabled = uiState.receiveAddress != null,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.ContentCopy,
-                            contentDescription = stringResource(R.string.copy_receive_address),
-                        )
-                    }
-                },
-            )
         }
     }
 }
@@ -184,7 +140,6 @@ private fun StatusCard(
     valueStyle: TextStyle,
     caption: String?,
     errorMessage: String?,
-    trailing: (@Composable () -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -198,20 +153,12 @@ private fun StatusCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp),
-            horizontalAlignment = Alignment.Start,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                trailing?.invoke()
-            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = value,
@@ -241,17 +188,17 @@ private fun StatusCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun BitcoinHomeScreenPreview() {
+private fun BitcoinNetworkStatusScreenPreview() {
     WalletTheme {
-        BitcoinHomeContent(
-            uiState = BitcoinHomeUiState(
+        BitcoinNetworkStatusContent(
+            uiState = BitcoinNetworkStatusUiState(
                 selectedNetwork = BitcoinNetwork.TESTNET4,
                 blockHeight = 894_623,
                 updatedAtMillis = 1_700_000_000_000L,
             ),
             onNetworkSelected = {},
             onRefresh = {},
-            onCopyAddress = {},
+            onBack = {},
         )
     }
 }

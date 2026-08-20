@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +52,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 @Composable
 fun BitcoinWalletListScreen(
     onCreateWallet: () -> Unit,
+    onNetworkStatus: () -> Unit,
     viewModel: BitcoinWalletListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -58,6 +60,7 @@ fun BitcoinWalletListScreen(
         uiState = uiState,
         onNetworkSelected = viewModel::onNetworkSelected,
         onCreateWallet = onCreateWallet,
+        onNetworkStatus = onNetworkStatus,
     )
 }
 
@@ -67,8 +70,9 @@ private fun BitcoinWalletListContent(
     uiState: BitcoinWalletListUiState,
     onNetworkSelected: (BitcoinNetwork) -> Unit,
     onCreateWallet: () -> Unit,
+    onNetworkStatus: () -> Unit,
 ) {
-    var showCreateSheet by remember { mutableStateOf(false) }
+    var showActionsSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
@@ -79,7 +83,7 @@ private fun BitcoinWalletListContent(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showCreateSheet = true }) {
+            FloatingActionButton(onClick = { showActionsSheet = true }) {
                 Icon(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = stringResource(R.string.add_wallet),
@@ -124,9 +128,9 @@ private fun BitcoinWalletListContent(
         }
     }
 
-    if (showCreateSheet) {
+    if (showActionsSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showCreateSheet = false },
+            onDismissRequest = { showActionsSheet = false },
             sheetState = sheetState,
         ) {
             ListItem(
@@ -143,8 +147,26 @@ private fun BitcoinWalletListContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        showCreateSheet = false
+                        showActionsSheet = false
                         onCreateWallet()
+                    },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.network_status_title)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Hub,
+                        contentDescription = null,
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showActionsSheet = false
+                        onNetworkStatus()
                     },
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -187,6 +209,7 @@ private fun BitcoinWalletListEmptyPreview() {
             uiState = BitcoinWalletListUiState(),
             onNetworkSelected = {},
             onCreateWallet = {},
+            onNetworkStatus = {},
         )
     }
 }
@@ -207,6 +230,7 @@ private fun BitcoinWalletListPopulatedPreview() {
             ),
             onNetworkSelected = {},
             onCreateWallet = {},
+            onNetworkStatus = {},
         )
     }
 }

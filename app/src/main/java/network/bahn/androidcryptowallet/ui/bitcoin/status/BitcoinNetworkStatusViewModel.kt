@@ -1,4 +1,4 @@
-package network.bahn.androidcryptowallet.ui.bitcoin
+package network.bahn.androidcryptowallet.ui.bitcoin.status
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
@@ -18,8 +19,8 @@ import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class BitcoinHomeViewModel @Inject constructor(
-    observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
+class BitcoinNetworkStatusViewModel @Inject constructor(
+    private val observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
     observeBitcoinNetworkStatus: ObserveBitcoinNetworkStatusUseCase,
     private val setBitcoinNetwork: SetBitcoinNetworkUseCase,
     private val refreshBlockHeight: RefreshBitcoinBlockHeightUseCase,
@@ -27,31 +28,33 @@ class BitcoinHomeViewModel @Inject constructor(
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<BitcoinHomeUiState> = combine(
+    val uiState: StateFlow<BitcoinNetworkStatusUiState> = combine(
         observeSelectedBitcoinNetwork(),
         observeBitcoinNetworkStatus(),
         isRefreshing,
         errorMessage,
     ) { network, status, refreshing, error ->
-        BitcoinHomeUiState(
+        BitcoinNetworkStatusUiState(
             selectedNetwork = network,
             blockHeight = status?.blockHeight,
             updatedAtMillis = status?.updatedAtMillis,
-            receiveAddress = null,
             isRefreshing = refreshing,
             errorMessage = error,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = BitcoinHomeUiState(),
+        initialValue = BitcoinNetworkStatusUiState(),
     )
 
-    fun onNetworkSelected(network: BitcoinNetwork) {
+    fun onEnter() {
         viewModelScope.launch {
-            errorMessage.value = null
-            setBitcoinNetwork(network)
+            onRefresh(observeSelectedBitcoinNetwork().first())
         }
+    }
+
+    fun onNetworkSelected(network: BitcoinNetwork) {
+        onRefresh(network)
     }
 
     fun onRefresh(network: BitcoinNetwork) {
