@@ -51,7 +51,7 @@ class AlchemyBitcoinRemoteDataSource @Inject constructor(
             Log.i(TAG, "address balance succeeded for $network confirmed=${balance.confirmedSatoshis}")
             return balance
         } catch (e: HttpException) {
-            if (e.code() == 404) {
+            if (e.code() == 404 || e.code() == 400) {
                 Log.i(TAG, "address not found on $network; treating as zero balance")
                 return BitcoinAddressBalance(confirmedSatoshis = 0L)
             }

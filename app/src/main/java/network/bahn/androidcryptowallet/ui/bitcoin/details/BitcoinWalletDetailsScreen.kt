@@ -128,13 +128,12 @@ private fun BitcoinWalletDetailsContent(
         ) {
             DetailCard(
                 title = stringResource(R.string.wallet_balance),
-                value = uiState.confirmedBalanceSatoshis?.let { satoshis ->
-                    stringResource(
-                        R.string.bitcoin_amount,
-                        StringUtils.formatBitcoinAmount(satoshis),
-                    )
-                } ?: stringResource(R.string.receive_address_placeholder),
-                valueStyle = MaterialTheme.typography.displaySmall,
+                value = stringResource(
+                    R.string.bitcoin_amount,
+                    StringUtils.formatBitcoinAmount(uiState.confirmedBalanceSatoshis ?: 0L),
+                ),
+                valueStyle = MaterialTheme.typography.headlineMedium,
+                valueFontFamily = FontFamily.Monospace,
                 caption = when {
                     unconfirmed != 0L -> stringResource(
                         R.string.unconfirmed_balance,
@@ -251,6 +250,27 @@ private fun DetailCard(
 private fun copyAddress(context: Context, address: String) {
     val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
     clipboard.setPrimaryClip(ClipData.newPlainText("bitcoin address", address))
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BitcoinWalletDetailsZeroBalancePreview() {
+    WalletTheme {
+        BitcoinWalletDetailsContent(
+            uiState = BitcoinWalletDetailsUiState(
+                wallet = BitcoinWallet(
+                    id = "1",
+                    network = BitcoinNetwork.TESTNET4,
+                    receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                    confirmedBalanceSatoshis = 0,
+                    unconfirmedBalanceSatoshis = 0,
+                    balanceUpdatedAtMillis = 1_700_000_000_000L,
+                ),
+            ),
+            onRefresh = {},
+            onBack = {},
+        )
+    }
 }
 
 @Preview(showBackground = true)

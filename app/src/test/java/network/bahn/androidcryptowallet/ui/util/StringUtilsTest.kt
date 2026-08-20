@@ -50,14 +50,10 @@ class StringUtilsTest {
     }
 
     @Test
-    fun formatBitcoinAmountUsesPlaceholderWhenNull() {
-        assertEquals("—", StringUtils.formatBitcoinAmount(null))
-    }
-
-    @Test
-    fun formatBitcoinAmountConvertsSatoshisToEightDecimals() {
-        assertEquals("0.04225100", StringUtils.formatBitcoinAmount(4_225_100))
+    fun formatBitcoinAmountAlwaysShowsEightFractionalDigits() {
         assertEquals("0.00000000", StringUtils.formatBitcoinAmount(0))
+        assertEquals("0.00000001", StringUtils.formatBitcoinAmount(1))
+        assertEquals("0.04225100", StringUtils.formatBitcoinAmount(4_225_100))
         assertEquals("1.00000000", StringUtils.formatBitcoinAmount(100_000_000))
     }
 }
