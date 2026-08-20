@@ -18,18 +18,21 @@ object BitcoinPlaceholderMnemonic {
 
     val QUIZ_INDICES = listOf(2, 6, 10)
 
-    fun quizQuestions(): List<BitcoinMnemonicQuizQuestion> = QUIZ_INDICES.map { index ->
-        val correct = WORDS[index]
-        val others = WORDS.filterIndexed { i, _ -> i != index }
-        val decoys = listOf(
-            others[index % others.size],
-            others[(index + 4) % others.size],
-        )
-        BitcoinMnemonicQuizQuestion(
-            wordNumber = index + 1,
-            correctWord = correct,
-            options = (listOf(correct) + decoys).distinct().sorted(),
-        )
+    fun quizQuestions(words: List<String> = WORDS): List<BitcoinMnemonicQuizQuestion> {
+        val usable = QUIZ_INDICES.filter { it < words.size }
+        return usable.map { index ->
+            val correct = words[index]
+            val others = words.filterIndexed { i, _ -> i != index }
+            val decoys = listOf(
+                others[index % others.size],
+                others[(index + 4) % others.size],
+            )
+            BitcoinMnemonicQuizQuestion(
+                wordNumber = index + 1,
+                correctWord = correct,
+                options = (listOf(correct) + decoys).distinct().sorted(),
+            )
+        }
     }
 }
 

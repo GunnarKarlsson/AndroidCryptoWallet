@@ -28,15 +28,14 @@ class BdkBitcoinKeyEngine @Inject constructor() : BitcoinKeyEngine {
         parseMnemonic(words)
     }
 
-    override fun deriveReceiveAddresses(
+    override fun deriveReceiveAddress(
         mnemonicWords: List<String>,
         passphrase: String?,
-    ): List<BitcoinReceiveAddress> {
+        network: BitcoinNetwork,
+    ): BitcoinReceiveAddress {
         val mnemonic = parseMnemonic(mnemonicWords)
         val password = passphrase?.takeIf { it.isNotEmpty() }
-        return BitcoinNetwork.entries.map { network ->
-            deriveReceiveAddress(mnemonic, password, network)
-        }
+        return deriveReceiveAddress(mnemonic, password, network)
     }
 
     private fun deriveReceiveAddress(

@@ -4,14 +4,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import network.bahn.androidcryptowallet.data.local.db.BitcoinReceiveAddressDao
+import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.toDomain
 import network.bahn.androidcryptowallet.data.local.db.toEntity
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
-import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,42 +21,37 @@ import javax.inject.Singleton
 class BitcoinWalletRepositoryImpl @Inject constructor(
     private val keyEngine: BitcoinKeyEngine,
     private val mnemonicStore: BitcoinMnemonicStore,
-    private val receiveAddressDao: BitcoinReceiveAddressDao,
+    private val walletDao: BitcoinWalletDao,
     private val selectedBitcoinNetworkStore: SelectedBitcoinNetworkStore,
 ) : BitcoinWalletRepository {
-    override fun observeWalletExists(): Flow<Boolean> =
-        receiveAddressDao.observeCount().map { count -> count > 0 }
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun observeReceiveAddress(): Flow<BitcoinReceiveAddress?> =
+    override fun observeWallets(): Flow<List<BitcoinWallet>> =
         selectedBitcoinNetworkStore.selectedNetwork.flatMapLatest { network ->
-            receiveAddressDao.observe(network.name).map { entity -> entity?.toDomain() }
+            walletDao.observeByNetwork(network.name).map { rows -> rows.map { it.toDomain() } }
         }
 
     override fun generateMnemonic(): List<String> = keyEngine.generateMnemonic()
 
-    override suspend fun createWallet(mnemonicWords: List<String>, passphrase: String?) {
-        persistWallet(mnemonicWords, passphrase)
-    }
-
-    override suspend fun importWallet(mnemonic: String, passphrase: String?) {
-        val words = mnemonic.trim().lowercase().split(WHITESPACE).filter { it.isNotEmpty() }
-        persistWallet(words, passphrase)
-    }
-
-    private suspend fun persistWallet(mnemonicWords: List<String>, passphrase: String?) {
-        check(!mnemonicStore.hasWallet()) { "A Bitcoin wallet already exists on this device" }
-        // BIP-39 checksum/wordlist, then BIP-32/BIP-84 derive; persist seed, cache public addresses.
+    override suspend fun createWallet(
+        network: BitcoinNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) {
+        // BIP-39 checksum/wordlist, then BIP-32/BIP-84 derive for [network] only.
         keyEngine.validateMnemonic(mnemonicWords)
-        val addresses = keyEngine.deriveReceiveAddresses(mnemonicWords, passphrase)
+        val derived = keyEngine.deriveReceiveAddress(mnemonicWords, passphrase, network)
+        val wallet = BitcoinWallet(
+            id = UUID.randomUUID().toString(),
+            network = network,
+            receiveAddress = derived.address,
+            derivationIndex = derived.index,
+            scriptType = derived.scriptType,
+        )
         mnemonicStore.save(
+            walletId = wallet.id,
             mnemonic = mnemonicWords.joinToString(" "),
             passphrase = passphrase?.takeIf { it.isNotEmpty() },
         )
-        receiveAddressDao.upsertAll(addresses.map { it.toEntity() })
-    }
-
-    private companion object {
-        val WHITESPACE = Regex("\\s+")
+        walletDao.insert(wallet.toEntity())
     }
 }

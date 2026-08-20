@@ -16,8 +16,11 @@ class BdkBitcoinKeyEngineInstrumentedTest {
     @Test
     fun bip84MainnetReceiveAddressIndex0() {
         val engine = BdkBitcoinKeyEngine()
-        val addresses = engine.deriveReceiveAddresses(BIP84_MNEMONIC_WORDS, passphrase = null)
-        val mainnet = addresses.first { it.network == BitcoinNetwork.MAINNET }
+        val mainnet = engine.deriveReceiveAddress(
+            mnemonicWords = BIP84_MNEMONIC_WORDS,
+            passphrase = null,
+            network = BitcoinNetwork.MAINNET,
+        )
 
         assertEquals(BitcoinScriptType.BIP84, mainnet.scriptType)
         assertEquals(0, mainnet.index)

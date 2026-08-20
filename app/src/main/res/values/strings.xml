@@ -33,4 +33,11 @@
     <string name="import_wallet_subtitle">Enter your 12 or 24 word recovery phrase.</string>
     <string name="import_mnemonic_label">Recovery phrase</string>
     <string name="import_mnemonic_placeholder">word1 word2 word3 …</string>
+    <string name="wallets_title">Bitcoin wallets</string>
+    <string name="wallets_empty">No wallets on this network yet.</string>
+    <string name="add_wallet">Add wallet</string>
+    <string name="wallet_list_item_label">Bitcoin wallet</string>
+    <string name="select_network_title">Select network</string>
+    <string name="select_network_subtitle">This wallet will be created for the network you choose.</string>
+    <string name="create_wallet_failed">Could not create wallet</string>
 </resources>

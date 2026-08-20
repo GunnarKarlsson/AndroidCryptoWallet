@@ -25,4 +25,9 @@ object StringUtils {
     fun formatDateTime(epochMillis: Long): String =
         DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
             .format(Date(epochMillis))
+
+    fun truncateBitcoinAddress(address: String, head: Int = 8, tail: Int = 8): String {
+        if (address.length <= head + tail + 1) return address
+        return address.take(head) + "…" + address.takeLast(tail)
+    }
 }

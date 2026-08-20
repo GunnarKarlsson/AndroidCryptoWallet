@@ -1,5 +1,6 @@
 package network.bahn.androidcryptowallet.data.wallet
 
+import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 
 /**
@@ -14,11 +15,12 @@ interface BitcoinKeyEngine {
     fun validateMnemonic(words: List<String>)
 
     /**
-     * BIP-32 HD derivation under BIP-84 Native SegWit. Returns the external
-     * (receive) address at index 0 for both networks.
+     * BIP-32 HD derivation under BIP-84 Native SegWit. External (receive) address
+     * at index 0 for [network] only.
      */
-    fun deriveReceiveAddresses(
+    fun deriveReceiveAddress(
         mnemonicWords: List<String>,
         passphrase: String?,
-    ): List<BitcoinReceiveAddress>
+        network: BitcoinNetwork,
+    ): BitcoinReceiveAddress
 }

@@ -35,4 +35,17 @@ class StringUtilsTest {
         )
         assertEquals("Last updated ${StringUtils.formatDateTime(1_700_000_000_000L)}", result)
     }
+
+    @Test
+    fun truncateBitcoinAddressKeepsHeadAndTail() {
+        assertEquals(
+            "bc1qcr8t…8z306fyu",
+            StringUtils.truncateBitcoinAddress("bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"),
+        )
+    }
+
+    @Test
+    fun truncateBitcoinAddressLeavesShortAddressesAlone() {
+        assertEquals("bc1qshort", StringUtils.truncateBitcoinAddress("bc1qshort"))
+    }
 }

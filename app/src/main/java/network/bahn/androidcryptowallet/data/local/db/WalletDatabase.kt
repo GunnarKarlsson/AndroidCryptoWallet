@@ -6,12 +6,12 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [
         BitcoinNetworkStatusEntity::class,
-        BitcoinReceiveAddressEntity::class,
+        BitcoinWalletEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class WalletDatabase : RoomDatabase() {
     abstract fun bitcoinNetworkStatusDao(): BitcoinNetworkStatusDao
-    abstract fun bitcoinReceiveAddressDao(): BitcoinReceiveAddressDao
+    abstract fun bitcoinWalletDao(): BitcoinWalletDao
 }

@@ -1,74 +1,101 @@
 package network.bahn.androidcryptowallet.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinHomeScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.list.BitcoinWalletListScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinCreateWalletScreen
-import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinImportWalletScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinPlaceholderMnemonic
-import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinWelcomeScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupEvent
+import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupViewModel
 
 @Composable
 fun WalletNavHost(
     navController: NavHostController = rememberNavController(),
 ) {
-    var createPassphrase by remember { mutableStateOf("") }
-    var importMnemonic by remember { mutableStateOf("") }
-    var importPassphrase by remember { mutableStateOf("") }
-
     NavHost(
         navController = navController,
-        startDestination = BitcoinWelcomeRoute,
+        startDestination = BitcoinWalletListRoute,
     ) {
-        composable<BitcoinWelcomeRoute> {
-            BitcoinWelcomeScreen(
-                onCreateWallet = { navController.navigate(BitcoinCreateWalletRoute) },
-                onImportWallet = { navController.navigate(BitcoinImportWalletRoute) },
+        composable<BitcoinWalletListRoute> {
+            BitcoinWalletListScreen(
+                onCreateWallet = { navController.navigate(BitcoinCreateGraphRoute) },
             )
         }
-        composable<BitcoinCreateWalletRoute> {
-            BitcoinCreateWalletScreen(
-                words = BitcoinPlaceholderMnemonic.WORDS,
-                passphrase = createPassphrase,
-                onPassphraseChange = { createPassphrase = it },
-                onContinue = { navController.navigate(BitcoinConfirmMnemonicRoute) },
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable<BitcoinConfirmMnemonicRoute> {
-            BitcoinConfirmMnemonicScreen(
-                questions = BitcoinPlaceholderMnemonic.quizQuestions(),
-                onConfirmed = { navController.navigateToBitcoinHome() },
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable<BitcoinImportWalletRoute> {
-            BitcoinImportWalletScreen(
-                mnemonic = importMnemonic,
-                passphrase = importPassphrase,
-                onMnemonicChange = { importMnemonic = it },
-                onPassphraseChange = { importPassphrase = it },
-                onImport = { navController.navigateToBitcoinHome() },
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable<BitcoinHomeRoute> {
-            BitcoinHomeScreen()
+        navigation<BitcoinCreateGraphRoute>(
+            startDestination = BitcoinSelectNetworkRoute,
+        ) {
+            composable<BitcoinSelectNetworkRoute> { entry ->
+                val setupViewModel = entry.createGraphViewModel(navController)
+                val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
+                BitcoinSelectNetworkScreen(
+                    selectedNetwork = uiState.createNetwork,
+                    onNetworkSelected = setupViewModel::onCreateNetworkSelected,
+                    onContinue = {
+                        setupViewModel.ensureMnemonicGenerated()
+                        navController.navigate(BitcoinCreateWalletRoute)
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<BitcoinCreateWalletRoute> { entry ->
+                val setupViewModel = entry.createGraphViewModel(navController)
+                val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(setupViewModel) {
+                    setupViewModel.ensureMnemonicGenerated()
+                }
+                BitcoinCreateWalletScreen(
+                    words = uiState.mnemonicWords,
+                    passphrase = uiState.passphrase,
+                    onPassphraseChange = setupViewModel::onPassphraseChange,
+                    onContinue = { navController.navigate(BitcoinConfirmMnemonicRoute) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<BitcoinConfirmMnemonicRoute> { entry ->
+                val setupViewModel = entry.createGraphViewModel(navController)
+                val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(setupViewModel) {
+                    setupViewModel.events.collect { event ->
+                        when (event) {
+                            BitcoinSetupEvent.WalletCreated -> {
+                                navController.popBackStack(
+                                    route = BitcoinCreateGraphRoute,
+                                    inclusive = true,
+                                )
+                            }
+                        }
+                    }
+                }
+                BitcoinConfirmMnemonicScreen(
+                    questions = BitcoinPlaceholderMnemonic.quizQuestions(uiState.mnemonicWords),
+                    isSubmitting = uiState.isCreating,
+                    errorMessage = uiState.errorMessage,
+                    onConfirmed = setupViewModel::confirm,
+                    onBack = { navController.popBackStack() },
+                )
+            }
         }
     }
 }
 
-private fun NavHostController.navigateToBitcoinHome() {
-    navigate(BitcoinHomeRoute) {
-        popUpTo(BitcoinWelcomeRoute) { inclusive = true }
-        launchSingleTop = true
+@Composable
+private fun NavBackStackEntry.createGraphViewModel(
+    navController: NavHostController,
+): BitcoinSetupViewModel {
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry<BitcoinCreateGraphRoute>()
     }
+    return hiltViewModel(parentEntry)
 }

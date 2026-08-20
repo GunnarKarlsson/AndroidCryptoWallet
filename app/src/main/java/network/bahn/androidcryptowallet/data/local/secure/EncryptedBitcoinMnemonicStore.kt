@@ -9,7 +9,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Stores BIP-39 seed material only (mnemonic + optional passphrase).
+ * Stores BIP-39 seed material only (mnemonic + optional passphrase), keyed by wallet id.
  * Does not store BIP-32 xprv or per-address private keys; those are derived in memory.
  */
 @Singleton
@@ -31,18 +31,18 @@ class EncryptedBitcoinMnemonicStore @Inject constructor(
         )
     }
 
-    override fun hasWallet(): Boolean = prefs.contains(KEY_MNEMONIC)
-
-    override fun save(mnemonic: String, passphrase: String?) {
+    override fun save(walletId: String, mnemonic: String, passphrase: String?) {
         prefs.edit()
-            .putString(KEY_MNEMONIC, mnemonic)
-            .putString(KEY_PASSPHRASE, passphrase.orEmpty())
+            .putString(mnemonicKey(walletId), mnemonic)
+            .putString(passphraseKey(walletId), passphrase.orEmpty())
             .apply()
     }
 
+    private fun mnemonicKey(walletId: String) = "mnemonic_$walletId"
+
+    private fun passphraseKey(walletId: String) = "passphrase_$walletId"
+
     private companion object {
         const val PREFS_FILE = "bitcoin_mnemonic"
-        const val KEY_MNEMONIC = "mnemonic"
-        const val KEY_PASSPHRASE = "passphrase"
     }
 }

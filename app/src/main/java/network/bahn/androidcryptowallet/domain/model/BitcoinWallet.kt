@@ -1,9 +1,13 @@
 package network.bahn.androidcryptowallet.domain.model
 
 /**
- * Local Bitcoin wallet metadata. The BIP-39 mnemonic lives only in the encrypted store;
- * this type is public state (whether a wallet exists / has a passphrase).
+ * Public Bitcoin wallet row. BIP-39 mnemonic is in the encrypted store, keyed by [id].
+ * [receiveAddress] is BIP-84 Native SegWit at index [derivationIndex] for [network].
  */
 data class BitcoinWallet(
-    val hasPassphrase: Boolean,
+    val id: String,
+    val network: BitcoinNetwork,
+    val receiveAddress: String,
+    val derivationIndex: Int = 0,
+    val scriptType: BitcoinScriptType = BitcoinScriptType.BIP84,
 )
