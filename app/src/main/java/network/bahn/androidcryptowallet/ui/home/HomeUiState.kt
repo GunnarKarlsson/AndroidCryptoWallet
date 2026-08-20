@@ -1,9 +1,6 @@
 package network.bahn.androidcryptowallet.ui.home
 
-enum class BitcoinNetwork(val label: String) {
-    TESTNET4("Testnet4"),
-    MAINNET("Mainnet"),
-}
+import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 
 data class HomeUiState(
     val selectedNetwork: BitcoinNetwork = BitcoinNetwork.TESTNET4,

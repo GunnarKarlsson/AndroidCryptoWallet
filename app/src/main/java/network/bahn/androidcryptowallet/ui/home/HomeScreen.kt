@@ -37,22 +37,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     var uiState by remember { mutableStateOf(HomeUiState()) }
 
     HomeContent(
         uiState = uiState,
         onNetworkSelected = { network ->
             uiState = uiState.copy(selectedNetwork = network)
+            viewModel.onNetworkSelected(network)
         },
         onRefresh = {
-            // Placeholder: network fetch lands in step 2.
+            viewModel.onRefresh(uiState.selectedNetwork)
         },
     )
 }
