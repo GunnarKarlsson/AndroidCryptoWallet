@@ -15,6 +15,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import network.bahn.androidcryptowallet.BuildConfig
 import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
+import network.bahn.androidcryptowallet.data.local.db.BitcoinReceiveAddressDao
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinConfig
 import network.bahn.androidcryptowallet.domain.TimeProvider
@@ -36,6 +37,10 @@ object AppModule {
     @Provides
     fun provideBitcoinNetworkStatusDao(database: WalletDatabase): BitcoinNetworkStatusDao =
         database.bitcoinNetworkStatusDao()
+
+    @Provides
+    fun provideBitcoinReceiveAddressDao(database: WalletDatabase): BitcoinReceiveAddressDao =
+        database.bitcoinReceiveAddressDao()
 
     @Provides
     @Singleton

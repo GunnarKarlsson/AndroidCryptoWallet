@@ -20,6 +20,8 @@ okhttp = "5.5.0"
 serializationJson = "1.9.0"
 datastore = "1.1.7"
 coroutines = "1.10.2"
+bdkAndroid = "3.0.0"
+securityCrypto = "1.1.0-alpha07"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +55,8 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+bdk-android = { group = "org.bitcoindevkit", name = "bdk-android", version.ref = "bdkAndroid" }
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

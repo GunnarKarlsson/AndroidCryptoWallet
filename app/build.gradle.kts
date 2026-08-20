@@ -91,6 +91,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.bdk.android)
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)

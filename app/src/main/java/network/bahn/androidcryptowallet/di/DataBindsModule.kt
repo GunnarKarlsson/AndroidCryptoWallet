@@ -6,10 +6,16 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkDataStore
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
+import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EncryptedBitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
+import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import javax.inject.Singleton
 
 @Module
@@ -32,4 +38,22 @@ abstract class DataBindsModule {
     abstract fun bindBitcoinNetworkStatusRepository(
         impl: BitcoinNetworkStatusRepositoryImpl,
     ): BitcoinNetworkStatusRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBitcoinKeyEngine(
+        impl: BdkBitcoinKeyEngine,
+    ): BitcoinKeyEngine
+
+    @Binds
+    @Singleton
+    abstract fun bindBitcoinMnemonicStore(
+        impl: EncryptedBitcoinMnemonicStore,
+    ): BitcoinMnemonicStore
+
+    @Binds
+    @Singleton
+    abstract fun bindBitcoinWalletRepository(
+        impl: BitcoinWalletRepositoryImpl,
+    ): BitcoinWalletRepository
 }
