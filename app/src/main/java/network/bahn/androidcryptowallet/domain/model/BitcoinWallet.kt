@@ -10,4 +10,7 @@ data class BitcoinWallet(
     val receiveAddress: String,
     val derivationIndex: Int = 0,
     val scriptType: BitcoinScriptType = BitcoinScriptType.BIP84,
+    val confirmedBalanceSatoshis: Long? = null,
+    val unconfirmedBalanceSatoshis: Long? = null,
+    val balanceUpdatedAtMillis: Long? = null,
 )

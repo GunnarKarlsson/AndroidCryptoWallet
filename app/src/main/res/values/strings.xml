@@ -41,4 +41,10 @@
     <string name="select_network_subtitle">This wallet will be created for the network you choose.</string>
     <string name="create_wallet_failed">Could not create wallet</string>
     <string name="network_status_title">Network status</string>
+    <string name="wallet_details_title">Wallet</string>
+    <string name="wallet_balance">Balance</string>
+    <string name="bitcoin_amount">%1$s BTC</string>
+    <string name="unconfirmed_balance">Unconfirmed %1$s BTC</string>
+    <string name="refresh_balance">Refresh balance</string>
+    <string name="address_copied">Address copied</string>
 </resources>

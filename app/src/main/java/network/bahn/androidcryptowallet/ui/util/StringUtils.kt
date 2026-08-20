@@ -30,4 +30,16 @@ object StringUtils {
         if (address.length <= head + tail + 1) return address
         return address.take(head) + "…" + address.takeLast(tail)
     }
+
+    fun formatBitcoinAmount(satoshis: Long?): String {
+        if (satoshis == null) return BLOCK_HEIGHT_PLACEHOLDER
+        val btc = satoshis.toBigDecimal().movePointLeft(8)
+        return BTC_AMOUNT_FORMAT.format(btc)
+    }
+
+    private val BTC_AMOUNT_FORMAT = NumberFormat.getNumberInstance(Locale.US).apply {
+        minimumFractionDigits = 8
+        maximumFractionDigits = 8
+        isGroupingUsed = false
+    }
 }

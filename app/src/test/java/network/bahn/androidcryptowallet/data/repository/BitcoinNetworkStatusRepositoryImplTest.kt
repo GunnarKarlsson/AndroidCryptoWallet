@@ -125,4 +125,9 @@ private class FakeBitcoinRemoteDataSource : BitcoinRemoteDataSource {
             BitcoinNetwork.MAINNET -> 200L
         }
     }
+
+    override suspend fun getAddressBalance(
+        network: BitcoinNetwork,
+        address: String,
+    ) = error("unused")
 }

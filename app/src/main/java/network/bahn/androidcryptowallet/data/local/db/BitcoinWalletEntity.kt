@@ -14,6 +14,9 @@ data class BitcoinWalletEntity(
     val receiveAddress: String,
     val derivationIndex: Int,
     val scriptType: String,
+    val confirmedBalanceSatoshis: Long? = null,
+    val unconfirmedBalanceSatoshis: Long? = null,
+    val balanceUpdatedAtMillis: Long? = null,
 )
 
 fun BitcoinWalletEntity.toDomain(): BitcoinWallet = BitcoinWallet(
@@ -22,6 +25,9 @@ fun BitcoinWalletEntity.toDomain(): BitcoinWallet = BitcoinWallet(
     receiveAddress = receiveAddress,
     derivationIndex = derivationIndex,
     scriptType = BitcoinScriptType.valueOf(scriptType),
+    confirmedBalanceSatoshis = confirmedBalanceSatoshis,
+    unconfirmedBalanceSatoshis = unconfirmedBalanceSatoshis,
+    balanceUpdatedAtMillis = balanceUpdatedAtMillis,
 )
 
 fun BitcoinWallet.toEntity(): BitcoinWalletEntity = BitcoinWalletEntity(
@@ -30,4 +36,7 @@ fun BitcoinWallet.toEntity(): BitcoinWalletEntity = BitcoinWalletEntity(
     receiveAddress = receiveAddress,
     derivationIndex = derivationIndex,
     scriptType = scriptType.name,
+    confirmedBalanceSatoshis = confirmedBalanceSatoshis,
+    unconfirmedBalanceSatoshis = unconfirmedBalanceSatoshis,
+    balanceUpdatedAtMillis = balanceUpdatedAtMillis,
 )

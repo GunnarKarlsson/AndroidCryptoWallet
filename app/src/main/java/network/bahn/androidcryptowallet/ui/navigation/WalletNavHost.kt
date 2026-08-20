@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import network.bahn.androidcryptowallet.ui.bitcoin.details.BitcoinWalletDetailsScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.list.BitcoinWalletListScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinCreateWalletScreen
@@ -33,6 +34,14 @@ fun WalletNavHost(
             BitcoinWalletListScreen(
                 onCreateWallet = { navController.navigate(BitcoinCreateGraphRoute) },
                 onNetworkStatus = { navController.navigate(BitcoinNetworkStatusRoute) },
+                onWalletClick = { walletId ->
+                    navController.navigate(BitcoinWalletDetailsRoute(walletId))
+                },
+            )
+        }
+        composable<BitcoinWalletDetailsRoute> {
+            BitcoinWalletDetailsScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable<BitcoinNetworkStatusRoute> {

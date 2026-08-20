@@ -10,7 +10,10 @@ import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
+import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
+import network.bahn.androidcryptowallet.domain.TimeProvider
+import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
@@ -83,15 +86,35 @@ class BitcoinWalletRepositoryImplTest {
         assertEquals(2, store.saved.size)
     }
 
+    @Test
+    fun refreshBalanceCachesSatoshisForWallet() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val repo = createRepository(remote = remote)
+
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        repo.refreshBalance(id)
+
+        val wallet = repo.observeWallet(id).first()
+        assertEquals(12_345L, wallet?.confirmedBalanceSatoshis)
+        assertEquals(100L, wallet?.unconfirmedBalanceSatoshis)
+        assertEquals(1_700_000_000_000L, wallet?.balanceUpdatedAtMillis)
+        assertEquals(listOf(TESTNET_ADDRESS), remote.addresses)
+        assertEquals(listOf(BitcoinNetwork.TESTNET4), remote.networks)
+    }
+
     private fun createRepository(
         engine: FakeBitcoinKeyEngine = FakeBitcoinKeyEngine(),
         store: FakeBitcoinMnemonicStore = FakeBitcoinMnemonicStore(),
         networkStore: FakeWalletSelectedBitcoinNetworkStore = FakeWalletSelectedBitcoinNetworkStore(),
+        remote: FakeWalletBitcoinRemoteDataSource = FakeWalletBitcoinRemoteDataSource(),
     ): BitcoinWalletRepositoryImpl = BitcoinWalletRepositoryImpl(
         keyEngine = engine,
         mnemonicStore = store,
         walletDao = FakeBitcoinWalletDao(),
         selectedBitcoinNetworkStore = networkStore,
+        remote = remote,
+        timeProvider = TimeProvider { 1_700_000_000_000L },
     )
 }
 
@@ -140,8 +163,48 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
     override fun observeByNetwork(network: String): Flow<List<BitcoinWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
+    override fun observeById(id: String): Flow<BitcoinWalletEntity?> =
+        items.map { rows -> rows.find { it.id == id } }
+
     override suspend fun insert(entity: BitcoinWalletEntity) {
         items.update { it + entity }
+    }
+
+    override suspend fun updateBalance(
+        id: String,
+        confirmedSatoshis: Long,
+        unconfirmedSatoshis: Long,
+        updatedAtMillis: Long,
+    ) {
+        items.update { rows ->
+            rows.map { row ->
+                if (row.id != id) {
+                    row
+                } else {
+                    row.copy(
+                        confirmedBalanceSatoshis = confirmedSatoshis,
+                        unconfirmedBalanceSatoshis = unconfirmedSatoshis,
+                        balanceUpdatedAtMillis = updatedAtMillis,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private class FakeWalletBitcoinRemoteDataSource : BitcoinRemoteDataSource {
+    val networks = mutableListOf<BitcoinNetwork>()
+    val addresses = mutableListOf<String>()
+
+    override suspend fun getBlockCount(network: BitcoinNetwork): Long = error("unused")
+
+    override suspend fun getAddressBalance(
+        network: BitcoinNetwork,
+        address: String,
+    ): BitcoinAddressBalance {
+        networks += network
+        addresses += address
+        return BitcoinAddressBalance(confirmedSatoshis = 12_345L, unconfirmedSatoshis = 100L)
     }
 }
 

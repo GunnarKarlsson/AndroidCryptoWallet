@@ -53,6 +53,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 fun BitcoinWalletListScreen(
     onCreateWallet: () -> Unit,
     onNetworkStatus: () -> Unit,
+    onWalletClick: (String) -> Unit,
     viewModel: BitcoinWalletListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,6 +62,7 @@ fun BitcoinWalletListScreen(
         onNetworkSelected = viewModel::onNetworkSelected,
         onCreateWallet = onCreateWallet,
         onNetworkStatus = onNetworkStatus,
+        onWalletClick = onWalletClick,
     )
 }
 
@@ -71,6 +73,7 @@ private fun BitcoinWalletListContent(
     onNetworkSelected: (BitcoinNetwork) -> Unit,
     onCreateWallet: () -> Unit,
     onNetworkStatus: () -> Unit,
+    onWalletClick: (String) -> Unit,
 ) {
     var showActionsSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -121,7 +124,10 @@ private fun BitcoinWalletListContent(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(uiState.wallets, key = { it.id }) { wallet ->
-                        BitcoinWalletListItem(wallet = wallet)
+                        BitcoinWalletListItem(
+                            wallet = wallet,
+                            onClick = { onWalletClick(wallet.id) },
+                        )
                     }
                 }
             }
@@ -175,8 +181,12 @@ private fun BitcoinWalletListContent(
 }
 
 @Composable
-private fun BitcoinWalletListItem(wallet: BitcoinWallet) {
+private fun BitcoinWalletListItem(
+    wallet: BitcoinWallet,
+    onClick: () -> Unit,
+) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -210,6 +220,7 @@ private fun BitcoinWalletListEmptyPreview() {
             onNetworkSelected = {},
             onCreateWallet = {},
             onNetworkStatus = {},
+            onWalletClick = {},
         )
     }
 }
@@ -231,6 +242,7 @@ private fun BitcoinWalletListPopulatedPreview() {
             onNetworkSelected = {},
             onCreateWallet = {},
             onNetworkStatus = {},
+            onWalletClick = {},
         )
     }
 }

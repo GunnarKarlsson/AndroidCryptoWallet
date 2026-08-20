@@ -2,13 +2,16 @@ package network.bahn.androidcryptowallet.data.remote.alchemy
 
 import android.util.Log
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
+import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AlchemyBitcoinRemoteDataSource @Inject constructor(
     private val apiFactory: AlchemyBitcoinJsonRpcApiFactory,
+    private val utxoApiFactory: AlchemyUtxoApiFactory,
     private val config: AlchemyBitcoinConfig,
 ) : BitcoinRemoteDataSource {
     override suspend fun getBlockCount(network: BitcoinNetwork): Long {
@@ -31,7 +34,39 @@ class AlchemyBitcoinRemoteDataSource @Inject constructor(
         }
     }
 
+    override suspend fun getAddressBalance(
+        network: BitcoinNetwork,
+        address: String,
+    ): BitcoinAddressBalance {
+        Log.d(TAG, "Requesting address balance for $network")
+        try {
+            val response = utxoApiFactory.get(network).getAddress(
+                apiKey = config.apiKey,
+                address = address,
+            )
+            val balance = BitcoinAddressBalance(
+                confirmedSatoshis = response.balance.toSatoshis(),
+                unconfirmedSatoshis = response.unconfirmedBalance.toSatoshis(),
+            )
+            Log.i(TAG, "address balance succeeded for $network confirmed=${balance.confirmedSatoshis}")
+            return balance
+        } catch (e: HttpException) {
+            if (e.code() == 404) {
+                Log.i(TAG, "address not found on $network; treating as zero balance")
+                return BitcoinAddressBalance(confirmedSatoshis = 0L)
+            }
+            Log.e(TAG, "address balance failed for $network: ${e.message}", e)
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "address balance failed for $network: ${e.message}", e)
+            throw e
+        }
+    }
+
     private companion object {
         const val TAG = "Alchemy"
+
+        fun String?.toSatoshis(): Long = this?.toLongOrNull() ?: 0L
     }
 }
+

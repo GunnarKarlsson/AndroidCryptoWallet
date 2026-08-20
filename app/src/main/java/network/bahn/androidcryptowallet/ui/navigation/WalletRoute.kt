@@ -19,3 +19,6 @@ data object BitcoinConfirmMnemonicRoute
 
 @Serializable
 data object BitcoinNetworkStatusRoute
+
+@Serializable
+data class BitcoinWalletDetailsRoute(val walletId: String)
