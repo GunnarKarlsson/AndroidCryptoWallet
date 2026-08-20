@@ -42,10 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
-import java.text.DateFormat
-import java.text.NumberFormat
-import java.util.Date
-import java.util.Locale
+import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
@@ -159,13 +156,17 @@ private fun HomeContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = formatBlockHeight(uiState.blockHeight),
+                        text = StringUtils.formatBlockHeight(uiState.blockHeight),
                         style = MaterialTheme.typography.displayMedium,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = lastUpdatedText(uiState.updatedAtMillis),
+                        text = StringUtils.formatLastUpdated(
+                            updatedAtMillis = uiState.updatedAtMillis,
+                            neverRefreshed = stringResource(R.string.last_updated_never),
+                            lastUpdatedPattern = stringResource(R.string.last_updated),
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start,
@@ -182,19 +183,6 @@ private fun HomeContent(
             }
         }
     }
-}
-
-private fun formatBlockHeight(height: Long?): String {
-    if (height == null) return "—"
-    return NumberFormat.getIntegerInstance(Locale.US).format(height)
-}
-
-@Composable
-private fun lastUpdatedText(updatedAtMillis: Long?): String {
-    if (updatedAtMillis == null) return stringResource(R.string.last_updated_never)
-    val formatted = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-        .format(Date(updatedAtMillis))
-    return stringResource(R.string.last_updated, formatted)
 }
 
 @Preview(showBackground = true)
