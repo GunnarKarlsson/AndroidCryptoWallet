@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">AndroidCryptoWallet</string>
+    <string name="network_label">Network</string>
+    <string name="latest_block">Latest block</string>
+    <string name="refresh_block_height">Refresh block height</string>
 </resources>
