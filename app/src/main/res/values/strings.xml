@@ -3,4 +3,6 @@
     <string name="network_label">Network</string>
     <string name="latest_block">Latest block</string>
     <string name="refresh_block_height">Refresh block height</string>
+    <string name="last_updated_never">Not yet refreshed</string>
+    <string name="last_updated">Last updated %1$s</string>
 </resources>

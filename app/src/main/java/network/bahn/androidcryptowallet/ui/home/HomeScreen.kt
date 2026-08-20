@@ -38,25 +38,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
+import java.text.DateFormat
 import java.text.NumberFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
-    var uiState by remember { mutableStateOf(HomeUiState()) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     HomeContent(
         uiState = uiState,
-        onNetworkSelected = { network ->
-            uiState = uiState.copy(selectedNetwork = network)
-            viewModel.onNetworkSelected(network)
-        },
-        onRefresh = {
-            viewModel.onRefresh(uiState.selectedNetwork)
-        },
+        onNetworkSelected = viewModel::onNetworkSelected,
+        onRefresh = { viewModel.onRefresh(uiState.selectedNetwork) },
     )
 }
 
@@ -167,11 +165,19 @@ private fun HomeContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = formatLastUpdated(uiState.updatedAtMillis),
+                        text = lastUpdatedText(uiState.updatedAtMillis),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start,
                     )
+                    uiState.errorMessage?.let { message ->
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
         }
@@ -183,9 +189,12 @@ private fun formatBlockHeight(height: Long?): String {
     return NumberFormat.getIntegerInstance(Locale.US).format(height)
 }
 
-private fun formatLastUpdated(updatedAtMillis: Long?): String {
-    if (updatedAtMillis == null) return "Not yet refreshed"
-    return "Last updated just now"
+@Composable
+private fun lastUpdatedText(updatedAtMillis: Long?): String {
+    if (updatedAtMillis == null) return stringResource(R.string.last_updated_never)
+    val formatted = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+        .format(Date(updatedAtMillis))
+    return stringResource(R.string.last_updated, formatted)
 }
 
 @Preview(showBackground = true)
@@ -193,7 +202,11 @@ private fun formatLastUpdated(updatedAtMillis: Long?): String {
 private fun HomeScreenPreview() {
     WalletTheme {
         HomeContent(
-            uiState = HomeUiState(),
+            uiState = HomeUiState(
+                selectedNetwork = BitcoinNetwork.TESTNET4,
+                blockHeight = 894_623,
+                updatedAtMillis = 1_700_000_000_000L,
+            ),
             onNetworkSelected = {},
             onRefresh = {},
         )
