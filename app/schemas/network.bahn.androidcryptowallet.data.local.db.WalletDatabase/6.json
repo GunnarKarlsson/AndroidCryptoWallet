@@ -1,0 +1,106 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "0ecedb89e5d967a4a7cf4ad1fde68a98",
+    "entities": [
+      {
+        "tableName": "bitcoin_network_status",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`network` TEXT NOT NULL, `blockHeight` INTEGER NOT NULL, `updatedAtMillis` INTEGER NOT NULL, PRIMARY KEY(`network`))",
+        "fields": [
+          {
+            "fieldPath": "network",
+            "columnName": "network",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blockHeight",
+            "columnName": "blockHeight",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMillis",
+            "columnName": "updatedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "network"
+          ]
+        }
+      },
+      {
+        "tableName": "bitcoin_wallet",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `network` TEXT NOT NULL, `receiveAddress` TEXT NOT NULL, `derivationIndex` INTEGER NOT NULL, `scriptType` TEXT NOT NULL, `kind` TEXT NOT NULL, `confirmedBalanceSatoshis` INTEGER, `unconfirmedBalanceSatoshis` INTEGER, `balanceUpdatedAtMillis` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "network",
+            "columnName": "network",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiveAddress",
+            "columnName": "receiveAddress",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "derivationIndex",
+            "columnName": "derivationIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scriptType",
+            "columnName": "scriptType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confirmedBalanceSatoshis",
+            "columnName": "confirmedBalanceSatoshis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "unconfirmedBalanceSatoshis",
+            "columnName": "unconfirmedBalanceSatoshis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "balanceUpdatedAtMillis",
+            "columnName": "balanceUpdatedAtMillis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0ecedb89e5d967a4a7cf4ad1fde68a98')"
+    ]
+  }
+}

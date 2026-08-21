@@ -7,11 +7,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import network.bahn.androidcryptowallet.data.wallet.HdWalletRoomReconciler
 import network.bahn.androidcryptowallet.data.wallet.WatchOnlyBitcoinWalletSeeder
 import javax.inject.Inject
 
 @HiltAndroidApp
 class WalletApplication : Application() {
+    @Inject
+    lateinit var hdWalletRoomReconciler: HdWalletRoomReconciler
+
     @Inject
     lateinit var watchOnlyBitcoinWalletSeeder: WatchOnlyBitcoinWalletSeeder
 
@@ -20,6 +24,11 @@ class WalletApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         applicationScope.launch {
+            try {
+                hdWalletRoomReconciler.reconcile()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to reconcile HD wallets", e)
+            }
             try {
                 watchOnlyBitcoinWalletSeeder.seed()
             } catch (e: Exception) {

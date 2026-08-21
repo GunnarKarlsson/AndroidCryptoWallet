@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
         BitcoinWalletEntity::class,
     ],
     version = 6,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class WalletDatabase : RoomDatabase() {
     abstract fun bitcoinNetworkStatusDao(): BitcoinNetworkStatusDao

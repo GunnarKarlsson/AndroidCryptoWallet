@@ -14,6 +14,7 @@ import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
+import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
@@ -39,8 +40,12 @@ class BitcoinWalletRepositoryImplTest {
         assertEquals(TESTNET_ADDRESS, wallets.single().receiveAddress)
         assertEquals(BitcoinScriptType.BIP84, wallets.single().scriptType)
         assertEquals(BitcoinWalletKind.HD, wallets.single().kind)
-        assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.first)
-        assertEquals(null, store.saved[wallets.single().id]?.second)
+        assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
+        assertEquals(null, store.saved[wallets.single().id]?.passphrase)
+        assertEquals(BitcoinNetwork.TESTNET4, store.saved[wallets.single().id]?.public?.network)
+        assertEquals(TESTNET_ADDRESS, store.saved[wallets.single().id]?.public?.receiveAddress)
+        assertEquals(0, store.saved[wallets.single().id]?.public?.derivationIndex)
+        assertEquals(BitcoinScriptType.BIP84, store.saved[wallets.single().id]?.public?.scriptType)
         assertEquals(listOf(BitcoinNetwork.TESTNET4), engine.deriveNetworks)
         assertEquals(1, engine.validateCalls)
 
@@ -151,12 +156,26 @@ private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
     }
 }
 
-private class FakeBitcoinMnemonicStore : BitcoinMnemonicStore {
-    val saved = mutableMapOf<String, Pair<String, String?>>()
+private data class SavedHdWallet(
+    val mnemonic: String,
+    val passphrase: String?,
+    val public: BitcoinHdWalletPublic,
+)
 
-    override fun save(walletId: String, mnemonic: String, passphrase: String?) {
-        saved[walletId] = mnemonic to passphrase
+private class FakeBitcoinMnemonicStore : BitcoinMnemonicStore {
+    val saved = mutableMapOf<String, SavedHdWallet>()
+
+    override fun save(
+        mnemonic: String,
+        passphrase: String?,
+        public: BitcoinHdWalletPublic,
+    ) {
+        saved[public.id] = SavedHdWallet(mnemonic, passphrase, public)
     }
+
+    override fun listHdWalletIds(): List<String> = saved.keys.sorted()
+
+    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = saved[walletId]?.public
 }
 
 private class FakeBitcoinWalletDao : BitcoinWalletDao {

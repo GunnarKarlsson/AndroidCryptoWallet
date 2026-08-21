@@ -36,7 +36,6 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
-            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
 
     @Provides

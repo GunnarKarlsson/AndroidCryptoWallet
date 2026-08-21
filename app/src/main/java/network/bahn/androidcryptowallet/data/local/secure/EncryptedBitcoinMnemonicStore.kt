@@ -5,11 +5,13 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Stores BIP-39 seed material only (mnemonic + optional passphrase), keyed by wallet id.
+ * Stores BIP-39 seed material (mnemonic + optional passphrase) and a public snapshot
+ * (network, receive address, derivation index, script type), keyed by wallet id.
  * Does not store BIP-32 xprv or per-address private keys; those are derived in memory.
  */
 @Singleton
@@ -31,16 +33,39 @@ class EncryptedBitcoinMnemonicStore @Inject constructor(
         )
     }
 
-    override fun save(walletId: String, mnemonic: String, passphrase: String?) {
+    override fun save(
+        mnemonic: String,
+        passphrase: String?,
+        public: BitcoinHdWalletPublic,
+    ) {
         prefs.edit()
-            .putString(mnemonicKey(walletId), mnemonic)
-            .putString(passphraseKey(walletId), passphrase.orEmpty())
+            .putString(HdWalletPrefsCodec.MNEMONIC_PREFIX + public.id, mnemonic)
+            .putString(HdWalletPrefsCodec.PASSPHRASE_PREFIX + public.id, passphrase.orEmpty())
+            .putString(HdWalletPrefsCodec.NETWORK_PREFIX + public.id, public.network.name)
+            .putString(HdWalletPrefsCodec.ADDRESS_PREFIX + public.id, public.receiveAddress)
+            .putInt(HdWalletPrefsCodec.INDEX_PREFIX + public.id, public.derivationIndex)
+            .putString(HdWalletPrefsCodec.SCRIPT_PREFIX + public.id, public.scriptType.name)
             .apply()
     }
 
-    private fun mnemonicKey(walletId: String) = "mnemonic_$walletId"
+    override fun listHdWalletIds(): List<String> =
+        HdWalletPrefsCodec.walletIdsFromKeys(prefs.all.keys)
 
-    private fun passphraseKey(walletId: String) = "passphrase_$walletId"
+    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? {
+        val strings = mapOf(
+            HdWalletPrefsCodec.NETWORK_PREFIX + walletId to
+                prefs.getString(HdWalletPrefsCodec.NETWORK_PREFIX + walletId, null),
+            HdWalletPrefsCodec.ADDRESS_PREFIX + walletId to
+                prefs.getString(HdWalletPrefsCodec.ADDRESS_PREFIX + walletId, null),
+            HdWalletPrefsCodec.SCRIPT_PREFIX + walletId to
+                prefs.getString(HdWalletPrefsCodec.SCRIPT_PREFIX + walletId, null),
+        )
+        val ints = mapOf(
+            HdWalletPrefsCodec.INDEX_PREFIX + walletId to
+                prefs.getInt(HdWalletPrefsCodec.INDEX_PREFIX + walletId, 0),
+        )
+        return HdWalletPrefsCodec.loadPublic(walletId, strings, ints)
+    }
 
     private companion object {
         const val PREFS_FILE = "bitcoin_mnemonic"
