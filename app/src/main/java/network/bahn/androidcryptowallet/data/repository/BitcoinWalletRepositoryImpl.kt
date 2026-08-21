@@ -15,6 +15,7 @@ import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
+import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import java.util.UUID
 import javax.inject.Inject
@@ -54,6 +55,7 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
             receiveAddress = derived.address,
             derivationIndex = derived.index,
             scriptType = derived.scriptType,
+            kind = BitcoinWalletKind.HD,
         )
         mnemonicStore.save(
             walletId = wallet.id,

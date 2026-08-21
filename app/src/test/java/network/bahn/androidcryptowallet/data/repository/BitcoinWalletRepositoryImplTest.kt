@@ -17,6 +17,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
+import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.model.InvalidBitcoinMnemonicException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -37,6 +38,7 @@ class BitcoinWalletRepositoryImplTest {
         assertEquals(BitcoinNetwork.TESTNET4, wallets.single().network)
         assertEquals(TESTNET_ADDRESS, wallets.single().receiveAddress)
         assertEquals(BitcoinScriptType.BIP84, wallets.single().scriptType)
+        assertEquals(BitcoinWalletKind.HD, wallets.single().kind)
         assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.first)
         assertEquals(null, store.saved[wallets.single().id]?.second)
         assertEquals(listOf(BitcoinNetwork.TESTNET4), engine.deriveNetworks)
@@ -168,6 +170,20 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
 
     override suspend fun insert(entity: BitcoinWalletEntity) {
         items.update { it + entity }
+    }
+
+    override suspend fun insertIgnore(entity: BitcoinWalletEntity) {
+        items.update { rows ->
+            if (rows.any { it.id == entity.id }) rows else rows + entity
+        }
+    }
+
+    override suspend fun mockWalletIds(): List<String> =
+        items.value.filter { it.id.startsWith("mock:") }.map { it.id }
+
+    override suspend fun deleteByIds(ids: List<String>) {
+        val idSet = ids.toSet()
+        items.update { rows -> rows.filter { it.id !in idSet } }
     }
 
     override suspend fun updateBalance(

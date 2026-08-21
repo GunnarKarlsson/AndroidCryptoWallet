@@ -18,6 +18,7 @@ import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinConfig
+import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -48,6 +49,13 @@ object AppModule {
         PreferenceDataStoreFactory.create {
             context.preferencesDataStoreFile("settings")
         }
+
+    @Provides
+    @Singleton
+    fun provideMockBitcoinWalletConfig(): MockBitcoinWalletConfig = MockBitcoinWalletConfig.fromRaw(
+        testnet4Raw = BuildConfig.MOCK_BITCOIN_WALLET_TESTNET4,
+        mainnetRaw = BuildConfig.MOCK_BITCOIN_WALLET_MAINNET,
+    )
 
     @Provides
     @Singleton

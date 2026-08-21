@@ -20,6 +20,16 @@ val alchemyKey =
         ?: localProperties.getProperty("ALCHEMY_BTC_API_KEY")
         ?: ""
 
+val mockWalletTestnet4 =
+    System.getenv("MOCK_BITCOIN_WALLET_TESTNET4")
+        ?: localProperties.getProperty("MOCK_BITCOIN_WALLET_TESTNET4")
+        ?: ""
+
+val mockWalletMainnet =
+    System.getenv("MOCK_BITCOIN_WALLET_MAINNET")
+        ?: localProperties.getProperty("MOCK_BITCOIN_WALLET_MAINNET")
+        ?: ""
+
 fun String.quotedForBuildConfig(): String {
     val escaped = replace("\\", "\\\\").replace("\"", "\\\"")
     return "\"" + escaped + "\""
@@ -50,6 +60,16 @@ android {
             "String",
             "ALCHEMY_MAINNET_BASE_URL",
             "https://bitcoin-mainnet.g.alchemy.com/v2/".quotedForBuildConfig(),
+        )
+        buildConfigField(
+            "String",
+            "MOCK_BITCOIN_WALLET_TESTNET4",
+            mockWalletTestnet4.quotedForBuildConfig(),
+        )
+        buildConfigField(
+            "String",
+            "MOCK_BITCOIN_WALLET_MAINNET",
+            mockWalletMainnet.quotedForBuildConfig(),
         )
     }
 

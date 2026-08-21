@@ -49,7 +49,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
+import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -88,7 +90,18 @@ private fun BitcoinWalletDetailsContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.wallet_details_title)) },
+                title = {
+                    Column {
+                        Text(stringResource(R.string.wallet_details_title))
+                        if (uiState.isWatchOnly) {
+                            Text(
+                                text = stringResource(R.string.wallet_watch_only),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -284,6 +297,29 @@ private fun BitcoinWalletDetailsScreenPreview() {
                     network = BitcoinNetwork.TESTNET4,
                     receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
                     confirmedBalanceSatoshis = 4_225_100,
+                    unconfirmedBalanceSatoshis = 0,
+                    balanceUpdatedAtMillis = 1_700_000_000_000L,
+                ),
+            ),
+            onRefresh = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BitcoinWalletDetailsWatchOnlyPreview() {
+    WalletTheme {
+        BitcoinWalletDetailsContent(
+            uiState = BitcoinWalletDetailsUiState(
+                wallet = BitcoinWallet(
+                    id = "mock:TESTNET4:tb1qwatch",
+                    network = BitcoinNetwork.TESTNET4,
+                    receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                    scriptType = BitcoinScriptType.EXTERNAL,
+                    kind = BitcoinWalletKind.WATCH_ONLY,
+                    confirmedBalanceSatoshis = 50_000,
                     unconfirmedBalanceSatoshis = 0,
                     balanceUpdatedAtMillis = 1_700_000_000_000L,
                 ),

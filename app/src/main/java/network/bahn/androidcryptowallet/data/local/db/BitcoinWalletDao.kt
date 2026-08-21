@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.data.local.db
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -13,8 +14,17 @@ interface BitcoinWalletDao {
     @Query("SELECT * FROM bitcoin_wallet WHERE id = :id")
     fun observeById(id: String): Flow<BitcoinWalletEntity?>
 
+    @Query("SELECT id FROM bitcoin_wallet WHERE id LIKE 'mock:%'")
+    suspend fun mockWalletIds(): List<String>
+
     @Insert
     suspend fun insert(entity: BitcoinWalletEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnore(entity: BitcoinWalletEntity)
+
+    @Query("DELETE FROM bitcoin_wallet WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 
     @Query(
         """

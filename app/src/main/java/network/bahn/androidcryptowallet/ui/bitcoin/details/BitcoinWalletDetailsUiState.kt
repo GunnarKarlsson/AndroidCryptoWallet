@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.ui.bitcoin.details
 
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
+import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 
 data class BitcoinWalletDetailsUiState(
     val wallet: BitcoinWallet? = null,
@@ -13,4 +14,5 @@ data class BitcoinWalletDetailsUiState(
     val confirmedBalanceSatoshis: Long? get() = wallet?.confirmedBalanceSatoshis
     val unconfirmedBalanceSatoshis: Long? get() = wallet?.unconfirmedBalanceSatoshis
     val balanceUpdatedAtMillis: Long? get() = wallet?.balanceUpdatedAtMillis
+    val isWatchOnly: Boolean get() = wallet?.kind == BitcoinWalletKind.WATCH_ONLY
 }

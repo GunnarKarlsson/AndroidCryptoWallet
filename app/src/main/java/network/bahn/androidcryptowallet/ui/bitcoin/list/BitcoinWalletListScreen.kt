@@ -44,7 +44,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
+import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinNetworkDropdown
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
@@ -200,6 +202,14 @@ private fun BitcoinWalletListItem(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            if (wallet.kind == BitcoinWalletKind.WATCH_ONLY) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.wallet_watch_only),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = StringUtils.truncateBitcoinAddress(wallet.receiveAddress),
@@ -236,6 +246,13 @@ private fun BitcoinWalletListPopulatedPreview() {
                         id = "1",
                         network = BitcoinNetwork.TESTNET4,
                         receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                    ),
+                    BitcoinWallet(
+                        id = "mock:TESTNET4:tb1qp0we5epypgj4acd2c4au58045ruud2pd6heuee",
+                        network = BitcoinNetwork.TESTNET4,
+                        receiveAddress = "tb1qp0we5epypgj4acd2c4au58045ruud2pd6heuee",
+                        scriptType = BitcoinScriptType.EXTERNAL,
+                        kind = BitcoinWalletKind.WATCH_ONLY,
                     ),
                 ),
             ),
