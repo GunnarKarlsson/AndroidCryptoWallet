@@ -17,7 +17,11 @@ import network.bahn.androidcryptowallet.BuildConfig
 import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
+import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinConfig
+import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
+import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import okhttp3.OkHttpClient
@@ -59,11 +63,28 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideMsBitcoinConfig(): MsBitcoinConfig = MsBitcoinConfig(
+        testnet4BaseUrl = BuildConfig.MS_TESTNET4_BASE_URL,
+        mainnetBaseUrl = BuildConfig.MS_MAINNET_BASE_URL,
+    )
+
+    @Provides
+    @Singleton
     fun provideAlchemyBitcoinConfig(): AlchemyBitcoinConfig = AlchemyBitcoinConfig(
         apiKey = BuildConfig.ALCHEMY_BTC_API_KEY,
         testnet4BaseUrl = BuildConfig.ALCHEMY_TESTNET4_BASE_URL,
         mainnetBaseUrl = BuildConfig.ALCHEMY_MAINNET_BASE_URL,
     )
+
+    @Provides
+    @Singleton
+    fun provideBitcoinRemoteDataSource(
+        ms: MsBitcoinRemoteDataSource,
+        alchemy: AlchemyBitcoinRemoteDataSource,
+    ): BitcoinRemoteDataSource = when (BuildConfig.BITCOIN_REMOTE_PROVIDER.trim().uppercase()) {
+        "ALCHEMY" -> alchemy
+        else -> ms
+    }
 
     @Provides
     @Singleton

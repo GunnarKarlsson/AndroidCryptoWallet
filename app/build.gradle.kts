@@ -30,6 +30,11 @@ val mockWalletMainnet =
         ?: localProperties.getProperty("MOCK_BITCOIN_WALLET_MAINNET")
         ?: ""
 
+val bitcoinRemoteProvider =
+    System.getenv("BITCOIN_REMOTE_PROVIDER")
+        ?: localProperties.getProperty("BITCOIN_REMOTE_PROVIDER")
+        ?: "MS"
+
 fun String.quotedForBuildConfig(): String {
     val escaped = replace("\\", "\\\\").replace("\"", "\\\"")
     return "\"" + escaped + "\""
@@ -70,6 +75,21 @@ android {
             "String",
             "MOCK_BITCOIN_WALLET_MAINNET",
             mockWalletMainnet.quotedForBuildConfig(),
+        )
+        buildConfigField(
+            "String",
+            "BITCOIN_REMOTE_PROVIDER",
+            bitcoinRemoteProvider.quotedForBuildConfig(),
+        )
+        buildConfigField(
+            "String",
+            "MS_TESTNET4_BASE_URL",
+            "https://mempool.space/testnet4/api/".quotedForBuildConfig(),
+        )
+        buildConfigField(
+            "String",
+            "MS_MAINNET_BASE_URL",
+            "https://mempool.space/api/".quotedForBuildConfig(),
         )
     }
 

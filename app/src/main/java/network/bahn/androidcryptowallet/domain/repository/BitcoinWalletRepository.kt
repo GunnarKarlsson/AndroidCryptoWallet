@@ -23,6 +23,6 @@ interface BitcoinWalletRepository {
         passphrase: String?,
     )
 
-    /** Fetch the receive-address balance from Alchemy and cache it on the wallet row. */
+    /** Fetch the receive-address balance from the remote data source and cache it on the wallet row. */
     suspend fun refreshBalance(walletId: String)
 }
