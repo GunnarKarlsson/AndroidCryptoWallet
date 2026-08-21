@@ -51,15 +51,17 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
+import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 private enum class SendFeePreset(
     @StringRes val labelRes: Int,
     @StringRes val rateRes: Int,
     @StringRes val etaRes: Int,
+    val satPerVByte: Long,
 ) {
-    Slow(R.string.send_fee_slow, R.string.send_fee_slow_rate, R.string.send_fee_slow_eta),
-    Normal(R.string.send_fee_normal, R.string.send_fee_normal_rate, R.string.send_fee_normal_eta),
-    Fast(R.string.send_fee_fast, R.string.send_fee_fast_rate, R.string.send_fee_fast_eta),
+    Slow(R.string.send_fee_slow, R.string.send_fee_slow_rate, R.string.send_fee_slow_eta, 2),
+    Normal(R.string.send_fee_normal, R.string.send_fee_normal_rate, R.string.send_fee_normal_eta, 5),
+    Fast(R.string.send_fee_fast, R.string.send_fee_fast_rate, R.string.send_fee_fast_eta, 10),
 }
 
 @Composable
@@ -200,6 +202,10 @@ private fun BitcoinSendContent(
                     )
                 }
             }
+            SendTotalSummary(
+                amount = amount,
+                feePreset = feePreset,
+            )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -254,7 +260,86 @@ private fun FeePresetCard(
     }
 }
 
+@Composable
+private fun SendTotalSummary(
+    amount: String,
+    feePreset: SendFeePreset,
+) {
+    val feeSatoshis = feePreset.satPerVByte * ESTIMATED_TX_VBYTES
+    val amountSatoshis = StringUtils.parseBitcoinAmountToSatoshis(amount)
+    val placeholder = stringResource(R.string.receive_address_placeholder)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SendSummaryRow(
+                label = stringResource(R.string.send_fee_row),
+                value = stringResource(
+                    R.string.bitcoin_amount,
+                    StringUtils.formatBitcoinAmount(feeSatoshis),
+                ),
+            )
+            SendSummaryRow(
+                label = stringResource(R.string.send_total_label),
+                value = if (amountSatoshis == null) {
+                    placeholder
+                } else {
+                    stringResource(
+                        R.string.bitcoin_amount,
+                        StringUtils.formatBitcoinAmount(amountSatoshis + feeSatoshis),
+                    )
+                },
+                emphasize = true,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SendSummaryRow(
+    label: String,
+    value: String,
+    emphasize: Boolean = false,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = if (emphasize) {
+                MaterialTheme.typography.titleMedium
+            } else {
+                MaterialTheme.typography.bodyMedium
+            },
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = if (emphasize) {
+                MaterialTheme.typography.titleMedium
+            } else {
+                MaterialTheme.typography.bodyMedium
+            },
+            fontFamily = FontFamily.Monospace,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+    }
+}
+
 private val BTC_AMOUNT_PATTERN = Regex("^\\d*\\.?\\d{0,8}$")
+private const val ESTIMATED_TX_VBYTES = 141L
 
 private fun pastedClipboardText(context: Context): String? {
     val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return null

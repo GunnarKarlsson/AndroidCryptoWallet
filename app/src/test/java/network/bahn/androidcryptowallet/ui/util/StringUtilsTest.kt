@@ -56,4 +56,14 @@ class StringUtilsTest {
         assertEquals("0.04225100", StringUtils.formatBitcoinAmount(4_225_100))
         assertEquals("1.00000000", StringUtils.formatBitcoinAmount(100_000_000))
     }
+
+    @Test
+    fun parseBitcoinAmountToSatoshisReadsBtcString() {
+        assertEquals(null, StringUtils.parseBitcoinAmountToSatoshis(""))
+        assertEquals(null, StringUtils.parseBitcoinAmountToSatoshis("."))
+        assertEquals(0L, StringUtils.parseBitcoinAmountToSatoshis("0"))
+        assertEquals(1L, StringUtils.parseBitcoinAmountToSatoshis("0.00000001"))
+        assertEquals(1_000_000L, StringUtils.parseBitcoinAmountToSatoshis("0.01"))
+        assertEquals(100_000_000L, StringUtils.parseBitcoinAmountToSatoshis("1"))
+    }
 }

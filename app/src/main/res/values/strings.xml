@@ -76,5 +76,7 @@
     <string name="send_fee_slow_eta">~60 min</string>
     <string name="send_fee_normal_eta">~30 min</string>
     <string name="send_fee_fast_eta">~10 min</string>
+    <string name="send_fee_row">Fee</string>
+    <string name="send_total_label">Total</string>
     <string name="send_action">Send BTC</string>
 </resources>

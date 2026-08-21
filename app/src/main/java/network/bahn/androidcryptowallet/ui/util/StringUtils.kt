@@ -37,4 +37,15 @@ object StringUtils {
             .movePointLeft(8)
             .setScale(8, java.math.RoundingMode.UNNECESSARY)
             .toPlainString()
+
+    fun parseBitcoinAmountToSatoshis(amount: String): Long? {
+        val trimmed = amount.trim()
+        if (trimmed.isEmpty() || trimmed == ".") return null
+        return runCatching {
+            trimmed.toBigDecimal()
+                .movePointRight(8)
+                .setScale(0, java.math.RoundingMode.DOWN)
+                .longValueExact()
+        }.getOrNull()
+    }
 }
