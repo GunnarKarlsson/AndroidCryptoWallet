@@ -60,4 +60,21 @@
     <string name="receive_title">Receive</string>
     <string name="send_placeholder">Send is not available yet.</string>
     <string name="receive_placeholder">Receive is not available yet.</string>
+    <string name="send_recipient_label">Recipient</string>
+    <string name="send_recipient_placeholder">Bitcoin address</string>
+    <string name="paste_address">Paste address</string>
+    <string name="send_amount_label">Amount</string>
+    <string name="send_amount_placeholder">0.00000000</string>
+    <string name="send_btc_unit">BTC</string>
+    <string name="send_fee_label">Network fee</string>
+    <string name="send_fee_slow">Economy</string>
+    <string name="send_fee_normal">Standard</string>
+    <string name="send_fee_fast">Priority</string>
+    <string name="send_fee_slow_rate">~2 sat/vB</string>
+    <string name="send_fee_normal_rate">~5 sat/vB</string>
+    <string name="send_fee_fast_rate">~10 sat/vB</string>
+    <string name="send_fee_slow_eta">~60 min</string>
+    <string name="send_fee_normal_eta">~30 min</string>
+    <string name="send_fee_fast_eta">~10 min</string>
+    <string name="send_action">Send BTC</string>
 </resources>
