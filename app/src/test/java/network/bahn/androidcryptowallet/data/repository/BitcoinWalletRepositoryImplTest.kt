@@ -6,8 +6,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
+import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
+import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionEntity
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
+import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletTxCacheEntity
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
@@ -121,11 +124,86 @@ class BitcoinWalletRepositoryImplTest {
         val id = repo.observeWallets().first().single().id
         val page = repo.getTransactions(id, afterTxid = "cursor-txid")
 
-        assertEquals(listOf(TX_SUMMARY), page.transactions)
-        assertEquals("cursor-txid", page.lastConfirmedTxid)
+        assertEquals(listOf(TX_TWO), page.transactions)
+        assertEquals(TX_TWO.txid, page.lastConfirmedTxid)
         assertEquals(listOf(TESTNET_ADDRESS), remote.txAddresses)
         assertEquals(listOf(BitcoinNetwork.TESTNET4), remote.txNetworks)
         assertEquals(listOf("cursor-txid"), remote.txCursors)
+    }
+
+    @Test
+    fun getCachedTransactionsIsNullBeforeFetch() = runTest {
+        val repo = createRepository()
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+
+        assertEquals(null, repo.getCachedTransactions(id))
+    }
+
+    @Test
+    fun getTransactionsPersistsForLaterCacheRead() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val repo = createRepository(remote = remote)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+
+        repo.getTransactions(id)
+        assertEquals(1, remote.txCursors.size)
+
+        val cached = repo.getCachedTransactions(id)
+        assertEquals(listOf(TX_SUMMARY), cached?.transactions)
+        assertEquals(1, remote.txCursors.size)
+    }
+
+    @Test
+    fun getTransactionsEmptyPageIsStillCached() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource(
+            firstTxPage = BitcoinTransactionPage(
+                transactions = emptyList(),
+                lastConfirmedTxid = null,
+                hasMore = false,
+            ),
+        )
+        val repo = createRepository(remote = remote)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+
+        repo.getTransactions(id)
+        val cached = repo.getCachedTransactions(id)
+        assertEquals(emptyList<BitcoinTransactionSummary>(), cached?.transactions)
+        assertEquals(false, cached?.hasMore)
+    }
+
+    @Test
+    fun getTransactionsFirstPageReplacesCache() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val repo = createRepository(remote = remote)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+
+        repo.getTransactions(id)
+        remote.firstTxPage = BitcoinTransactionPage(
+            transactions = listOf(TX_TWO),
+            lastConfirmedTxid = TX_TWO.txid,
+            hasMore = false,
+        )
+        repo.getTransactions(id)
+
+        assertEquals(listOf(TX_TWO), repo.getCachedTransactions(id)?.transactions)
+    }
+
+    @Test
+    fun getTransactionsAppendsWhenCursorProvided() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val repo = createRepository(remote = remote)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+
+        repo.getTransactions(id)
+        repo.getTransactions(id, afterTxid = TX_SUMMARY.txid)
+
+        assertEquals(listOf(TX_SUMMARY, TX_TWO), repo.getCachedTransactions(id)?.transactions)
+        assertEquals(listOf(null, TX_SUMMARY.txid), remote.txCursors)
     }
 
     @Test
@@ -148,6 +226,7 @@ class BitcoinWalletRepositoryImplTest {
         keyEngine = engine,
         mnemonicStore = store,
         walletDao = FakeBitcoinWalletDao(),
+        transactionDao = FakeBitcoinTransactionDao(),
         selectedBitcoinNetworkStore = networkStore,
         remote = remote,
         timeProvider = TimeProvider { 1_700_000_000_000L },
@@ -163,6 +242,13 @@ private val TX_SUMMARY = BitcoinTransactionSummary(
     blockTimeSeconds = 1_700_000_000L,
     netSatoshis = 1_000L,
     feeSatoshis = 10L,
+)
+private val TX_TWO = BitcoinTransactionSummary(
+    txid = "txid-2",
+    confirmed = true,
+    blockTimeSeconds = 1_699_000_000L,
+    netSatoshis = -500L,
+    feeSatoshis = 20L,
 )
 
 private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
@@ -263,7 +349,47 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
     }
 }
 
-private class FakeWalletBitcoinRemoteDataSource : BitcoinRemoteDataSource {
+private class FakeBitcoinTransactionDao : BitcoinTransactionDao {
+    private val items = mutableListOf<BitcoinTransactionEntity>()
+    private val caches = mutableMapOf<String, BitcoinWalletTxCacheEntity>()
+
+    override suspend fun listByWalletId(walletId: String): List<BitcoinTransactionEntity> =
+        items.filter { it.walletId == walletId }.sortedBy { it.sortIndex }
+
+    override suspend fun maxSortIndex(walletId: String): Int =
+        items.filter { it.walletId == walletId }.maxOfOrNull { it.sortIndex } ?: -1
+
+    override suspend fun cacheForWallet(walletId: String): BitcoinWalletTxCacheEntity? =
+        caches[walletId]
+
+    override suspend fun upsertTransactions(entities: List<BitcoinTransactionEntity>) {
+        entities.forEach { entity ->
+            items.removeAll { it.walletId == entity.walletId && it.txid == entity.txid }
+            items += entity
+        }
+    }
+
+    override suspend fun deleteByWalletId(walletId: String) {
+        items.removeAll { it.walletId == walletId }
+    }
+
+    override suspend fun upsertCache(entity: BitcoinWalletTxCacheEntity) {
+        caches[entity.walletId] = entity
+    }
+}
+
+private class FakeWalletBitcoinRemoteDataSource(
+    var firstTxPage: BitcoinTransactionPage = BitcoinTransactionPage(
+        transactions = listOf(TX_SUMMARY),
+        lastConfirmedTxid = TX_SUMMARY.txid,
+        hasMore = false,
+    ),
+    var nextTxPage: BitcoinTransactionPage = BitcoinTransactionPage(
+        transactions = listOf(TX_TWO),
+        lastConfirmedTxid = TX_TWO.txid,
+        hasMore = false,
+    ),
+) : BitcoinRemoteDataSource {
     val networks = mutableListOf<BitcoinNetwork>()
     val addresses = mutableListOf<String>()
     val txNetworks = mutableListOf<BitcoinNetwork>()
@@ -289,11 +415,7 @@ private class FakeWalletBitcoinRemoteDataSource : BitcoinRemoteDataSource {
         txNetworks += network
         txAddresses += address
         txCursors += afterTxid
-        return BitcoinTransactionPage(
-            transactions = listOf(TX_SUMMARY),
-            lastConfirmedTxid = afterTxid,
-            hasMore = false,
-        )
+        return if (afterTxid == null) firstTxPage else nextTxPage
     }
 }
 

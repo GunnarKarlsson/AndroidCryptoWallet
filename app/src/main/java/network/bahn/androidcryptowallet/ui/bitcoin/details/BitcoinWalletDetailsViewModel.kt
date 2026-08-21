@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
+import network.bahn.androidcryptowallet.domain.usecase.GetCachedBitcoinWalletTransactionsUseCase
 import network.bahn.androidcryptowallet.domain.usecase.LoadBitcoinWalletTransactionsUseCase
 import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
 import network.bahn.androidcryptowallet.domain.usecase.RefreshBitcoinWalletBalanceUseCase
@@ -27,6 +29,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     observeBitcoinWallet: ObserveBitcoinWalletUseCase,
     private val refreshBitcoinWalletBalance: RefreshBitcoinWalletBalanceUseCase,
+    private val getCachedBitcoinWalletTransactions: GetCachedBitcoinWalletTransactionsUseCase,
     private val loadBitcoinWalletTransactions: LoadBitcoinWalletTransactionsUseCase,
 ) : ViewModel() {
     private val walletId = savedStateHandle.toRoute<BitcoinWalletDetailsRoute>().walletId
@@ -49,6 +52,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
             errorMessage = error,
             transactions = txs.transactions,
             isLoadingTransactions = txs.isLoading,
+            isRefreshingTransactions = txs.isRefreshing,
             isLoadingMoreTransactions = txs.isLoadingMore,
             hasMoreTransactions = txs.hasMore,
             transactionsErrorMessage = txs.errorMessage,
@@ -61,17 +65,20 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
 
     fun onEnter() {
         refreshBalance()
-        loadFirstPage()
+        loadCachedOrFetch()
     }
 
     fun onRefresh() {
         refreshBalance()
-        loadFirstPage()
+    }
+
+    fun onRefreshTransactions() {
+        loadFirstPageFromNetwork(showFullSpinner = txLoadState.value.transactions.isEmpty())
     }
 
     fun onLoadMore() {
         val state = txLoadState.value
-        if (state.isLoading || state.isLoadingMore || !state.hasMore) return
+        if (state.isLoading || state.isRefreshing || state.isLoadingMore || !state.hasMore) return
         val cursor = lastConfirmedTxid ?: return
         if (loadMoreJob?.isActive == true) return
         loadMoreJob = viewModelScope.launch {
@@ -120,20 +127,24 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun loadFirstPage() {
+    private fun loadCachedOrFetch() {
         firstPageJob?.cancel()
         loadMoreJob?.cancel()
         firstPageJob = viewModelScope.launch {
             lastConfirmedTxid = null
             txLoadState.value = TxLoadState(isLoading = true)
             try {
-                val page = loadBitcoinWalletTransactions(walletId)
-                lastConfirmedTxid = page.lastConfirmedTxid
-                txLoadState.value = TxLoadState(
-                    transactions = page.transactions,
-                    isLoading = false,
-                    hasMore = page.hasMore,
-                )
+                val cached = getCachedBitcoinWalletTransactions(walletId)
+                if (cached != null) {
+                    lastConfirmedTxid = cached.lastConfirmedTxid
+                    txLoadState.value = TxLoadState(
+                        transactions = cached.transactions,
+                        isLoading = false,
+                        hasMore = false,
+                    )
+                    return@launch
+                }
+                applyFirstPage(loadBitcoinWalletTransactions(walletId))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -147,9 +158,50 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun loadFirstPageFromNetwork(showFullSpinner: Boolean) {
+        firstPageJob?.cancel()
+        loadMoreJob?.cancel()
+        firstPageJob = viewModelScope.launch {
+            lastConfirmedTxid = null
+            txLoadState.update {
+                it.copy(
+                    isLoading = showFullSpinner,
+                    isRefreshing = !showFullSpinner,
+                    errorMessage = null,
+                )
+            }
+            try {
+                applyFirstPage(loadBitcoinWalletTransactions(walletId))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Refresh transactions failed", e)
+                txLoadState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        errorMessage = e.message?.takeIf { it.isNotBlank() }
+                            ?: "Could not load transactions",
+                    )
+                }
+            }
+        }
+    }
+
+    private fun applyFirstPage(page: BitcoinTransactionPage) {
+        lastConfirmedTxid = page.lastConfirmedTxid
+        txLoadState.value = TxLoadState(
+            transactions = page.transactions,
+            isLoading = false,
+            isRefreshing = false,
+            hasMore = page.hasMore,
+        )
+    }
+
     private data class TxLoadState(
         val transactions: List<BitcoinTransactionSummary> = emptyList(),
         val isLoading: Boolean = true,
+        val isRefreshing: Boolean = false,
         val isLoadingMore: Boolean = false,
         val hasMore: Boolean = false,
         val errorMessage: String? = null,

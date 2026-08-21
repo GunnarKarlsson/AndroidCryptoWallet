@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
+import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletTxCacheEntity
 import network.bahn.androidcryptowallet.data.local.db.toDomain
 import network.bahn.androidcryptowallet.data.local.db.toEntity
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
@@ -28,6 +30,7 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
     private val keyEngine: BitcoinKeyEngine,
     private val mnemonicStore: BitcoinMnemonicStore,
     private val walletDao: BitcoinWalletDao,
+    private val transactionDao: BitcoinTransactionDao,
     private val selectedBitcoinNetworkStore: SelectedBitcoinNetworkStore,
     private val remote: BitcoinRemoteDataSource,
     private val timeProvider: TimeProvider,
@@ -88,16 +91,50 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getCachedTransactions(walletId: String): BitcoinTransactionPage? {
+        val cache = transactionDao.cacheForWallet(walletId) ?: return null
+        val transactions = transactionDao.listByWalletId(walletId).map { it.toDomain() }
+        return BitcoinTransactionPage(
+            transactions = transactions,
+            lastConfirmedTxid = cache.lastConfirmedTxid,
+            hasMore = cache.hasMore,
+        )
+    }
+
     override suspend fun getTransactions(
         walletId: String,
         afterTxid: String?,
     ): BitcoinTransactionPage {
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")
-        return remote.getAddressTransactions(
+        val page = remote.getAddressTransactions(
             network = BitcoinNetwork.valueOf(wallet.network),
             address = wallet.receiveAddress,
             afterTxid = afterTxid,
         )
+        persistTransactions(walletId, page, replace = afterTxid == null)
+        return page
+    }
+
+    private suspend fun persistTransactions(
+        walletId: String,
+        page: BitcoinTransactionPage,
+        replace: Boolean,
+    ) {
+        val startIndex = if (replace) 0 else transactionDao.maxSortIndex(walletId) + 1
+        val entities = page.transactions.mapIndexed { index, tx ->
+            tx.toEntity(walletId = walletId, sortIndex = startIndex + index)
+        }
+        val cache = BitcoinWalletTxCacheEntity(
+            walletId = walletId,
+            lastConfirmedTxid = page.lastConfirmedTxid,
+            hasMore = page.hasMore,
+            fetchedAtMillis = timeProvider.nowMillis(),
+        )
+        if (replace) {
+            transactionDao.replaceWalletTransactions(walletId, entities, cache)
+        } else {
+            transactionDao.appendWalletTransactions(entities, cache)
+        }
     }
 }

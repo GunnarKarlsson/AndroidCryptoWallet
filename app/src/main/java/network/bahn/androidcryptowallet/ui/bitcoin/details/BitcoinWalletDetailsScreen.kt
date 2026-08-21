@@ -82,6 +82,7 @@ fun BitcoinWalletDetailsScreen(
     BitcoinWalletDetailsContent(
         uiState = uiState,
         onRefresh = viewModel::onRefresh,
+        onRefreshTransactions = viewModel::onRefreshTransactions,
         onLoadMore = viewModel::onLoadMore,
         onSend = onSend,
         onReceive = onReceive,
@@ -94,6 +95,7 @@ fun BitcoinWalletDetailsScreen(
 private fun BitcoinWalletDetailsContent(
     uiState: BitcoinWalletDetailsUiState,
     onRefresh: () -> Unit,
+    onRefreshTransactions: () -> Unit,
     onLoadMore: () -> Unit,
     onSend: () -> Unit,
     onReceive: () -> Unit,
@@ -228,13 +230,37 @@ private fun BitcoinWalletDetailsContent(
             }
             item { Spacer(modifier = Modifier.height(24.dp)) }
             item {
-                Text(
-                    text = stringResource(R.string.wallet_transactions),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.wallet_transactions),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(
+                        onClick = onRefreshTransactions,
+                        enabled = !uiState.isLoadingTransactions &&
+                            !uiState.isRefreshingTransactions,
+                    ) {
+                        if (uiState.isRefreshingTransactions) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Outlined.Refresh,
+                                contentDescription = stringResource(R.string.refresh_transactions),
+                            )
+                        }
+                    }
+                }
             }
-            item { Spacer(modifier = Modifier.height(12.dp)) }
+            item { Spacer(modifier = Modifier.height(4.dp)) }
             when {
                 uiState.isLoadingTransactions && uiState.transactions.isEmpty() -> {
                     item {
@@ -504,6 +530,7 @@ private fun BitcoinWalletDetailsZeroBalancePreview() {
                 isLoadingTransactions = false,
             ),
             onRefresh = {},
+            onRefreshTransactions = {},
             onLoadMore = {},
             onSend = {},
             onReceive = {},
@@ -522,6 +549,7 @@ private fun BitcoinWalletDetailsScreenPreview() {
                 isLoadingTransactions = true,
             ),
             onRefresh = {},
+            onRefreshTransactions = {},
             onLoadMore = {},
             onSend = {},
             onReceive = {},
@@ -561,6 +589,7 @@ private fun BitcoinWalletDetailsWatchOnlyPreview() {
                 ),
             ),
             onRefresh = {},
+            onRefreshTransactions = {},
             onLoadMore = {},
             onSend = {},
             onReceive = {},
@@ -579,6 +608,7 @@ private fun BitcoinWalletDetailsTransactionsEmptyPreview() {
                 isLoadingTransactions = false,
             ),
             onRefresh = {},
+            onRefreshTransactions = {},
             onLoadMore = {},
             onSend = {},
             onReceive = {},

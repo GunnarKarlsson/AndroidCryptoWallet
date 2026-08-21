@@ -49,6 +49,7 @@
     <string name="refresh_balance">Refresh balance</string>
     <string name="address_copied">Address copied</string>
     <string name="wallet_transactions">Transactions</string>
+    <string name="refresh_transactions">Refresh transactions</string>
     <string name="wallet_transactions_empty">No transactions available</string>
     <string name="wallet_transactions_loading">Loading transactions</string>
     <string name="wallet_transactions_loading_more">Loading more transactions</string>

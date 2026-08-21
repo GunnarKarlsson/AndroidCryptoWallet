@@ -15,8 +15,10 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import network.bahn.androidcryptowallet.BuildConfig
 import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
+import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
+import network.bahn.androidcryptowallet.data.local.db.WalletDatabaseMigrations
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinConfig
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinRemoteDataSource
@@ -36,6 +38,7 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
+            .addMigrations(WalletDatabaseMigrations.MIGRATION_6_7)
             .build()
 
     @Provides
@@ -45,6 +48,10 @@ object AppModule {
     @Provides
     fun provideBitcoinWalletDao(database: WalletDatabase): BitcoinWalletDao =
         database.bitcoinWalletDao()
+
+    @Provides
+    fun provideBitcoinTransactionDao(database: WalletDatabase): BitcoinTransactionDao =
+        database.bitcoinTransactionDao()
 
     @Provides
     @Singleton

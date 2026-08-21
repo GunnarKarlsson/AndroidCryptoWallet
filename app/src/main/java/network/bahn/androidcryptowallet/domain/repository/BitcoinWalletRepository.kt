@@ -27,7 +27,16 @@ interface BitcoinWalletRepository {
     /** Fetch the receive-address balance from the remote data source and cache it on the wallet row. */
     suspend fun refreshBalance(walletId: String)
 
-    /** Live transaction page for the wallet receive address. [afterTxid] is the confirmed cursor. */
+    /**
+     * Previously fetched transactions for this wallet, or null if they have never been fetched.
+     * An empty list means a fetch ran and the address had no transactions.
+     */
+    suspend fun getCachedTransactions(walletId: String): BitcoinTransactionPage?
+
+    /**
+     * Fetch a live transaction page for the wallet receive address and persist it.
+     * [afterTxid] null replaces the cached first page; otherwise the page is appended.
+     */
     suspend fun getTransactions(
         walletId: String,
         afterTxid: String? = null,

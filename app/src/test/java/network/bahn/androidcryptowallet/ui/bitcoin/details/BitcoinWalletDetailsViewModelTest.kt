@@ -16,6 +16,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
+import network.bahn.androidcryptowallet.domain.usecase.GetCachedBitcoinWalletTransactionsUseCase
 import network.bahn.androidcryptowallet.domain.usecase.LoadBitcoinWalletTransactionsUseCase
 import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
 import network.bahn.androidcryptowallet.domain.usecase.RefreshBitcoinWalletBalanceUseCase
@@ -44,6 +45,41 @@ class BitcoinWalletDetailsViewModelTest {
         val viewModel = createViewModel()
         assertTrue(viewModel.uiState.value.isLoadingTransactions)
         assertTrue(viewModel.uiState.value.transactions.isEmpty())
+    }
+
+    @Test
+    fun onEnterUsesCachedTransactionsWithoutNetwork() = runTest {
+        val repo = FakeDetailsWalletRepository(cachedPage = pageOf(TX_ONE))
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        viewModel.onEnter()
+
+        val latest = viewModel.uiState.value
+        assertFalse(latest.isLoadingTransactions)
+        assertEquals(listOf(TX_ONE), latest.transactions)
+        assertTrue(repo.txCursors.isEmpty())
+        assertFalse(latest.hasMoreTransactions)
+        job.cancel()
+    }
+
+    @Test
+    fun toolbarRefreshDoesNotFetchTransactions() = runTest {
+        val repo = FakeDetailsWalletRepository(firstPage = pageOf(TX_ONE))
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onEnter()
+        assertEquals(listOf(null as String?), repo.txCursors)
+
+        viewModel.onRefresh()
+
+        assertEquals(listOf(null as String?), repo.txCursors)
+        assertEquals(listOf(TX_ONE), viewModel.uiState.value.transactions)
+        job.cancel()
     }
 
     @Test
@@ -100,9 +136,9 @@ class BitcoinWalletDetailsViewModelTest {
     }
 
     @Test
-    fun refreshReplacesTransactionList() = runTest {
+    fun refreshTransactionsReplacesListFromNetwork() = runTest {
         val repo = FakeDetailsWalletRepository(
-            firstPage = pageOf(TX_ONE, hasMore = true, lastConfirmedTxid = TX_ONE.txid),
+            cachedPage = pageOf(TX_ONE, hasMore = true, lastConfirmedTxid = TX_ONE.txid),
         )
         val viewModel = createViewModel(repo)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -110,10 +146,11 @@ class BitcoinWalletDetailsViewModelTest {
         }
         viewModel.onEnter()
         repo.firstPage = pageOf(TX_TWO)
-        viewModel.onRefresh()
+        viewModel.onRefreshTransactions()
 
         assertEquals(listOf(TX_TWO), viewModel.uiState.value.transactions)
         assertFalse(viewModel.uiState.value.hasMoreTransactions)
+        assertEquals(listOf(null), repo.txCursors)
         job.cancel()
     }
 
@@ -146,6 +183,7 @@ class BitcoinWalletDetailsViewModelTest {
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
         observeBitcoinWallet = ObserveBitcoinWalletUseCase(repo),
         refreshBitcoinWalletBalance = RefreshBitcoinWalletBalanceUseCase(repo),
+        getCachedBitcoinWalletTransactions = GetCachedBitcoinWalletTransactionsUseCase(repo),
         loadBitcoinWalletTransactions = LoadBitcoinWalletTransactionsUseCase(repo),
     )
 }
@@ -189,6 +227,7 @@ private class FakeDetailsWalletRepository(
     private val wallet: MutableStateFlow<BitcoinWallet?> = MutableStateFlow(WALLET),
     var firstPage: BitcoinTransactionPage = pageOf(),
     var nextPage: BitcoinTransactionPage = pageOf(),
+    var cachedPage: BitcoinTransactionPage? = null,
     var transactionsError: Exception? = null,
 ) : BitcoinWalletRepository {
     val txCursors = mutableListOf<String?>()
@@ -204,12 +243,21 @@ private class FakeDetailsWalletRepository(
 
     override suspend fun refreshBalance(walletId: String) = Unit
 
+    override suspend fun getCachedTransactions(walletId: String): BitcoinTransactionPage? = cachedPage
+
     override suspend fun getTransactions(
         walletId: String,
         afterTxid: String?,
     ): BitcoinTransactionPage {
         transactionsError?.let { throw it }
         txCursors += afterTxid
-        return if (afterTxid == null) firstPage else nextPage
+        val page = if (afterTxid == null) firstPage else nextPage
+        cachedPage = if (afterTxid == null) {
+            page
+        } else {
+            val existing = cachedPage?.transactions.orEmpty()
+            page.copy(transactions = existing + page.transactions)
+        }
+        return page
     }
 }

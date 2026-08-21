@@ -133,6 +133,7 @@ private class FakeListWalletRepository(
         passphrase: String?,
     ) = error("unused")
     override suspend fun refreshBalance(walletId: String) = error("unused")
+    override suspend fun getCachedTransactions(walletId: String) = error("unused")
     override suspend fun getTransactions(
         walletId: String,
         afterTxid: String?,

@@ -11,6 +11,7 @@ data class BitcoinWalletDetailsUiState(
     val errorMessage: String? = null,
     val transactions: List<BitcoinTransactionSummary> = emptyList(),
     val isLoadingTransactions: Boolean = true,
+    val isRefreshingTransactions: Boolean = false,
     val isLoadingMoreTransactions: Boolean = false,
     val hasMoreTransactions: Boolean = false,
     val transactionsErrorMessage: String? = null,
