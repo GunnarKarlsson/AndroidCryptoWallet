@@ -6,4 +6,5 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 data class BitcoinWalletListUiState(
     val selectedNetwork: BitcoinNetwork = BitcoinNetwork.TESTNET4,
     val wallets: List<BitcoinWallet> = emptyList(),
+    val isLoading: Boolean = true,
 )

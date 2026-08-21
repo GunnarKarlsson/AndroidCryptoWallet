@@ -35,6 +35,7 @@
     <string name="import_mnemonic_placeholder">word1 word2 word3 …</string>
     <string name="wallets_title">Bitcoin wallets</string>
     <string name="wallets_empty">No wallets on this network yet.</string>
+    <string name="wallets_loading">Loading wallets</string>
     <string name="add_wallet">Add wallet</string>
     <string name="wallet_list_item_label">Bitcoin wallet</string>
     <string name="wallet_watch_only">Watch-only</string>

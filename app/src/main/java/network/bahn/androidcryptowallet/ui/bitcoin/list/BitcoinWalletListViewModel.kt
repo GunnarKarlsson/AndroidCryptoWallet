@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletsUseCase
 import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
+import network.bahn.androidcryptowallet.domain.usecase.ObserveWalletCatalogReadyUseCase
 import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
 import javax.inject.Inject
 
@@ -18,15 +19,18 @@ import javax.inject.Inject
 class BitcoinWalletListViewModel @Inject constructor(
     observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
     observeBitcoinWallets: ObserveBitcoinWalletsUseCase,
+    observeWalletCatalogReady: ObserveWalletCatalogReadyUseCase,
     private val setBitcoinNetwork: SetBitcoinNetworkUseCase,
 ) : ViewModel() {
     val uiState: StateFlow<BitcoinWalletListUiState> = combine(
         observeSelectedBitcoinNetwork(),
         observeBitcoinWallets(),
-    ) { network, wallets ->
+        observeWalletCatalogReady(),
+    ) { network, wallets, ready ->
         BitcoinWalletListUiState(
             selectedNetwork = network,
             wallets = wallets,
+            isLoading = !ready,
         )
     }.stateIn(
         scope = viewModelScope,

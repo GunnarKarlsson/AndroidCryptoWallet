@@ -14,8 +14,10 @@ import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepo
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.WalletCatalogInitializer
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import javax.inject.Singleton
 
 @Module
@@ -56,4 +58,10 @@ abstract class DataBindsModule {
     abstract fun bindBitcoinWalletRepository(
         impl: BitcoinWalletRepositoryImpl,
     ): BitcoinWalletRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWalletCatalogReadiness(
+        impl: WalletCatalogInitializer,
+    ): WalletCatalogReadiness
 }

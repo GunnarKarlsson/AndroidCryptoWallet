@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -108,27 +111,44 @@ private fun BitcoinWalletListContent(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(16.dp))
-            if (uiState.wallets.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.wallets_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            when {
+                uiState.wallets.isNotEmpty() -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(uiState.wallets, key = { it.id }) { wallet ->
+                            BitcoinWalletListItem(
+                                wallet = wallet,
+                                onClick = { onWalletClick(wallet.id) },
+                            )
+                        }
+                    }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 88.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(uiState.wallets, key = { it.id }) { wallet ->
-                        BitcoinWalletListItem(
-                            wallet = wallet,
-                            onClick = { onWalletClick(wallet.id) },
+                uiState.isLoading -> {
+                    val loadingDescription = stringResource(R.string.wallets_loading)
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.semantics {
+                                contentDescription = loadingDescription
+                            },
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+                else -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.wallets_empty),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -223,10 +243,24 @@ private fun BitcoinWalletListItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun BitcoinWalletListEmptyPreview() {
+private fun BitcoinWalletListLoadingPreview() {
     WalletTheme {
         BitcoinWalletListContent(
             uiState = BitcoinWalletListUiState(),
+            onNetworkSelected = {},
+            onCreateWallet = {},
+            onNetworkStatus = {},
+            onWalletClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BitcoinWalletListEmptyPreview() {
+    WalletTheme {
+        BitcoinWalletListContent(
+            uiState = BitcoinWalletListUiState(isLoading = false),
             onNetworkSelected = {},
             onCreateWallet = {},
             onNetworkStatus = {},
@@ -241,6 +275,7 @@ private fun BitcoinWalletListPopulatedPreview() {
     WalletTheme {
         BitcoinWalletListContent(
             uiState = BitcoinWalletListUiState(
+                isLoading = false,
                 wallets = listOf(
                     BitcoinWallet(
                         id = "1",
