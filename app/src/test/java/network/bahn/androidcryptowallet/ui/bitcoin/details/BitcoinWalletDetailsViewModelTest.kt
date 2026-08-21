@@ -48,6 +48,72 @@ class BitcoinWalletDetailsViewModelTest {
     }
 
     @Test
+    fun onEnterSkipsBalanceFetchWhenCachedIncludingZero() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            wallet = MutableStateFlow(
+                WALLET.copy(
+                    confirmedBalanceSatoshis = 0L,
+                    unconfirmedBalanceSatoshis = 0L,
+                ),
+            ),
+        )
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        viewModel.onEnter()
+
+        assertEquals(0, repo.refreshBalanceCalls)
+        job.cancel()
+    }
+
+    @Test
+    fun onEnterFetchesBalanceWhenNeverCached() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            wallet = MutableStateFlow(
+                WALLET.copy(
+                    confirmedBalanceSatoshis = null,
+                    unconfirmedBalanceSatoshis = null,
+                    balanceUpdatedAtMillis = null,
+                ),
+            ),
+        )
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        viewModel.onEnter()
+
+        assertEquals(1, repo.refreshBalanceCalls)
+        job.cancel()
+    }
+
+    @Test
+    fun toolbarRefreshFetchesBalanceEvenWhenCachedZero() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            wallet = MutableStateFlow(
+                WALLET.copy(
+                    confirmedBalanceSatoshis = 0L,
+                    unconfirmedBalanceSatoshis = 0L,
+                ),
+            ),
+        )
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onEnter()
+        assertEquals(0, repo.refreshBalanceCalls)
+
+        viewModel.onRefresh()
+
+        assertEquals(1, repo.refreshBalanceCalls)
+        job.cancel()
+    }
+
+    @Test
     fun onEnterUsesCachedTransactionsWithoutNetwork() = runTest {
         val repo = FakeDetailsWalletRepository(cachedPage = pageOf(TX_ONE))
         val viewModel = createViewModel(repo)
@@ -231,6 +297,7 @@ private class FakeDetailsWalletRepository(
     var transactionsError: Exception? = null,
 ) : BitcoinWalletRepository {
     val txCursors = mutableListOf<String?>()
+    var refreshBalanceCalls = 0
 
     override fun observeWallets(): Flow<List<BitcoinWallet>> = emptyFlow()
     override fun observeWallet(id: String): Flow<BitcoinWallet?> = wallet
@@ -241,7 +308,9 @@ private class FakeDetailsWalletRepository(
         passphrase: String?,
     ) = error("unused")
 
-    override suspend fun refreshBalance(walletId: String) = Unit
+    override suspend fun refreshBalance(walletId: String) {
+        refreshBalanceCalls++
+    }
 
     override suspend fun getCachedTransactions(walletId: String): BitcoinTransactionPage? = cachedPage
 

@@ -116,6 +116,25 @@ class BitcoinWalletRepositoryImplTest {
     }
 
     @Test
+    fun refreshBalanceCachesZeroSatoshis() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource(
+            confirmedSatoshis = 0L,
+            unconfirmedSatoshis = 0L,
+        )
+        val repo = createRepository(remote = remote)
+
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        repo.refreshBalance(id)
+
+        val wallet = repo.observeWallet(id).first()
+        assertEquals(0L, wallet?.confirmedBalanceSatoshis)
+        assertEquals(0L, wallet?.unconfirmedBalanceSatoshis)
+        assertEquals(1_700_000_000_000L, wallet?.balanceUpdatedAtMillis)
+        assertEquals(1, remote.addresses.size)
+    }
+
+    @Test
     fun getTransactionsPassesNetworkAddressAndCursor() = runTest {
         val remote = FakeWalletBitcoinRemoteDataSource()
         val repo = createRepository(remote = remote)
@@ -389,6 +408,8 @@ private class FakeWalletBitcoinRemoteDataSource(
         lastConfirmedTxid = TX_TWO.txid,
         hasMore = false,
     ),
+    var confirmedSatoshis: Long = 12_345L,
+    var unconfirmedSatoshis: Long = 100L,
 ) : BitcoinRemoteDataSource {
     val networks = mutableListOf<BitcoinNetwork>()
     val addresses = mutableListOf<String>()
@@ -404,7 +425,10 @@ private class FakeWalletBitcoinRemoteDataSource(
     ): BitcoinAddressBalance {
         networks += network
         addresses += address
-        return BitcoinAddressBalance(confirmedSatoshis = 12_345L, unconfirmedSatoshis = 100L)
+        return BitcoinAddressBalance(
+            confirmedSatoshis = confirmedSatoshis,
+            unconfirmedSatoshis = unconfirmedSatoshis,
+        )
     }
 
     override suspend fun getAddressTransactions(

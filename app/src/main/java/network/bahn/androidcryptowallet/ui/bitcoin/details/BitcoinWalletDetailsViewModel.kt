@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BitcoinWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    observeBitcoinWallet: ObserveBitcoinWalletUseCase,
+    private val observeBitcoinWallet: ObserveBitcoinWalletUseCase,
     private val refreshBitcoinWalletBalance: RefreshBitcoinWalletBalanceUseCase,
     private val getCachedBitcoinWalletTransactions: GetCachedBitcoinWalletTransactionsUseCase,
     private val loadBitcoinWalletTransactions: LoadBitcoinWalletTransactionsUseCase,
@@ -64,12 +65,12 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     )
 
     fun onEnter() {
-        refreshBalance()
+        refreshBalance(force = false)
         loadCachedOrFetch()
     }
 
     fun onRefresh() {
-        refreshBalance()
+        refreshBalance(force = true)
     }
 
     fun onRefreshTransactions() {
@@ -110,9 +111,13 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun refreshBalance() {
+    private fun refreshBalance(force: Boolean) {
         if (isRefreshing.value) return
         viewModelScope.launch {
+            if (!force) {
+                val wallet = observeBitcoinWallet(walletId).first()
+                if (wallet?.confirmedBalanceSatoshis != null) return@launch
+            }
             errorMessage.value = null
             isRefreshing.value = true
             try {
