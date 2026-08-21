@@ -18,10 +18,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -52,6 +55,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -67,6 +71,8 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 @Composable
 fun BitcoinWalletDetailsScreen(
     onBack: () -> Unit,
+    onSend: () -> Unit,
+    onReceive: () -> Unit,
     viewModel: BitcoinWalletDetailsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -77,6 +83,8 @@ fun BitcoinWalletDetailsScreen(
         uiState = uiState,
         onRefresh = viewModel::onRefresh,
         onLoadMore = viewModel::onLoadMore,
+        onSend = onSend,
+        onReceive = onReceive,
         onBack = onBack,
     )
 }
@@ -87,6 +95,8 @@ private fun BitcoinWalletDetailsContent(
     uiState: BitcoinWalletDetailsUiState,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
+    onSend: () -> Unit,
+    onReceive: () -> Unit,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -162,6 +172,18 @@ private fun BitcoinWalletDetailsContent(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
         ) {
             item {
+                WalletAddressHeader(
+                    address = address,
+                    networkLabel = uiState.network?.label,
+                    onCopy = {
+                        if (address == null) return@WalletAddressHeader
+                        copyAddress(context, address)
+                        scope.launch { snackbarHostState.showSnackbar(copiedMessage) }
+                    },
+                )
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+            item {
                 DetailCard(
                     title = stringResource(R.string.wallet_balance),
                     value = stringResource(
@@ -186,36 +208,23 @@ private fun BitcoinWalletDetailsContent(
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
             item {
-                DetailCard(
-                    title = stringResource(R.string.network_label),
-                    value = uiState.network?.label
-                        ?: stringResource(R.string.receive_address_placeholder),
-                    valueStyle = MaterialTheme.typography.headlineSmall,
-                )
-            }
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-            item {
-                DetailCard(
-                    title = stringResource(R.string.receive_address),
-                    value = address ?: stringResource(R.string.receive_address_placeholder),
-                    valueStyle = MaterialTheme.typography.bodyLarge,
-                    valueFontFamily = FontFamily.Monospace,
-                    trailing = {
-                        IconButton(
-                            onClick = {
-                                if (address == null) return@IconButton
-                                copyAddress(context, address)
-                                scope.launch { snackbarHostState.showSnackbar(copiedMessage) }
-                            },
-                            enabled = address != null,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.ContentCopy,
-                                contentDescription = stringResource(R.string.copy_receive_address),
-                            )
-                        }
-                    },
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = onReceive,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.receive_title))
+                    }
+                    Button(
+                        onClick = onSend,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.send_title))
+                    }
+                }
             }
             item { Spacer(modifier = Modifier.height(24.dp)) }
             item {
@@ -365,6 +374,55 @@ private fun TxStatusMarker(confirmed: Boolean) {
 }
 
 @Composable
+private fun WalletAddressHeader(
+    address: String?,
+    networkLabel: String?,
+    onCopy: () -> Unit,
+) {
+    val displayAddress = address ?: stringResource(R.string.receive_address_placeholder)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(
+                onClick = onCopy,
+                enabled = address != null,
+                modifier = Modifier.size(40.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.ContentCopy,
+                    contentDescription = stringResource(R.string.copy_receive_address),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Text(
+                text = displayAddress,
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 9.sp,
+                    maxFontSize = 13.sp,
+                ),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(
+                R.string.network_value,
+                networkLabel ?: stringResource(R.string.receive_address_placeholder),
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 40.dp),
+        )
+    }
+}
+
+@Composable
 private fun DetailCard(
     title: String,
     value: String,
@@ -372,7 +430,6 @@ private fun DetailCard(
     caption: String? = null,
     errorMessage: String? = null,
     valueFontFamily: FontFamily? = null,
-    trailing: (@Composable () -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -387,18 +444,11 @@ private fun DetailCard(
                 .fillMaxWidth()
                 .padding(24.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                trailing?.invoke()
-            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = value,
@@ -455,6 +505,8 @@ private fun BitcoinWalletDetailsZeroBalancePreview() {
             ),
             onRefresh = {},
             onLoadMore = {},
+            onSend = {},
+            onReceive = {},
             onBack = {},
         )
     }
@@ -471,6 +523,8 @@ private fun BitcoinWalletDetailsScreenPreview() {
             ),
             onRefresh = {},
             onLoadMore = {},
+            onSend = {},
+            onReceive = {},
             onBack = {},
         )
     }
@@ -508,6 +562,8 @@ private fun BitcoinWalletDetailsWatchOnlyPreview() {
             ),
             onRefresh = {},
             onLoadMore = {},
+            onSend = {},
+            onReceive = {},
             onBack = {},
         )
     }
@@ -524,6 +580,8 @@ private fun BitcoinWalletDetailsTransactionsEmptyPreview() {
             ),
             onRefresh = {},
             onLoadMore = {},
+            onSend = {},
+            onReceive = {},
             onBack = {},
         )
     }

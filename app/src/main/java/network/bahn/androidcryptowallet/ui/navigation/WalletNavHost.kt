@@ -12,8 +12,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import network.bahn.androidcryptowallet.ui.bitcoin.details.BitcoinWalletDetailsScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.list.BitcoinWalletListScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.receive.BitcoinReceiveScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.send.BitcoinSendScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinCreateWalletScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinPlaceholderMnemonic
@@ -39,8 +42,21 @@ fun WalletNavHost(
                 },
             )
         }
-        composable<BitcoinWalletDetailsRoute> {
+        composable<BitcoinWalletDetailsRoute> { entry ->
+            val walletId = entry.toRoute<BitcoinWalletDetailsRoute>().walletId
             BitcoinWalletDetailsScreen(
+                onBack = { navController.popBackStack() },
+                onSend = { navController.navigate(BitcoinSendRoute(walletId)) },
+                onReceive = { navController.navigate(BitcoinReceiveRoute(walletId)) },
+            )
+        }
+        composable<BitcoinSendRoute> {
+            BitcoinSendScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<BitcoinReceiveRoute> {
+            BitcoinReceiveScreen(
                 onBack = { navController.popBackStack() },
             )
         }

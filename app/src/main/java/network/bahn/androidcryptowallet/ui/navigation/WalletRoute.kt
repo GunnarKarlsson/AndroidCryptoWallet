@@ -22,3 +22,9 @@ data object BitcoinNetworkStatusRoute
 
 @Serializable
 data class BitcoinWalletDetailsRoute(val walletId: String)
+
+@Serializable
+data class BitcoinSendRoute(val walletId: String)
+
+@Serializable
+data class BitcoinReceiveRoute(val walletId: String)

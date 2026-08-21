@@ -5,7 +5,6 @@
     <string name="refresh_block_height">Refresh block height</string>
     <string name="last_updated_never">Not yet refreshed</string>
     <string name="last_updated">Last updated %1$s</string>
-    <string name="receive_address">Receive address</string>
     <string name="receive_address_placeholder">—</string>
     <string name="copy_receive_address">Copy receive address</string>
     <string name="navigate_back">Back</string>
@@ -55,4 +54,9 @@
     <string name="wallet_transactions_loading_more">Loading more transactions</string>
     <string name="tx_status_confirmed">Confirmed</string>
     <string name="tx_status_mempool">Mempool</string>
+    <string name="network_value">Network: %1$s</string>
+    <string name="send_title">Send</string>
+    <string name="receive_title">Receive</string>
+    <string name="send_placeholder">Send is not available yet.</string>
+    <string name="receive_placeholder">Receive is not available yet.</string>
 </resources>
