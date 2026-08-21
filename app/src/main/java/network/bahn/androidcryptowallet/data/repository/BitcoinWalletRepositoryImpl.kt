@@ -15,6 +15,7 @@ import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
@@ -84,6 +85,19 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
             confirmedSatoshis = balance.confirmedSatoshis,
             unconfirmedSatoshis = balance.unconfirmedSatoshis,
             updatedAtMillis = timeProvider.nowMillis(),
+        )
+    }
+
+    override suspend fun getTransactions(
+        walletId: String,
+        afterTxid: String?,
+    ): BitcoinTransactionPage {
+        val wallet = walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        return remote.getAddressTransactions(
+            network = BitcoinNetwork.valueOf(wallet.network),
+            address = wallet.receiveAddress,
+            afterTxid = afterTxid,
         )
     }
 }

@@ -49,4 +49,10 @@
     <string name="unconfirmed_balance">Unconfirmed %1$s BTC</string>
     <string name="refresh_balance">Refresh balance</string>
     <string name="address_copied">Address copied</string>
+    <string name="wallet_transactions">Transactions</string>
+    <string name="wallet_transactions_empty">No transactions available</string>
+    <string name="wallet_transactions_loading">Loading transactions</string>
+    <string name="wallet_transactions_loading_more">Loading more transactions</string>
+    <string name="tx_status_confirmed">Confirmed</string>
+    <string name="tx_status_mempool">Mempool</string>
 </resources>

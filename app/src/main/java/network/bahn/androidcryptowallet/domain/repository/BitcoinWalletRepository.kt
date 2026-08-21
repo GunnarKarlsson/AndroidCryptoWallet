@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 
 interface BitcoinWalletRepository {
@@ -25,4 +26,10 @@ interface BitcoinWalletRepository {
 
     /** Fetch the receive-address balance from the remote data source and cache it on the wallet row. */
     suspend fun refreshBalance(walletId: String)
+
+    /** Live transaction page for the wallet receive address. [afterTxid] is the confirmed cursor. */
+    suspend fun getTransactions(
+        walletId: String,
+        afterTxid: String? = null,
+    ): BitcoinTransactionPage
 }

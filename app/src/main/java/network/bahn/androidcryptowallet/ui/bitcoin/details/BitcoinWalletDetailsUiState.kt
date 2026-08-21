@@ -1,6 +1,7 @@
 package network.bahn.androidcryptowallet.ui.bitcoin.details
 
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 
@@ -8,6 +9,11 @@ data class BitcoinWalletDetailsUiState(
     val wallet: BitcoinWallet? = null,
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
+    val transactions: List<BitcoinTransactionSummary> = emptyList(),
+    val isLoadingTransactions: Boolean = true,
+    val isLoadingMoreTransactions: Boolean = false,
+    val hasMoreTransactions: Boolean = false,
+    val transactionsErrorMessage: String? = null,
 ) {
     val network: BitcoinNetwork? get() = wallet?.network
     val receiveAddress: String? get() = wallet?.receiveAddress

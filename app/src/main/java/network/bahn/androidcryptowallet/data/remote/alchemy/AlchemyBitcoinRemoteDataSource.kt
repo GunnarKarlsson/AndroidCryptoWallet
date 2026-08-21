@@ -4,6 +4,7 @@ import android.util.Log
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,6 +62,14 @@ class AlchemyBitcoinRemoteDataSource @Inject constructor(
             Log.e(TAG, "address balance failed for $network: ${e.message}", e)
             throw e
         }
+    }
+
+    override suspend fun getAddressTransactions(
+        network: BitcoinNetwork,
+        address: String,
+        afterTxid: String?,
+    ): BitcoinTransactionPage {
+        throw UnsupportedOperationException("Alchemy does not implement address transactions")
     }
 
     private companion object {

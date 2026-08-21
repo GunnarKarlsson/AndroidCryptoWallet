@@ -4,6 +4,7 @@ import android.util.Log
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,6 +45,39 @@ class MsBitcoinRemoteDataSource @Inject constructor(
             throw e
         } catch (e: Exception) {
             Log.e(TAG, "address balance failed for $network: ${e.message}", e)
+            throw e
+        }
+    }
+
+    override suspend fun getAddressTransactions(
+        network: BitcoinNetwork,
+        address: String,
+        afterTxid: String?,
+    ): BitcoinTransactionPage {
+        Log.d(TAG, "Requesting address transactions for $network afterTxid=$afterTxid")
+        try {
+            val api = apiProvider.get(network)
+            val txs = if (afterTxid == null) {
+                api.getAddressTransactions(address)
+            } else {
+                api.getAddressTransactionsChain(address, afterTxid)
+            }
+            val page = txs.toTransactionPage(address)
+            Log.i(TAG, "address transactions succeeded for $network count=${page.transactions.size}")
+            return page
+        } catch (e: HttpException) {
+            if (isMsAddressNotFound(e.code())) {
+                Log.i(TAG, "address not found on $network; treating as empty transactions")
+                return BitcoinTransactionPage(
+                    transactions = emptyList(),
+                    lastConfirmedTxid = null,
+                    hasMore = false,
+                )
+            }
+            Log.e(TAG, "address transactions failed for $network: ${e.message}", e)
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "address transactions failed for $network: ${e.message}", e)
             throw e
         }
     }

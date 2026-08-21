@@ -19,6 +19,17 @@ interface MsApi {
         @Path("address") address: String,
     ): MsAddressResponse
 
+    @GET("address/{address}/txs")
+    suspend fun getAddressTransactions(
+        @Path("address") address: String,
+    ): List<MsTxResponse>
+
+    @GET("address/{address}/txs/chain/{lastTxid}")
+    suspend fun getAddressTransactionsChain(
+        @Path("address") address: String,
+        @Path("lastTxid") lastTxid: String,
+    ): List<MsTxResponse>
+
     @GET
     suspend fun getTipHeight(
         @Url url: String,

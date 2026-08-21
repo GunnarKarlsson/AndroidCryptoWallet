@@ -6,6 +6,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.HttpException
@@ -89,12 +91,66 @@ class MsBitcoinRemoteDataSourceTest {
             api.lastHeightUrl,
         )
     }
+
+    @Test
+    fun firstPageHitsTxsEndpoint() = runTest {
+        val api = FakeMsApi(txs = listOf(mempoolTx("unconfirmed"), confirmedTx("confirmed")))
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val page = remote.getAddressTransactions(BitcoinNetwork.TESTNET4, ADDRESS, afterTxid = null)
+
+        assertEquals(listOf(ADDRESS), api.txsAddresses)
+        assertTrue(api.chainRequests.isEmpty())
+        assertEquals(listOf("unconfirmed", "confirmed"), page.transactions.map { it.txid })
+        assertEquals("confirmed", page.lastConfirmedTxid)
+        assertFalse(page.hasMore)
+    }
+
+    @Test
+    fun nextPageHitsChainEndpoint() = runTest {
+        val api = FakeMsApi(chainTxs = List(MS_TX_PAGE_SIZE) { confirmedTx("c$it") })
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val page = remote.getAddressTransactions(
+            BitcoinNetwork.TESTNET4,
+            ADDRESS,
+            afterTxid = "last-confirmed",
+        )
+
+        assertTrue(api.txsAddresses.isEmpty())
+        assertEquals(listOf(ADDRESS to "last-confirmed"), api.chainRequests)
+        assertTrue(page.hasMore)
+        assertEquals("c${MS_TX_PAGE_SIZE - 1}", page.lastConfirmedTxid)
+    }
+
+    @Test
+    fun notFoundAddressIsEmptyTransactions() = runTest {
+        val api = FakeMsApi(txsError = httpError(404))
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val page = remote.getAddressTransactions(BitcoinNetwork.TESTNET4, "tb1qmissing", null)
+
+        assertTrue(page.transactions.isEmpty())
+        assertNull(page.lastConfirmedTxid)
+        assertFalse(page.hasMore)
+    }
 }
 
 private val TEST_CONFIG = MsBitcoinConfig(
     testnet4BaseUrl = "https://mempool.space/testnet4/api/",
     mainnetBaseUrl = "https://mempool.space/api/",
 )
+
+private const val ADDRESS = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34"
 
 private fun httpError(code: Int): HttpException {
     val body = "".toResponseBody("text/plain".toMediaType())
@@ -105,12 +161,32 @@ private class FakeMsApi(
     private val addressResponse: MsAddressResponse? = null,
     private val addressError: HttpException? = null,
     private val heightBody: String = "0",
+    private val txs: List<MsTxResponse> = emptyList(),
+    private val chainTxs: List<MsTxResponse> = emptyList(),
+    private val txsError: HttpException? = null,
 ) : MsApi {
     var lastHeightUrl: String? = null
+    val txsAddresses = mutableListOf<String>()
+    val chainRequests = mutableListOf<Pair<String, String>>()
 
     override suspend fun getAddress(address: String): MsAddressResponse {
         addressError?.let { throw it }
         return addressResponse ?: error("unused")
+    }
+
+    override suspend fun getAddressTransactions(address: String): List<MsTxResponse> {
+        txsError?.let { throw it }
+        txsAddresses += address
+        return txs
+    }
+
+    override suspend fun getAddressTransactionsChain(
+        address: String,
+        lastTxid: String,
+    ): List<MsTxResponse> {
+        txsError?.let { throw it }
+        chainRequests += address to lastTxid
+        return chainTxs
     }
 
     override suspend fun getTipHeight(url: String): ResponseBody {

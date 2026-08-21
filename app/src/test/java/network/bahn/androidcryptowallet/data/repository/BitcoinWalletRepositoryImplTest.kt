@@ -18,6 +18,8 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
+import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.model.InvalidBitcoinMnemonicException
 import org.junit.Assert.assertEquals
@@ -110,6 +112,33 @@ class BitcoinWalletRepositoryImplTest {
         assertEquals(listOf(BitcoinNetwork.TESTNET4), remote.networks)
     }
 
+    @Test
+    fun getTransactionsPassesNetworkAddressAndCursor() = runTest {
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val repo = createRepository(remote = remote)
+
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        val page = repo.getTransactions(id, afterTxid = "cursor-txid")
+
+        assertEquals(listOf(TX_SUMMARY), page.transactions)
+        assertEquals("cursor-txid", page.lastConfirmedTxid)
+        assertEquals(listOf(TESTNET_ADDRESS), remote.txAddresses)
+        assertEquals(listOf(BitcoinNetwork.TESTNET4), remote.txNetworks)
+        assertEquals(listOf("cursor-txid"), remote.txCursors)
+    }
+
+    @Test
+    fun getTransactionsFailsWhenWalletMissing() = runTest {
+        val repo = createRepository()
+        try {
+            repo.getTransactions("missing")
+            error("expected failure")
+        } catch (e: IllegalStateException) {
+            assertTrue(e.message!!.contains("Wallet not found"))
+        }
+    }
+
     private fun createRepository(
         engine: FakeBitcoinKeyEngine = FakeBitcoinKeyEngine(),
         store: FakeBitcoinMnemonicStore = FakeBitcoinMnemonicStore(),
@@ -128,6 +157,13 @@ class BitcoinWalletRepositoryImplTest {
 private val VALID_WORDS = List(12) { "abandon" }.dropLast(1) + "about"
 private const val MAINNET_ADDRESS = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"
 private const val TESTNET_ADDRESS = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34"
+private val TX_SUMMARY = BitcoinTransactionSummary(
+    txid = "txid-1",
+    confirmed = true,
+    blockTimeSeconds = 1_700_000_000L,
+    netSatoshis = 1_000L,
+    feeSatoshis = 10L,
+)
 
 private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
     val deriveNetworks = mutableListOf<BitcoinNetwork>()
@@ -230,6 +266,9 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
 private class FakeWalletBitcoinRemoteDataSource : BitcoinRemoteDataSource {
     val networks = mutableListOf<BitcoinNetwork>()
     val addresses = mutableListOf<String>()
+    val txNetworks = mutableListOf<BitcoinNetwork>()
+    val txAddresses = mutableListOf<String>()
+    val txCursors = mutableListOf<String?>()
 
     override suspend fun getBlockCount(network: BitcoinNetwork): Long = error("unused")
 
@@ -240,6 +279,21 @@ private class FakeWalletBitcoinRemoteDataSource : BitcoinRemoteDataSource {
         networks += network
         addresses += address
         return BitcoinAddressBalance(confirmedSatoshis = 12_345L, unconfirmedSatoshis = 100L)
+    }
+
+    override suspend fun getAddressTransactions(
+        network: BitcoinNetwork,
+        address: String,
+        afterTxid: String?,
+    ): BitcoinTransactionPage {
+        txNetworks += network
+        txAddresses += address
+        txCursors += afterTxid
+        return BitcoinTransactionPage(
+            transactions = listOf(TX_SUMMARY),
+            lastConfirmedTxid = afterTxid,
+            hasMore = false,
+        )
     }
 }
 
