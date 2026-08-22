@@ -138,6 +138,10 @@ private open class FakeCatalogWalletDao : BitcoinWalletDao {
     ) {
         error("unused")
     }
+
+    override suspend fun updateName(id: String, name: String?) {
+        error("unused")
+    }
 }
 
 private class ThrowingMockIdsWalletDao : FakeCatalogWalletDao() {

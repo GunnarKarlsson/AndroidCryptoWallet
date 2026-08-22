@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,6 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -216,27 +220,72 @@ private fun BitcoinWalletListItem(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
-            Text(
-                text = stringResource(R.string.wallet_list_item_label),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (wallet.kind == BitcoinWalletKind.WATCH_ONLY) {
-                Spacer(modifier = Modifier.height(2.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.wallet_watch_only),
-                    style = MaterialTheme.typography.labelMedium,
+                    text = StringUtils.walletDisplayName(
+                        name = wallet.name,
+                        fallback = stringResource(R.string.wallet_list_item_label),
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (wallet.kind == BitcoinWalletKind.WATCH_ONLY) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(R.string.wallet_watch_only),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = StringUtils.truncateBitcoinAddress(wallet.receiveAddress),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = StringUtils.truncateBitcoinAddress(wallet.receiveAddress),
-                style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                val confirmed = wallet.confirmedBalanceSatoshis
+                Text(
+                    text = if (confirmed == null) {
+                        stringResource(R.string.receive_address_placeholder)
+                    } else {
+                        stringResource(
+                            R.string.bitcoin_amount,
+                            StringUtils.formatBitcoinAmount(confirmed),
+                        )
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                val unconfirmed = wallet.unconfirmedBalanceSatoshis
+                if (unconfirmed != null && unconfirmed != 0L) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.unconfirmed_balance,
+                            StringUtils.formatBitcoinAmount(unconfirmed),
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.End,
+                    )
+                }
+            }
         }
     }
 }
@@ -281,6 +330,16 @@ private fun BitcoinWalletListPopulatedPreview() {
                         id = "1",
                         network = BitcoinNetwork.TESTNET4,
                         receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                        name = "Savings",
+                        confirmedBalanceSatoshis = 4_225_100,
+                        unconfirmedBalanceSatoshis = 12_000,
+                    ),
+                    BitcoinWallet(
+                        id = "2",
+                        network = BitcoinNetwork.TESTNET4,
+                        receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                        confirmedBalanceSatoshis = 0,
+                        unconfirmedBalanceSatoshis = 0,
                     ),
                     BitcoinWallet(
                         id = "mock:TESTNET4:tb1qp0we5epypgj4acd2c4au58045ruud2pd6heuee",

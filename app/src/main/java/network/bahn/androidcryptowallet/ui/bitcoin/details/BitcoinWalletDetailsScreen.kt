@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -53,6 +54,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,6 +73,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 @Composable
 fun BitcoinWalletDetailsScreen(
     onBack: () -> Unit,
+    onEdit: () -> Unit,
     onSend: () -> Unit,
     onReceive: () -> Unit,
     viewModel: BitcoinWalletDetailsViewModel = hiltViewModel(),
@@ -86,6 +89,7 @@ fun BitcoinWalletDetailsScreen(
         onLoadMore = viewModel::onLoadMore,
         onSend = onSend,
         onReceive = onReceive,
+        onEdit = onEdit,
         onBack = onBack,
     )
 }
@@ -99,6 +103,7 @@ private fun BitcoinWalletDetailsContent(
     onLoadMore: () -> Unit,
     onSend: () -> Unit,
     onReceive: () -> Unit,
+    onEdit: () -> Unit,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -125,14 +130,29 @@ private fun BitcoinWalletDetailsContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(stringResource(R.string.wallet_details_title))
-                        if (uiState.isWatchOnly) {
-                            Text(
-                                text = stringResource(R.string.wallet_watch_only),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onEdit) {
+                            Icon(
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = stringResource(R.string.edit_wallet),
                             )
+                        }
+                        Column(modifier = Modifier.weight(1f, fill = false)) {
+                            Text(
+                                text = StringUtils.walletDisplayName(
+                                    name = uiState.wallet?.name,
+                                    fallback = stringResource(R.string.wallet_list_item_label),
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            if (uiState.isWatchOnly) {
+                                Text(
+                                    text = stringResource(R.string.wallet_watch_only),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
                 },
@@ -513,6 +533,7 @@ private fun previewWallet() = BitcoinWallet(
     id = "1",
     network = BitcoinNetwork.TESTNET4,
     receiveAddress = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+    name = "Savings",
     confirmedBalanceSatoshis = 4_225_100,
     unconfirmedBalanceSatoshis = 0,
     balanceUpdatedAtMillis = 1_700_000_000_000L,
@@ -535,6 +556,7 @@ private fun BitcoinWalletDetailsZeroBalancePreview() {
             onLoadMore = {},
             onSend = {},
             onReceive = {},
+            onEdit = {},
             onBack = {},
         )
     }
@@ -554,6 +576,7 @@ private fun BitcoinWalletDetailsScreenPreview() {
             onLoadMore = {},
             onSend = {},
             onReceive = {},
+            onEdit = {},
             onBack = {},
         )
     }
@@ -594,6 +617,7 @@ private fun BitcoinWalletDetailsWatchOnlyPreview() {
             onLoadMore = {},
             onSend = {},
             onReceive = {},
+            onEdit = {},
             onBack = {},
         )
     }
@@ -613,6 +637,7 @@ private fun BitcoinWalletDetailsTransactionsEmptyPreview() {
             onLoadMore = {},
             onSend = {},
             onReceive = {},
+            onEdit = {},
             onBack = {},
         )
     }

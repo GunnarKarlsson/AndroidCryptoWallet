@@ -16,4 +16,5 @@ data class BitcoinWallet(
     val confirmedBalanceSatoshis: Long? = null,
     val unconfirmedBalanceSatoshis: Long? = null,
     val balanceUpdatedAtMillis: Long? = null,
+    val name: String? = null,
 )

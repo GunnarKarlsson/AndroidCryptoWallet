@@ -358,6 +358,8 @@ private class FakeDetailsWalletRepository(
         refreshBalanceCalls++
     }
 
+    override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
+
     override suspend fun getCachedTransactions(walletId: String): BitcoinTransactionPage? = cachedPage
 
     override suspend fun getTransactions(

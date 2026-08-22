@@ -41,4 +41,7 @@ interface BitcoinWalletDao {
         unconfirmedSatoshis: Long,
         updatedAtMillis: Long,
     )
+
+    @Query("UPDATE bitcoin_wallet SET name = :name WHERE id = :id")
+    suspend fun updateName(id: String, name: String?)
 }

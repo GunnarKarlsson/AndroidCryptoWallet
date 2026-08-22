@@ -93,6 +93,13 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun renameWallet(walletId: String, name: String?) {
+        walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        val trimmed = name?.trim()?.takeIf { it.isNotEmpty() }
+        walletDao.updateName(walletId, trimmed)
+    }
+
     override suspend fun getCachedTransactions(walletId: String): BitcoinTransactionPage? {
         val cache = transactionDao.cacheForWallet(walletId) ?: return null
         val transactions = transactionDao.listByWalletId(walletId).map { it.toDomain() }

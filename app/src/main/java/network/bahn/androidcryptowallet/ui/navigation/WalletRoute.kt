@@ -28,3 +28,6 @@ data class BitcoinSendRoute(val walletId: String)
 
 @Serializable
 data class BitcoinReceiveRoute(val walletId: String)
+
+@Serializable
+data class BitcoinEditWalletRoute(val walletId: String)

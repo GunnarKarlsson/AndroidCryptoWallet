@@ -28,6 +28,12 @@ interface BitcoinWalletRepository {
     suspend fun refreshBalance(walletId: String)
 
     /**
+     * Persist a display name for [walletId]. Blank or whitespace-only [name] is stored as null
+     * so the UI can fall back to the default label.
+     */
+    suspend fun renameWallet(walletId: String, name: String?)
+
+    /**
      * Previously fetched transactions for this wallet, or null if they have never been fetched.
      * An empty list means a fetch ran and the address had no transactions.
      */

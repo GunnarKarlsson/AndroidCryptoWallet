@@ -38,6 +38,9 @@ object StringUtils {
             .setScale(8, java.math.RoundingMode.UNNECESSARY)
             .toPlainString()
 
+    fun walletDisplayName(name: String?, fallback: String): String =
+        name?.trim()?.takeIf { it.isNotEmpty() } ?: fallback
+
     fun parseBitcoinAmountToSatoshis(amount: String): Long? {
         val trimmed = amount.trim()
         if (trimmed.isEmpty() || trimmed == ".") return null

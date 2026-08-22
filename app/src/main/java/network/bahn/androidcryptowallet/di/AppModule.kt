@@ -18,7 +18,6 @@ import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
-import network.bahn.androidcryptowallet.data.local.db.WalletDatabaseMigrations
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinConfig
 import network.bahn.androidcryptowallet.data.remote.alchemy.AlchemyBitcoinRemoteDataSource
@@ -38,7 +37,6 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
-            .addMigrations(WalletDatabaseMigrations.MIGRATION_6_7)
             .build()
 
     @Provides

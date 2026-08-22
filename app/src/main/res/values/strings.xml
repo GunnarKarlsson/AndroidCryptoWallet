@@ -38,11 +38,15 @@
     <string name="add_wallet">Add wallet</string>
     <string name="wallet_list_item_label">Bitcoin wallet</string>
     <string name="wallet_watch_only">Watch-only</string>
+    <string name="edit_wallet">Edit wallet</string>
+    <string name="edit_wallet_title">Edit wallet</string>
+    <string name="wallet_name_label">Wallet name</string>
+    <string name="confirm_wallet_name">Confirm</string>
+    <string name="edit_wallet_failed">Could not save wallet name</string>
     <string name="select_network_title">Select network</string>
     <string name="select_network_subtitle">This wallet will be created for the network you choose.</string>
     <string name="create_wallet_failed">Could not create wallet</string>
     <string name="network_status_title">Network status</string>
-    <string name="wallet_details_title">Wallet</string>
     <string name="wallet_balance">Balance</string>
     <string name="bitcoin_amount">%1$s BTC</string>
     <string name="unconfirmed_balance">Unconfirmed %1$s BTC</string>

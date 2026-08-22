@@ -19,6 +19,7 @@ data class BitcoinWalletEntity(
     val confirmedBalanceSatoshis: Long? = null,
     val unconfirmedBalanceSatoshis: Long? = null,
     val balanceUpdatedAtMillis: Long? = null,
+    val name: String? = null,
 )
 
 fun BitcoinWalletEntity.toDomain(): BitcoinWallet = BitcoinWallet(
@@ -31,6 +32,7 @@ fun BitcoinWalletEntity.toDomain(): BitcoinWallet = BitcoinWallet(
     confirmedBalanceSatoshis = confirmedBalanceSatoshis,
     unconfirmedBalanceSatoshis = unconfirmedBalanceSatoshis,
     balanceUpdatedAtMillis = balanceUpdatedAtMillis,
+    name = name,
 )
 
 fun BitcoinWallet.toEntity(): BitcoinWalletEntity = BitcoinWalletEntity(
@@ -43,4 +45,5 @@ fun BitcoinWallet.toEntity(): BitcoinWalletEntity = BitcoinWalletEntity(
     confirmedBalanceSatoshis = confirmedBalanceSatoshis,
     unconfirmedBalanceSatoshis = unconfirmedBalanceSatoshis,
     balanceUpdatedAtMillis = balanceUpdatedAtMillis,
+    name = name,
 )

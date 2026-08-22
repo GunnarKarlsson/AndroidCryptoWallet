@@ -193,4 +193,12 @@ private class FakeSeedBitcoinWalletDao : BitcoinWalletDao {
             }
         }
     }
+
+    override suspend fun updateName(id: String, name: String?) {
+        items.update { rows ->
+            rows.map { row ->
+                if (row.id != id) row else row.copy(name = name)
+            }
+        }
+    }
 }

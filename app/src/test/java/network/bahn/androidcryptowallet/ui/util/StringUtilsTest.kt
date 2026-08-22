@@ -66,4 +66,13 @@ class StringUtilsTest {
         assertEquals(1_000_000L, StringUtils.parseBitcoinAmountToSatoshis("0.01"))
         assertEquals(100_000_000L, StringUtils.parseBitcoinAmountToSatoshis("1"))
     }
+
+    @Test
+    fun walletDisplayNameFallsBackWhenMissingOrBlank() {
+        assertEquals("Bitcoin wallet", StringUtils.walletDisplayName(null, "Bitcoin wallet"))
+        assertEquals("Bitcoin wallet", StringUtils.walletDisplayName("  ", "Bitcoin wallet"))
+        assertEquals("Bitcoin wallet", StringUtils.walletDisplayName("", "Bitcoin wallet"))
+        assertEquals("Savings", StringUtils.walletDisplayName("Savings", "Bitcoin wallet"))
+        assertEquals("Savings", StringUtils.walletDisplayName("  Savings  ", "Bitcoin wallet"))
+    }
 }

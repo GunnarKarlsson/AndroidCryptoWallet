@@ -59,6 +59,7 @@ class HdWalletRoomReconcilerTest {
                 derivationIndex = SNAPSHOT.derivationIndex,
                 scriptType = SNAPSHOT.scriptType.name,
                 kind = BitcoinWalletKind.HD.name,
+                name = "Savings",
                 confirmedBalanceSatoshis = 99L,
             ),
         )
@@ -71,6 +72,7 @@ class HdWalletRoomReconcilerTest {
         val rows = dao.observeByNetwork(BitcoinNetwork.TESTNET4.name).first()
         assertEquals(1, rows.size)
         assertEquals(99L, rows.single().confirmedBalanceSatoshis)
+        assertEquals("Savings", rows.single().name)
     }
 
     @Test
@@ -151,6 +153,10 @@ private class FakeReconcileWalletDao : BitcoinWalletDao {
         unconfirmedSatoshis: Long,
         updatedAtMillis: Long,
     ) {
+        error("unused")
+    }
+
+    override suspend fun updateName(id: String, name: String?) {
         error("unused")
     }
 }

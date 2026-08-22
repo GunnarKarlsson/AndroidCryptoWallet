@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase
         BitcoinTransactionEntity::class,
         BitcoinWalletTxCacheEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class WalletDatabase : RoomDatabase() {
