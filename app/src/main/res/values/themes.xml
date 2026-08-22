@@ -5,4 +5,10 @@
         <item name="android:windowBackground">@color/wallet_background</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
+
+    <style name="Theme.AndroidCryptoWallet.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.AndroidCryptoWallet</item>
+    </style>
 </resources>
