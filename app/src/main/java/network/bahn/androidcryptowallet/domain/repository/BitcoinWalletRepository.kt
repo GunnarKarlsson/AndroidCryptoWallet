@@ -41,4 +41,20 @@ interface BitcoinWalletRepository {
         walletId: String,
         afterTxid: String? = null,
     ): BitcoinTransactionPage
+
+    fun isValidAddress(
+        network: BitcoinNetwork,
+        address: String,
+    ): Boolean
+
+    /**
+     * Build, sign, and broadcast a payment from an HD wallet's receive address.
+     * Returns the broadcast txid.
+     */
+    suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+    ): String
 }

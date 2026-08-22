@@ -222,6 +222,7 @@ private fun BitcoinWalletDetailsContent(
                     }
                     Button(
                         onClick = onSend,
+                        enabled = !uiState.isWatchOnly,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(R.string.send_title))

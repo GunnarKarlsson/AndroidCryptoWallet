@@ -5,6 +5,7 @@ import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
+import network.bahn.androidcryptowallet.domain.model.BitcoinUtxo
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -70,6 +71,27 @@ class AlchemyBitcoinRemoteDataSource @Inject constructor(
         afterTxid: String?,
     ): BitcoinTransactionPage {
         throw UnsupportedOperationException("Alchemy does not implement address transactions")
+    }
+
+    override suspend fun getAddressUtxos(
+        network: BitcoinNetwork,
+        address: String,
+    ): List<BitcoinUtxo> {
+        throw UnsupportedOperationException("Alchemy does not implement address UTXOs")
+    }
+
+    override suspend fun getTransactionHex(
+        network: BitcoinNetwork,
+        txid: String,
+    ): String {
+        throw UnsupportedOperationException("Alchemy does not implement transaction hex")
+    }
+
+    override suspend fun broadcastTransaction(
+        network: BitcoinNetwork,
+        rawTxHex: String,
+    ): String {
+        throw UnsupportedOperationException("Alchemy does not implement transaction broadcast")
     }
 
     private companion object {

@@ -3,14 +3,22 @@ package network.bahn.androidcryptowallet.data.wallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
+import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
 import network.bahn.androidcryptowallet.domain.model.InvalidBitcoinMnemonicException
+import org.bitcoindevkit.Address
+import org.bitcoindevkit.Amount
+import org.bitcoindevkit.CreateTxException
 import org.bitcoindevkit.Descriptor
 import org.bitcoindevkit.DescriptorSecretKey
+import org.bitcoindevkit.FeeRate
 import org.bitcoindevkit.KeychainKind
 import org.bitcoindevkit.Mnemonic
 import org.bitcoindevkit.Network
 import org.bitcoindevkit.NetworkKind
 import org.bitcoindevkit.Persister
+import org.bitcoindevkit.Transaction
+import org.bitcoindevkit.TxBuilder
+import org.bitcoindevkit.UnconfirmedTx
 import org.bitcoindevkit.Wallet
 import org.bitcoindevkit.WordCount
 import javax.inject.Inject
@@ -35,14 +43,87 @@ class BdkBitcoinKeyEngine @Inject constructor() : BitcoinKeyEngine {
     ): BitcoinReceiveAddress {
         val mnemonic = parseMnemonic(mnemonicWords)
         val password = passphrase?.takeIf { it.isNotEmpty() }
-        return deriveReceiveAddress(mnemonic, password, network)
+        val wallet = openWallet(mnemonic, password, network)
+        val addressInfo = wallet.peekAddress(KeychainKind.EXTERNAL, RECEIVE_INDEX)
+        return BitcoinReceiveAddress(
+            network = network,
+            address = addressInfo.address.toString(),
+            index = RECEIVE_INDEX.toInt(),
+            scriptType = BitcoinScriptType.BIP84,
+        )
     }
 
-    private fun deriveReceiveAddress(
+    override fun isValidAddress(
+        network: BitcoinNetwork,
+        address: String,
+    ): Boolean {
+        val trimmed = address.trim()
+        if (trimmed.isEmpty()) return false
+        return try {
+            Address(trimmed, network.toBdkNetwork())
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        network: BitcoinNetwork,
+        fundingTxHexes: List<String>,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+        changeAddress: String,
+    ): BitcoinSignedTransaction {
+        if (fundingTxHexes.isEmpty()) error("Insufficient funds")
+        val mnemonic = parseMnemonic(mnemonicWords)
+        val password = passphrase?.takeIf { it.isNotEmpty() }
+        val wallet = openWallet(mnemonic, password, network)
+        wallet.revealNextAddress(KeychainKind.EXTERNAL)
+        val lastSeen = (System.currentTimeMillis() / 1_000L).toULong()
+        wallet.applyUnconfirmedTxs(
+            fundingTxHexes.map { hex ->
+                UnconfirmedTx(
+                    tx = Transaction(hex.decodeHex()),
+                    lastSeen = lastSeen,
+                )
+            },
+        )
+        val dest = Address(recipientAddress.trim(), network.toBdkNetwork())
+        val change = Address(changeAddress.trim(), network.toBdkNetwork())
+        val psbt = try {
+            TxBuilder()
+                .addRecipient(dest.scriptPubkey(), Amount.fromSat(amountSatoshis.toULong()))
+                .feeRate(FeeRate.fromSatPerVb(feeRateSatPerVbyte.toULong()))
+                .drainTo(change.scriptPubkey())
+                .finish(wallet)
+        } catch (e: CreateTxException.InsufficientFunds) {
+            throw IllegalStateException("Insufficient funds", e)
+        } catch (e: CreateTxException.NoUtxosSelected) {
+            throw IllegalStateException("Insufficient funds", e)
+        } catch (e: CreateTxException.OutputBelowDustLimit) {
+            throw IllegalStateException(BELOW_DUST, e)
+        } catch (e: CreateTxException) {
+            throw IllegalStateException(
+                e.message?.takeIf { it.isNotBlank() } ?: "Could not build transaction",
+                e,
+            )
+        }
+        if (!wallet.sign(psbt)) error("Could not sign transaction")
+        val tx = psbt.extractTx()
+        return BitcoinSignedTransaction(
+            txid = tx.computeTxid().toString(),
+            rawHex = tx.serialize().toHex(),
+        )
+    }
+
+    private fun openWallet(
         mnemonic: Mnemonic,
         password: String?,
         network: BitcoinNetwork,
-    ): BitcoinReceiveAddress {
+    ): Wallet {
         // BIP-32 extended keys: NetworkKind is MAIN vs TEST (tprv/xprv). Testnet4
         // shares TEST keys with other test networks; Network.TESTNET4 is only for
         // address encoding / genesis (tb1q).
@@ -51,22 +132,14 @@ class BdkBitcoinKeyEngine @Inject constructor() : BitcoinKeyEngine {
 
         // BIP-84: wpkh(key / 84' / {0,1}' / 0' / {0,1} / *). EXTERNAL = receive /0/*.
         val external = Descriptor.newBip84(secretKey, KeychainKind.EXTERNAL, networkKind)
-        // BIP-84 change chain /1/* — built so later send can reuse this engine; not shown in UI.
+        // BIP-84 change chain /1/* — drainTo sends change to the receive address instead.
         val internal = Descriptor.newBip84(secretKey, KeychainKind.INTERNAL, networkKind)
 
-        val persister = Persister.newInMemory()
-        val wallet = Wallet(
+        return Wallet(
             descriptor = external,
             changeDescriptor = internal,
             network = network.toBdkNetwork(),
-            persister = persister,
-        )
-        val addressInfo = wallet.peekAddress(KeychainKind.EXTERNAL, RECEIVE_INDEX)
-        return BitcoinReceiveAddress(
-            network = network,
-            address = addressInfo.address.toString(),
-            index = RECEIVE_INDEX.toInt(),
-            scriptType = BitcoinScriptType.BIP84,
+            persister = Persister.newInMemory(),
         )
     }
 
@@ -100,5 +173,18 @@ class BdkBitcoinKeyEngine @Inject constructor() : BitcoinKeyEngine {
 
     private companion object {
         const val RECEIVE_INDEX = 0u
+        const val BELOW_DUST =
+            "Amount is below the dust limit. Send at least 294 satoshis (0.00000294 BTC)."
     }
 }
+
+private fun String.decodeHex(): ByteArray {
+    val hex = trim()
+    require(hex.length % 2 == 0 && hex.isNotEmpty()) { "invalid hex" }
+    return ByteArray(hex.length / 2) { i ->
+        hex.substring(i * 2, i * 2 + 2).toInt(16).toByte()
+    }
+}
+
+private fun ByteArray.toHex(): String =
+    joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xFF) }

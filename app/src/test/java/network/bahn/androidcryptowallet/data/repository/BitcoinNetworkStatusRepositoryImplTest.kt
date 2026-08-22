@@ -136,4 +136,19 @@ private class FakeBitcoinRemoteDataSource : BitcoinRemoteDataSource {
         address: String,
         afterTxid: String?,
     ) = error("unused")
+
+    override suspend fun getAddressUtxos(
+        network: BitcoinNetwork,
+        address: String,
+    ) = error("unused")
+
+    override suspend fun getTransactionHex(
+        network: BitcoinNetwork,
+        txid: String,
+    ) = error("unused")
+
+    override suspend fun broadcastTransaction(
+        network: BitcoinNetwork,
+        rawTxHex: String,
+    ) = error("unused")
 }

@@ -243,10 +243,56 @@ class BitcoinWalletDetailsViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun reloadWalletFlagForceRefreshesBalanceAndTransactions() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            wallet = MutableStateFlow(
+                WALLET.copy(
+                    confirmedBalanceSatoshis = 0L,
+                    unconfirmedBalanceSatoshis = 0L,
+                ),
+            ),
+            cachedPage = pageOf(TX_ONE),
+            firstPage = pageOf(TX_TWO),
+        )
+        val viewModel = createViewModel(
+            repo = repo,
+            savedStateHandle = SavedStateHandle(
+                mapOf(
+                    "walletId" to WALLET.id,
+                    BitcoinWalletDetailsViewModel.RELOAD_WALLET_KEY to true,
+                ),
+            ),
+        )
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertEquals(1, repo.refreshBalanceCalls)
+        assertEquals(listOf(null), repo.txCursors)
+        assertEquals(listOf(TX_TWO), viewModel.uiState.value.transactions)
+        job.cancel()
+    }
+
+    @Test
+    fun onEnterDoesNotReloadAgainAfterFirstVisit() = runTest {
+        val repo = FakeDetailsWalletRepository(firstPage = pageOf(TX_ONE))
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onEnter()
+        assertEquals(listOf(null as String?), repo.txCursors)
+        viewModel.onEnter()
+        assertEquals(listOf(null as String?), repo.txCursors)
+        job.cancel()
+    }
+
     private fun createViewModel(
         repo: FakeDetailsWalletRepository = FakeDetailsWalletRepository(),
+        savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
     ) = BitcoinWalletDetailsViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
+        savedStateHandle = savedStateHandle,
         observeBitcoinWallet = ObserveBitcoinWalletUseCase(repo),
         refreshBitcoinWalletBalance = RefreshBitcoinWalletBalanceUseCase(repo),
         getCachedBitcoinWalletTransactions = GetCachedBitcoinWalletTransactionsUseCase(repo),
@@ -329,4 +375,13 @@ private class FakeDetailsWalletRepository(
         }
         return page
     }
+
+    override fun isValidAddress(network: BitcoinNetwork, address: String) = error("unused")
+
+    override suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+    ) = error("unused")
 }

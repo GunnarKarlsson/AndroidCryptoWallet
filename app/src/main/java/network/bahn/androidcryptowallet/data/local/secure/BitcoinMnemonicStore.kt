@@ -16,4 +16,8 @@ interface BitcoinMnemonicStore {
     fun listHdWalletIds(): List<String>
 
     fun loadPublic(walletId: String): BitcoinHdWalletPublic?
+
+    fun loadMnemonic(walletId: String): String?
+
+    fun loadPassphrase(walletId: String): String?
 }

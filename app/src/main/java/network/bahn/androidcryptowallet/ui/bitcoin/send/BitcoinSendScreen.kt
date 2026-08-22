@@ -2,7 +2,6 @@ package network.bahn.androidcryptowallet.ui.bitcoin.send
 
 import android.content.ClipboardManager
 import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.ContentPaste
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,11 +35,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,40 +47,32 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
-private enum class SendFeePreset(
-    @StringRes val labelRes: Int,
-    @StringRes val rateRes: Int,
-    @StringRes val etaRes: Int,
-    val satPerVByte: Long,
-) {
-    Slow(R.string.send_fee_slow, R.string.send_fee_slow_rate, R.string.send_fee_slow_eta, 2),
-    Normal(R.string.send_fee_normal, R.string.send_fee_normal_rate, R.string.send_fee_normal_eta, 5),
-    Fast(R.string.send_fee_fast, R.string.send_fee_fast_rate, R.string.send_fee_fast_eta, 10),
-}
-
 @Composable
 fun BitcoinSendScreen(
     onBack: () -> Unit,
+    onSent: () -> Unit,
+    viewModel: BitcoinSendViewModel = hiltViewModel(),
 ) {
-    var recipient by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var feePreset by remember { mutableStateOf(SendFeePreset.Normal) }
-    BitcoinSendContent(
-        recipient = recipient,
-        amount = amount,
-        feePreset = feePreset,
-        onRecipientChange = { recipient = it },
-        onAmountChange = { value ->
-            if (value.isEmpty() || value.matches(BTC_AMOUNT_PATTERN)) {
-                amount = value
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                BitcoinSendEvent.Sent -> onSent()
             }
-        },
-        onFeePresetSelected = { feePreset = it },
+        }
+    }
+    BitcoinSendContent(
+        uiState = uiState,
+        onRecipientChange = viewModel::onRecipientChange,
+        onAmountChange = viewModel::onAmountChange,
+        onFeePresetSelected = viewModel::onFeePresetSelected,
+        onSend = viewModel::onSend,
         onBack = onBack,
     )
 }
@@ -89,19 +80,15 @@ fun BitcoinSendScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BitcoinSendContent(
-    recipient: String,
-    amount: String,
-    feePreset: SendFeePreset,
+    uiState: BitcoinSendUiState,
     onRecipientChange: (String) -> Unit,
     onAmountChange: (String) -> Unit,
     onFeePresetSelected: (SendFeePreset) -> Unit,
+    onSend: () -> Unit,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val notAvailableMessage = stringResource(R.string.send_placeholder)
-    val canSend = recipient.isNotBlank() && amount.isNotBlank()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -121,16 +108,22 @@ private fun BitcoinSendContent(
         },
         bottomBar = {
             Button(
-                onClick = {
-                    scope.launch { snackbarHostState.showSnackbar(notAvailableMessage) }
-                },
-                enabled = canSend,
+                onClick = onSend,
+                enabled = uiState.canSend,
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
                     .padding(horizontal = 20.dp, vertical = 12.dp),
             ) {
-                Text(stringResource(R.string.send_action))
+                if (uiState.isSubmitting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                } else {
+                    Text(stringResource(R.string.send_action))
+                }
             }
         },
     ) { innerPadding ->
@@ -145,8 +138,9 @@ private fun BitcoinSendContent(
         ) {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = recipient,
+                value = uiState.recipient,
                 onValueChange = onRecipientChange,
+                enabled = !uiState.isSubmitting,
                 label = { Text(stringResource(R.string.send_recipient_label)) },
                 placeholder = { Text(stringResource(R.string.send_recipient_placeholder)) },
                 singleLine = true,
@@ -158,6 +152,7 @@ private fun BitcoinSendContent(
                         onClick = {
                             pastedClipboardText(context)?.let(onRecipientChange)
                         },
+                        enabled = !uiState.isSubmitting,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ContentPaste,
@@ -168,8 +163,9 @@ private fun BitcoinSendContent(
             )
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = amount,
+                value = uiState.amount,
                 onValueChange = onAmountChange,
+                enabled = !uiState.isSubmitting,
                 label = { Text(stringResource(R.string.send_amount_label)) },
                 placeholder = { Text(stringResource(R.string.send_amount_placeholder)) },
                 singleLine = true,
@@ -196,16 +192,25 @@ private fun BitcoinSendContent(
                 SendFeePreset.entries.forEach { preset ->
                     FeePresetCard(
                         preset = preset,
-                        selected = feePreset == preset,
+                        selected = uiState.feePreset == preset,
                         onClick = { onFeePresetSelected(preset) },
+                        enabled = !uiState.isSubmitting,
                         modifier = Modifier.weight(1f),
                     )
                 }
             }
             SendTotalSummary(
-                amount = amount,
-                feePreset = feePreset,
+                amount = uiState.amount,
+                feePreset = uiState.feePreset,
             )
+            val errorMessage = uiState.errorMessage
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -216,10 +221,12 @@ private fun FeePresetCard(
     preset: SendFeePreset,
     selected: Boolean,
     onClick: () -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Card(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -338,7 +345,6 @@ private fun SendSummaryRow(
     }
 }
 
-private val BTC_AMOUNT_PATTERN = Regex("^\\d*\\.?\\d{0,8}$")
 private const val ESTIMATED_TX_VBYTES = 141L
 
 private fun pastedClipboardText(context: Context): String? {
@@ -352,7 +358,14 @@ private fun pastedClipboardText(context: Context): String? {
 @Composable
 private fun BitcoinSendScreenPreview() {
     WalletTheme {
-        BitcoinSendScreen(onBack = {})
+        BitcoinSendContent(
+            uiState = BitcoinSendUiState(),
+            onRecipientChange = {},
+            onAmountChange = {},
+            onFeePresetSelected = {},
+            onSend = {},
+            onBack = {},
+        )
     }
 }
 
@@ -361,12 +374,52 @@ private fun BitcoinSendScreenPreview() {
 private fun BitcoinSendScreenFilledPreview() {
     WalletTheme {
         BitcoinSendContent(
-            recipient = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
-            amount = "0.01000000",
-            feePreset = SendFeePreset.Fast,
+            uiState = BitcoinSendUiState(
+                recipient = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                amount = "0.01000000",
+                feePreset = SendFeePreset.Fast,
+            ),
             onRecipientChange = {},
             onAmountChange = {},
             onFeePresetSelected = {},
+            onSend = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BitcoinSendScreenSubmittingPreview() {
+    WalletTheme {
+        BitcoinSendContent(
+            uiState = BitcoinSendUiState(
+                recipient = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                amount = "0.01000000",
+                isSubmitting = true,
+            ),
+            onRecipientChange = {},
+            onAmountChange = {},
+            onFeePresetSelected = {},
+            onSend = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BitcoinSendScreenWatchOnlyPreview() {
+    WalletTheme {
+        BitcoinSendContent(
+            uiState = BitcoinSendUiState(
+                isWatchOnly = true,
+                errorMessage = "Watch-only wallets cannot send",
+            ),
+            onRecipientChange = {},
+            onAmountChange = {},
+            onFeePresetSelected = {},
+            onSend = {},
             onBack = {},
         )
     }

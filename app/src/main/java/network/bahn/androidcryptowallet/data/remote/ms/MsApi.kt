@@ -4,8 +4,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Url
 
@@ -29,6 +32,21 @@ interface MsApi {
         @Path("address") address: String,
         @Path("lastTxid") lastTxid: String,
     ): List<MsTxResponse>
+
+    @GET("address/{address}/utxo")
+    suspend fun getAddressUtxos(
+        @Path("address") address: String,
+    ): List<MsUtxoResponse>
+
+    @GET("tx/{txid}/hex")
+    suspend fun getTransactionHex(
+        @Path("txid") txid: String,
+    ): ResponseBody
+
+    @POST("tx")
+    suspend fun broadcastTransaction(
+        @Body rawTxHex: RequestBody,
+    ): ResponseBody
 
     @GET
     suspend fun getTipHeight(

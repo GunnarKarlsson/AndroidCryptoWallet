@@ -21,8 +21,10 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
+import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.BitcoinUtxo
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.model.InvalidBitcoinMnemonicException
 import org.junit.Assert.assertEquals
@@ -236,15 +238,91 @@ class BitcoinWalletRepositoryImplTest {
         }
     }
 
+    @Test
+    fun sendRejectsWatchOnlyWithoutRemoteOrEngine() = runTest {
+        val engine = FakeBitcoinKeyEngine()
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val dao = FakeBitcoinWalletDao()
+        dao.insert(
+            BitcoinWalletEntity(
+                id = "watch-1",
+                network = BitcoinNetwork.TESTNET4.name,
+                receiveAddress = TESTNET_ADDRESS,
+                derivationIndex = 0,
+                scriptType = BitcoinScriptType.EXTERNAL.name,
+                kind = BitcoinWalletKind.WATCH_ONLY.name,
+            ),
+        )
+        val repo = createRepository(engine = engine, remote = remote, walletDao = dao)
+
+        try {
+            repo.send("watch-1", TESTNET_ADDRESS, 1_000L, 5L)
+            error("expected failure")
+        } catch (e: IllegalStateException) {
+            assertTrue(e.message!!.contains("Watch-only"))
+        }
+
+        assertTrue(remote.utxoAddresses.isEmpty())
+        assertTrue(engine.buildAndSignCalls.isEmpty())
+    }
+
+    @Test
+    fun sendRejectsMissingMnemonic() = runTest {
+        val store = FakeBitcoinMnemonicStore()
+        val repo = createRepository(store = store)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        store.saved.remove(id)
+
+        try {
+            repo.send(id, "tb1qrecipient", 1_000L, 5L)
+            error("expected failure")
+        } catch (e: IllegalStateException) {
+            assertTrue(e.message!!.contains("Wallet keys not found"))
+        }
+    }
+
+    @Test
+    fun sendPassesConfirmedUtxoHexesThenBroadcasts() = runTest {
+        val engine = FakeBitcoinKeyEngine()
+        val remote = FakeWalletBitcoinRemoteDataSource(
+            utxos = listOf(
+                BitcoinUtxo("txid-conf", 0, 50_000L, confirmed = true),
+                BitcoinUtxo("txid-mem", 1, 10_000L, confirmed = false),
+                BitcoinUtxo("txid-conf", 1, 5_000L, confirmed = true),
+            ),
+        )
+        val repo = createRepository(engine = engine, remote = remote)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = "secret-pass")
+        val id = repo.observeWallets().first().single().id
+
+        val txid = repo.send(id, "tb1qrecipient", 1_000L, 10L)
+
+        assertEquals("signed-txid", txid)
+        assertEquals(listOf(TESTNET_ADDRESS), remote.utxoAddresses)
+        assertEquals(listOf("txid-conf"), remote.txHexIds)
+        assertEquals(listOf("02000000signed"), remote.broadcastHexes)
+        val call = engine.buildAndSignCalls.single()
+        assertEquals(VALID_WORDS, call.mnemonicWords)
+        assertEquals("secret-pass", call.passphrase)
+        assertEquals(BitcoinNetwork.TESTNET4, call.network)
+        assertEquals(listOf("hex-txid-conf"), call.fundingTxHexes)
+        assertEquals("tb1qrecipient", call.recipientAddress)
+        assertEquals(1_000L, call.amountSatoshis)
+        assertEquals(10L, call.feeRateSatPerVbyte)
+        assertEquals(TESTNET_ADDRESS, call.changeAddress)
+    }
+
     private fun createRepository(
         engine: FakeBitcoinKeyEngine = FakeBitcoinKeyEngine(),
         store: FakeBitcoinMnemonicStore = FakeBitcoinMnemonicStore(),
         networkStore: FakeWalletSelectedBitcoinNetworkStore = FakeWalletSelectedBitcoinNetworkStore(),
         remote: FakeWalletBitcoinRemoteDataSource = FakeWalletBitcoinRemoteDataSource(),
+        walletDao: FakeBitcoinWalletDao = FakeBitcoinWalletDao(),
     ): BitcoinWalletRepositoryImpl = BitcoinWalletRepositoryImpl(
         keyEngine = engine,
         mnemonicStore = store,
-        walletDao = FakeBitcoinWalletDao(),
+        walletDao = walletDao,
         transactionDao = FakeBitcoinTransactionDao(),
         selectedBitcoinNetworkStore = networkStore,
         remote = remote,
@@ -272,6 +350,7 @@ private val TX_TWO = BitcoinTransactionSummary(
 
 private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
     val deriveNetworks = mutableListOf<BitcoinNetwork>()
+    val buildAndSignCalls = mutableListOf<BuildAndSignCall>()
     var validateCalls = 0
 
     override fun generateMnemonic(): List<String> = VALID_WORDS
@@ -295,7 +374,44 @@ private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
         }
         return BitcoinReceiveAddress(network, address, 0)
     }
+
+    override fun isValidAddress(network: BitcoinNetwork, address: String): Boolean =
+        address.isNotBlank()
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        network: BitcoinNetwork,
+        fundingTxHexes: List<String>,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+        changeAddress: String,
+    ): BitcoinSignedTransaction {
+        buildAndSignCalls += BuildAndSignCall(
+            mnemonicWords = mnemonicWords,
+            passphrase = passphrase,
+            network = network,
+            fundingTxHexes = fundingTxHexes,
+            recipientAddress = recipientAddress,
+            amountSatoshis = amountSatoshis,
+            feeRateSatPerVbyte = feeRateSatPerVbyte,
+            changeAddress = changeAddress,
+        )
+        return BitcoinSignedTransaction(txid = "signed-txid", rawHex = "02000000signed")
+    }
 }
+
+private data class BuildAndSignCall(
+    val mnemonicWords: List<String>,
+    val passphrase: String?,
+    val network: BitcoinNetwork,
+    val fundingTxHexes: List<String>,
+    val recipientAddress: String,
+    val amountSatoshis: Long,
+    val feeRateSatPerVbyte: Long,
+    val changeAddress: String,
+)
 
 private data class SavedHdWallet(
     val mnemonic: String,
@@ -317,6 +433,10 @@ private class FakeBitcoinMnemonicStore : BitcoinMnemonicStore {
     override fun listHdWalletIds(): List<String> = saved.keys.sorted()
 
     override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = saved[walletId]?.public
+
+    override fun loadMnemonic(walletId: String): String? = saved[walletId]?.mnemonic
+
+    override fun loadPassphrase(walletId: String): String? = saved[walletId]?.passphrase
 }
 
 private class FakeBitcoinWalletDao : BitcoinWalletDao {
@@ -410,12 +530,16 @@ private class FakeWalletBitcoinRemoteDataSource(
     ),
     var confirmedSatoshis: Long = 12_345L,
     var unconfirmedSatoshis: Long = 100L,
+    var utxos: List<BitcoinUtxo> = emptyList(),
 ) : BitcoinRemoteDataSource {
     val networks = mutableListOf<BitcoinNetwork>()
     val addresses = mutableListOf<String>()
     val txNetworks = mutableListOf<BitcoinNetwork>()
     val txAddresses = mutableListOf<String>()
     val txCursors = mutableListOf<String?>()
+    val utxoAddresses = mutableListOf<String>()
+    val txHexIds = mutableListOf<String>()
+    val broadcastHexes = mutableListOf<String>()
 
     override suspend fun getBlockCount(network: BitcoinNetwork): Long = error("unused")
 
@@ -440,6 +564,30 @@ private class FakeWalletBitcoinRemoteDataSource(
         txAddresses += address
         txCursors += afterTxid
         return if (afterTxid == null) firstTxPage else nextTxPage
+    }
+
+    override suspend fun getAddressUtxos(
+        network: BitcoinNetwork,
+        address: String,
+    ): List<BitcoinUtxo> {
+        utxoAddresses += address
+        return utxos
+    }
+
+    override suspend fun getTransactionHex(
+        network: BitcoinNetwork,
+        txid: String,
+    ): String {
+        txHexIds += txid
+        return "hex-$txid"
+    }
+
+    override suspend fun broadcastTransaction(
+        network: BitcoinNetwork,
+        rawTxHex: String,
+    ): String {
+        broadcastHexes += rawTxHex
+        return "signed-txid"
     }
 }
 

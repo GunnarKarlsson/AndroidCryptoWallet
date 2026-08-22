@@ -81,6 +81,10 @@ private class FakeCatalogMnemonicStore : BitcoinMnemonicStore {
     override fun listHdWalletIds(): List<String> = emptyList()
 
     override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = null
+
+    override fun loadMnemonic(walletId: String): String? = null
+
+    override fun loadPassphrase(walletId: String): String? = null
 }
 
 private class ThrowingCatalogMnemonicStore : BitcoinMnemonicStore {
@@ -93,6 +97,10 @@ private class ThrowingCatalogMnemonicStore : BitcoinMnemonicStore {
     override fun listHdWalletIds(): List<String> = error("encrypted store unavailable")
 
     override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = null
+
+    override fun loadMnemonic(walletId: String): String? = null
+
+    override fun loadPassphrase(walletId: String): String? = null
 }
 
 private open class FakeCatalogWalletDao : BitcoinWalletDao {

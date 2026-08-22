@@ -1,10 +1,12 @@
 package network.bahn.androidcryptowallet.data.repository
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletTxCacheEntity
@@ -114,6 +116,48 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
         )
         persistTransactions(walletId, page, replace = afterTxid == null)
         return page
+    }
+
+    override fun isValidAddress(
+        network: BitcoinNetwork,
+        address: String,
+    ): Boolean = keyEngine.isValidAddress(network, address)
+
+    override suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+    ): String {
+        val wallet = walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        if (wallet.kind == BitcoinWalletKind.WATCH_ONLY.name) {
+            error("Watch-only wallets cannot send")
+        }
+        if (amountSatoshis <= 0L) error("Enter an amount greater than zero")
+        val mnemonic = mnemonicStore.loadMnemonic(walletId)
+            ?: error("Wallet keys not found")
+        val passphrase = mnemonicStore.loadPassphrase(walletId)
+        val network = BitcoinNetwork.valueOf(wallet.network)
+        val confirmedUtxos = remote.getAddressUtxos(network, wallet.receiveAddress)
+            .filter { it.confirmed }
+        if (confirmedUtxos.isEmpty()) error("Insufficient funds")
+        val fundingTxHexes = confirmedUtxos.map { it.txid }.distinct().map { txid ->
+            remote.getTransactionHex(network, txid)
+        }
+        val signed = withContext(Dispatchers.Default) {
+            keyEngine.buildAndSignSend(
+                mnemonicWords = mnemonic.split(" "),
+                passphrase = passphrase,
+                network = network,
+                fundingTxHexes = fundingTxHexes,
+                recipientAddress = recipientAddress,
+                amountSatoshis = amountSatoshis,
+                feeRateSatPerVbyte = feeRateSatPerVbyte,
+                changeAddress = wallet.receiveAddress,
+            )
+        }
+        return remote.broadcastTransaction(network, signed.rawHex)
     }
 
     private suspend fun persistTransactions(

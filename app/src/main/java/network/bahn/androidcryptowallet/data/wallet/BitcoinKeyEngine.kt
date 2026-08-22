@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.data.wallet
 
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
 
 /**
  * Bitcoin key operations. Implementation uses BDK; domain/UI must not import
@@ -23,4 +24,25 @@ interface BitcoinKeyEngine {
         passphrase: String?,
         network: BitcoinNetwork,
     ): BitcoinReceiveAddress
+
+    fun isValidAddress(
+        network: BitcoinNetwork,
+        address: String,
+    ): Boolean
+
+    /**
+     * Build and sign a payment to [recipientAddress] from an in-memory BIP-84 wallet.
+     * [fundingTxHexes] are raw previous transactions that pay the wallet's receive script.
+     * Change is sent to [changeAddress] (the same receive address in the single-address model).
+     */
+    fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        network: BitcoinNetwork,
+        fundingTxHexes: List<String>,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+        changeAddress: String,
+    ): BitcoinSignedTransaction
 }

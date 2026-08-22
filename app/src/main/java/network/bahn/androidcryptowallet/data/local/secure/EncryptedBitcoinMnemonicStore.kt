@@ -67,6 +67,14 @@ class EncryptedBitcoinMnemonicStore @Inject constructor(
         return HdWalletPrefsCodec.loadPublic(walletId, strings, ints)
     }
 
+    override fun loadMnemonic(walletId: String): String? =
+        prefs.getString(HdWalletPrefsCodec.MNEMONIC_PREFIX + walletId, null)
+            ?.takeIf { it.isNotEmpty() }
+
+    override fun loadPassphrase(walletId: String): String? =
+        prefs.getString(HdWalletPrefsCodec.PASSPHRASE_PREFIX + walletId, null)
+            ?.takeIf { it.isNotEmpty() }
+
     private companion object {
         const val PREFS_FILE = "bitcoin_mnemonic"
     }

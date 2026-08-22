@@ -112,6 +112,10 @@ private class FakeReconcileMnemonicStore : BitcoinMnemonicStore {
     override fun listHdWalletIds(): List<String> = snapshots.keys.sorted()
 
     override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = snapshots[walletId]
+
+    override fun loadMnemonic(walletId: String): String? = null
+
+    override fun loadPassphrase(walletId: String): String? = null
 }
 
 private class FakeReconcileWalletDao : BitcoinWalletDao {

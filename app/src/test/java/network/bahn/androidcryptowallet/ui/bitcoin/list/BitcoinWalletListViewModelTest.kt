@@ -138,6 +138,15 @@ private class FakeListWalletRepository(
         walletId: String,
         afterTxid: String?,
     ) = error("unused")
+
+    override fun isValidAddress(network: BitcoinNetwork, address: String) = error("unused")
+
+    override suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+    ) = error("unused")
 }
 
 private class FakeListNetworkRepository(

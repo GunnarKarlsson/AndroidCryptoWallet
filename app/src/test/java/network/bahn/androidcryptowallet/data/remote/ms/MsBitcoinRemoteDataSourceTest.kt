@@ -143,6 +143,107 @@ class MsBitcoinRemoteDataSourceTest {
         assertNull(page.lastConfirmedTxid)
         assertFalse(page.hasMore)
     }
+
+    @Test
+    fun utxoDtoMapsConfirmedFlag() {
+        val confirmed = MsUtxoResponse(
+            txid = "aa",
+            vout = 1,
+            value = 50_000L,
+            status = MsUtxoStatus(confirmed = true),
+        ).toDomain()
+        val mempool = MsUtxoResponse(
+            txid = "bb",
+            vout = 0,
+            value = 1_000L,
+            status = MsUtxoStatus(confirmed = false),
+        ).toDomain()
+        val missing = MsUtxoResponse(txid = "cc", vout = 0, value = 2L).toDomain()
+
+        assertEquals("aa", confirmed.txid)
+        assertEquals(1, confirmed.vout)
+        assertEquals(50_000L, confirmed.valueSatoshis)
+        assertTrue(confirmed.confirmed)
+        assertFalse(mempool.confirmed)
+        assertFalse(missing.confirmed)
+    }
+
+    @Test
+    fun notFoundAddressIsEmptyUtxos() = runTest {
+        val api = FakeMsApi(utxosError = httpError(404))
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val utxos = remote.getAddressUtxos(BitcoinNetwork.TESTNET4, "tb1qmissing")
+
+        assertTrue(utxos.isEmpty())
+    }
+
+    @Test
+    fun getAddressUtxosMapsResponses() = runTest {
+        val api = FakeMsApi(
+            utxos = listOf(
+                MsUtxoResponse("txid-1", 0, 12_345L, MsUtxoStatus(confirmed = true)),
+            ),
+        )
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val utxos = remote.getAddressUtxos(BitcoinNetwork.TESTNET4, ADDRESS)
+
+        assertEquals(listOf(ADDRESS), api.utxoAddresses)
+        assertEquals(1, utxos.size)
+        assertEquals("txid-1", utxos.single().txid)
+        assertTrue(utxos.single().confirmed)
+    }
+
+    @Test
+    fun getTransactionHexReturnsPlainBody() = runTest {
+        val api = FakeMsApi(txHexBody = "02000000\n")
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val hex = remote.getTransactionHex(BitcoinNetwork.TESTNET4, "txid-1")
+
+        assertEquals("02000000", hex)
+        assertEquals(listOf("txid-1"), api.txHexIds)
+    }
+
+    @Test
+    fun broadcastPostsHexAndReturnsTxid() = runTest {
+        val api = FakeMsApi(broadcastTxid = "broadcast-txid\n")
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        val txid = remote.broadcastTransaction(BitcoinNetwork.TESTNET4, "02000000dead")
+
+        assertEquals("broadcast-txid", txid)
+        assertEquals("02000000dead", api.lastBroadcastHex)
+    }
+
+    @Test
+    fun broadcastNon2xxUsesErrorBody() = runTest {
+        val api = FakeMsApi(broadcastError = httpError(400, "txn-mempool-conflict"))
+        val remote = MsBitcoinRemoteDataSource(
+            apiProvider = MsApiProvider { api },
+            config = TEST_CONFIG,
+        )
+
+        try {
+            remote.broadcastTransaction(BitcoinNetwork.TESTNET4, "02000000")
+            error("expected failure")
+        } catch (e: IllegalStateException) {
+            assertEquals("txn-mempool-conflict", e.message)
+        }
+    }
 }
 
 private val TEST_CONFIG = MsBitcoinConfig(
@@ -152,9 +253,9 @@ private val TEST_CONFIG = MsBitcoinConfig(
 
 private const val ADDRESS = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34"
 
-private fun httpError(code: Int): HttpException {
-    val body = "".toResponseBody("text/plain".toMediaType())
-    return HttpException(Response.error<MsAddressResponse>(code, body))
+private fun httpError(code: Int, body: String = ""): HttpException {
+    val responseBody = body.toResponseBody("text/plain".toMediaType())
+    return HttpException(Response.error<MsAddressResponse>(code, responseBody))
 }
 
 private class FakeMsApi(
@@ -164,10 +265,18 @@ private class FakeMsApi(
     private val txs: List<MsTxResponse> = emptyList(),
     private val chainTxs: List<MsTxResponse> = emptyList(),
     private val txsError: HttpException? = null,
+    private val utxos: List<MsUtxoResponse> = emptyList(),
+    private val utxosError: HttpException? = null,
+    private val txHexBody: String = "",
+    private val broadcastTxid: String = "txid",
+    private val broadcastError: HttpException? = null,
 ) : MsApi {
     var lastHeightUrl: String? = null
     val txsAddresses = mutableListOf<String>()
     val chainRequests = mutableListOf<Pair<String, String>>()
+    val utxoAddresses = mutableListOf<String>()
+    val txHexIds = mutableListOf<String>()
+    var lastBroadcastHex: String? = null
 
     override suspend fun getAddress(address: String): MsAddressResponse {
         addressError?.let { throw it }
@@ -187,6 +296,25 @@ private class FakeMsApi(
         txsError?.let { throw it }
         chainRequests += address to lastTxid
         return chainTxs
+    }
+
+    override suspend fun getAddressUtxos(address: String): List<MsUtxoResponse> {
+        utxosError?.let { throw it }
+        utxoAddresses += address
+        return utxos
+    }
+
+    override suspend fun getTransactionHex(txid: String): ResponseBody {
+        txHexIds += txid
+        return txHexBody.toResponseBody("text/plain".toMediaType())
+    }
+
+    override suspend fun broadcastTransaction(rawTxHex: okhttp3.RequestBody): ResponseBody {
+        broadcastError?.let { throw it }
+        val buffer = okio.Buffer()
+        rawTxHex.writeTo(buffer)
+        lastBroadcastHex = buffer.readUtf8()
+        return broadcastTxid.toResponseBody("text/plain".toMediaType())
     }
 
     override suspend fun getTipHeight(url: String): ResponseBody {

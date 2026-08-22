@@ -33,6 +33,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     private val getCachedBitcoinWalletTransactions: GetCachedBitcoinWalletTransactionsUseCase,
     private val loadBitcoinWalletTransactions: LoadBitcoinWalletTransactionsUseCase,
 ) : ViewModel() {
+    private val routeHandle = savedStateHandle
     private val walletId = savedStateHandle.toRoute<BitcoinWalletDetailsRoute>().walletId
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
@@ -40,6 +41,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     private var lastConfirmedTxid: String? = null
     private var firstPageJob: Job? = null
     private var loadMoreJob: Job? = null
+    private var hasEntered = false
 
     val uiState: StateFlow<BitcoinWalletDetailsUiState> = combine(
         observeBitcoinWallet(walletId),
@@ -64,9 +66,26 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         initialValue = BitcoinWalletDetailsUiState(),
     )
 
+    init {
+        viewModelScope.launch {
+            routeHandle.getStateFlow(RELOAD_WALLET_KEY, false).collect { reload ->
+                if (!reload) return@collect
+                routeHandle[RELOAD_WALLET_KEY] = false
+                onReturnFromSend()
+            }
+        }
+    }
+
     fun onEnter() {
+        if (hasEntered) return
+        hasEntered = true
         refreshBalance(force = false)
         loadCachedOrFetch()
+    }
+
+    fun onReturnFromSend() {
+        refreshBalance(force = true)
+        loadFirstPageFromNetwork(showFullSpinner = txLoadState.value.transactions.isEmpty())
     }
 
     fun onRefresh() {
@@ -212,7 +231,8 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         val errorMessage: String? = null,
     )
 
-    private companion object {
-        const val TAG = "WalletDetails"
+    companion object {
+        const val RELOAD_WALLET_KEY = "reload_wallet"
+        private const val TAG = "WalletDetails"
     }
 }

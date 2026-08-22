@@ -14,6 +14,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import network.bahn.androidcryptowallet.ui.bitcoin.details.BitcoinWalletDetailsScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.details.BitcoinWalletDetailsViewModel
 import network.bahn.androidcryptowallet.ui.bitcoin.list.BitcoinWalletListScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.receive.BitcoinReceiveScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.send.BitcoinSendScreen
@@ -53,6 +54,13 @@ fun WalletNavHost(
         composable<BitcoinSendRoute> {
             BitcoinSendScreen(
                 onBack = { navController.popBackStack() },
+                onSent = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set(
+                        BitcoinWalletDetailsViewModel.RELOAD_WALLET_KEY,
+                        true,
+                    )
+                    navController.popBackStack()
+                },
             )
         }
         composable<BitcoinReceiveRoute> {
