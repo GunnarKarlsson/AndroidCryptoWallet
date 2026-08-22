@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Hub
+import androidx.compose.material.icons.outlined.SettingsBackupRestore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -61,6 +62,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 @Composable
 fun BitcoinWalletListScreen(
     onCreateWallet: () -> Unit,
+    onRestoreWallet: () -> Unit,
     onNetworkStatus: () -> Unit,
     onWalletClick: (String) -> Unit,
     viewModel: BitcoinWalletListViewModel = hiltViewModel(),
@@ -70,6 +72,7 @@ fun BitcoinWalletListScreen(
         uiState = uiState,
         onNetworkSelected = viewModel::onNetworkSelected,
         onCreateWallet = onCreateWallet,
+        onRestoreWallet = onRestoreWallet,
         onNetworkStatus = onNetworkStatus,
         onWalletClick = onWalletClick,
     )
@@ -81,6 +84,7 @@ private fun BitcoinWalletListContent(
     uiState: BitcoinWalletListUiState,
     onNetworkSelected: (BitcoinNetwork) -> Unit,
     onCreateWallet: () -> Unit,
+    onRestoreWallet: () -> Unit,
     onNetworkStatus: () -> Unit,
     onWalletClick: (String) -> Unit,
 ) {
@@ -181,6 +185,24 @@ private fun BitcoinWalletListContent(
                     .clickable {
                         showActionsSheet = false
                         onCreateWallet()
+                    },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.restore_wallet)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.SettingsBackupRestore,
+                        contentDescription = null,
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showActionsSheet = false
+                        onRestoreWallet()
                     },
             )
             ListItem(
@@ -298,6 +320,7 @@ private fun BitcoinWalletListLoadingPreview() {
             uiState = BitcoinWalletListUiState(),
             onNetworkSelected = {},
             onCreateWallet = {},
+            onRestoreWallet = {},
             onNetworkStatus = {},
             onWalletClick = {},
         )
@@ -312,6 +335,7 @@ private fun BitcoinWalletListEmptyPreview() {
             uiState = BitcoinWalletListUiState(isLoading = false),
             onNetworkSelected = {},
             onCreateWallet = {},
+            onRestoreWallet = {},
             onNetworkStatus = {},
             onWalletClick = {},
         )
@@ -352,6 +376,7 @@ private fun BitcoinWalletListPopulatedPreview() {
             ),
             onNetworkSelected = {},
             onCreateWallet = {},
+            onRestoreWallet = {},
             onNetworkStatus = {},
             onWalletClick = {},
         )

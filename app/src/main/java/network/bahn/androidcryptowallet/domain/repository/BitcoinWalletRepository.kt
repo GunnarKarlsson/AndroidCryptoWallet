@@ -24,6 +24,17 @@ interface BitcoinWalletRepository {
         passphrase: String?,
     )
 
+    /**
+     * Restore from a BIP-39 mnemonic (optional passphrase) for [network].
+     * If a wallet already exists for the derived receive address, this is a no-op.
+     * Otherwise this calls [createWallet].
+     */
+    suspend fun restoreWallet(
+        network: BitcoinNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    )
+
     /** Fetch the receive-address balance from the remote data source and cache it on the wallet row. */
     suspend fun refreshBalance(walletId: String)
 

@@ -21,7 +21,10 @@ import network.bahn.androidcryptowallet.ui.bitcoin.receive.BitcoinReceiveScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.send.BitcoinSendScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinCreateWalletScreen
+import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinImportWalletScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinPlaceholderMnemonic
+import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinRestoreEvent
+import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinRestoreViewModel
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSelectNetworkScreen
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupEvent
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupViewModel
@@ -38,6 +41,7 @@ fun WalletNavHost(
         composable<BitcoinWalletListRoute> {
             BitcoinWalletListScreen(
                 onCreateWallet = { navController.navigate(BitcoinCreateGraphRoute) },
+                onRestoreWallet = { navController.navigate(BitcoinRestoreGraphRoute) },
                 onNetworkStatus = { navController.navigate(BitcoinNetworkStatusRoute) },
                 onWalletClick = { walletId ->
                     navController.navigate(BitcoinWalletDetailsRoute(walletId))
@@ -135,6 +139,47 @@ fun WalletNavHost(
                 )
             }
         }
+        navigation<BitcoinRestoreGraphRoute>(
+            startDestination = BitcoinRestoreSelectNetworkRoute,
+        ) {
+            composable<BitcoinRestoreSelectNetworkRoute> { entry ->
+                val restoreViewModel = entry.restoreGraphViewModel(navController)
+                val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
+                BitcoinSelectNetworkScreen(
+                    selectedNetwork = uiState.restoreNetwork,
+                    onNetworkSelected = restoreViewModel::onRestoreNetworkSelected,
+                    onContinue = { navController.navigate(BitcoinRestoreWalletRoute) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<BitcoinRestoreWalletRoute> { entry ->
+                val restoreViewModel = entry.restoreGraphViewModel(navController)
+                val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(restoreViewModel) {
+                    restoreViewModel.events.collect { event ->
+                        when (event) {
+                            BitcoinRestoreEvent.WalletRestored -> {
+                                navController.popBackStack(
+                                    route = BitcoinRestoreGraphRoute,
+                                    inclusive = true,
+                                )
+                            }
+                        }
+                    }
+                }
+                BitcoinImportWalletScreen(
+                    mnemonicWords = uiState.mnemonicWords,
+                    passphrase = uiState.passphrase,
+                    isSubmitting = uiState.isRestoring,
+                    canRestore = uiState.canRestore,
+                    errorMessage = uiState.errorMessage,
+                    onMnemonicWordChange = restoreViewModel::onMnemonicWordChange,
+                    onPassphraseChange = restoreViewModel::onPassphraseChange,
+                    onRestore = restoreViewModel::restore,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+        }
     }
 }
 
@@ -144,6 +189,16 @@ private fun NavBackStackEntry.createGraphViewModel(
 ): BitcoinSetupViewModel {
     val parentEntry = remember(this) {
         navController.getBackStackEntry<BitcoinCreateGraphRoute>()
+    }
+    return hiltViewModel(parentEntry)
+}
+
+@Composable
+private fun NavBackStackEntry.restoreGraphViewModel(
+    navController: NavHostController,
+): BitcoinRestoreViewModel {
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry<BitcoinRestoreGraphRoute>()
     }
     return hiltViewModel(parentEntry)
 }

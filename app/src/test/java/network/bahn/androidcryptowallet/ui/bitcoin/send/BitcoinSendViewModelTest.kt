@@ -233,6 +233,11 @@ private class FakeSendWalletRepository(
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
+    override suspend fun restoreWallet(
+        network: BitcoinNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) = error("unused")
     override suspend fun refreshBalance(walletId: String) = error("unused")
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
     override suspend fun getCachedTransactions(walletId: String) = error("unused")

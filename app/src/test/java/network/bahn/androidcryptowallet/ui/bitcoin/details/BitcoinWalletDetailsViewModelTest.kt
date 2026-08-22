@@ -354,6 +354,12 @@ private class FakeDetailsWalletRepository(
         passphrase: String?,
     ) = error("unused")
 
+    override suspend fun restoreWallet(
+        network: BitcoinNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) = error("unused")
+
     override suspend fun refreshBalance(walletId: String) {
         refreshBalanceCalls++
     }

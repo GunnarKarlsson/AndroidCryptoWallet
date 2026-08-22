@@ -26,12 +26,12 @@ Spending does not use that cached display figure. Right before building a transa
 
 ## RPC provider
 
-Chain data comes from [mempool.space](https://mempool.space) (Esplora-compatible HTTP: address balance, history, UTXOs, and broadcast). Mainnet uses `https://mempool.space/api/`; testnet4 uses `https://mempool.space/testnet4/api/`. No API key is required.
+Chain data comes from [mempool.space](https://mempool.space) (Esplora-compatible HTTP: address balance, history, UTXOs, and broadcast). Mainnet uses `https://mempool.space/api/`; testnet4 uses `https://mempool.space/testnet4/api/`. No API key is required for low request quantities.
 
 ## Setup
 
 1. Copy `local.properties.example` to `local.properties` (Android Studio also creates this with `sdk.dir`).
-2. Optionally set mock watch-only addresses (`MOCK_BITCOIN_WALLET_TESTNET4` / `MOCK_BITCOIN_WALLET_MAINNET`).
+2. Optionally set mock watch-only addresses (`MOCK_BITCOIN_WALLET_TESTNET4` / `MOCK_BITCOIN_WALLET_MAINNET`) to any bitcoin address you want to view in the wallet lists and tx lists.
 3. Open the project in Android Studio and run the `debug` build (Bitcoin testnet4).
 
 ## License

@@ -46,6 +46,10 @@
     <string name="select_network_title">Select network</string>
     <string name="select_network_subtitle">This wallet will be created for the network you choose.</string>
     <string name="create_wallet_failed">Could not create wallet</string>
+    <string name="restore_wallet">Restore wallet</string>
+    <string name="restore_wallet_title">Restore wallet</string>
+    <string name="restore_wallet_subtitle">Enter your 12 word recovery phrase.</string>
+    <string name="restore_wallet_failed">Could not restore wallet</string>
     <string name="network_status_title">Network status</string>
     <string name="wallet_balance">Balance</string>
     <string name="bitcoin_amount">%1$s BTC</string>

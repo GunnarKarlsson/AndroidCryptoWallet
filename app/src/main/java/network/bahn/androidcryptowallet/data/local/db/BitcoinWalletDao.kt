@@ -14,6 +14,11 @@ interface BitcoinWalletDao {
     @Query("SELECT * FROM bitcoin_wallet WHERE id = :id")
     fun observeById(id: String): Flow<BitcoinWalletEntity?>
 
+    @Query(
+        "SELECT * FROM bitcoin_wallet WHERE network = :network AND receiveAddress = :receiveAddress LIMIT 1",
+    )
+    suspend fun findByNetworkAndAddress(network: String, receiveAddress: String): BitcoinWalletEntity?
+
     @Query("SELECT id FROM bitcoin_wallet WHERE id LIKE 'mock:%'")
     suspend fun mockWalletIds(): List<String>
 

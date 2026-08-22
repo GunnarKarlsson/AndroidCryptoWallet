@@ -78,6 +78,18 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
         walletDao.insert(wallet.toEntity())
     }
 
+    override suspend fun restoreWallet(
+        network: BitcoinNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) {
+        keyEngine.validateMnemonic(mnemonicWords)
+        val derived = keyEngine.deriveReceiveAddress(mnemonicWords, passphrase, network)
+        val existing = walletDao.findByNetworkAndAddress(network.name, derived.address)
+        if (existing != null) return
+        createWallet(network, mnemonicWords, passphrase)
+    }
+
     override suspend fun refreshBalance(walletId: String) {
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")

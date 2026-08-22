@@ -155,7 +155,7 @@ class BdkBitcoinKeyEngine @Inject constructor() : BitcoinKeyEngine {
             Mnemonic.fromString(normalized.joinToString(" "))
         } catch (e: Exception) {
             throw InvalidBitcoinMnemonicException(
-                e.message?.takeIf { it.isNotBlank() } ?: "Invalid BIP-39 mnemonic",
+                formatBip39ExceptionMessage(e),
                 e,
             )
         }
@@ -188,3 +188,40 @@ private fun String.decodeHex(): ByteArray {
 
 private fun ByteArray.toHex(): String =
     joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xFF) }
+
+internal fun formatBip39ExceptionMessage(error: Throwable): String {
+    val unknownIndex = unknownWordIndex(error)
+    if (unknownIndex != null) {
+        return "Unknown recovery word at position ${unknownIndex + 1}"
+    }
+    if (isChecksumError(error)) {
+        return "Recovery phrase checksum is invalid"
+    }
+    return error.message?.takeIf { it.isNotBlank() } ?: "Invalid BIP-39 mnemonic"
+}
+
+private fun isChecksumError(error: Throwable): Boolean =
+    generateSequence(error) { it.cause }.any { throwable ->
+        throwable.message.orEmpty().contains("checksum", ignoreCase = true) ||
+            throwable.javaClass.simpleName.contains("InvalidChecksum", ignoreCase = true)
+    }
+
+private fun unknownWordIndex(error: Throwable): Int? {
+    val fromMessage = Regex("""index[=:]?\s*(\d+)""")
+        .find(error.message.orEmpty())
+        ?.groupValues
+        ?.get(1)
+        ?.toIntOrNull()
+    if (fromMessage != null) return fromMessage
+    return runCatching {
+        val index = error.javaClass.getDeclaredField("index").apply { isAccessible = true }
+            .get(error)
+        when (index) {
+            null -> null
+            is ULong -> index.toInt()
+            is Long -> index.toInt()
+            is Int -> index
+            else -> null
+        }
+    }.getOrNull()
+}

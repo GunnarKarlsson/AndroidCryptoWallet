@@ -129,6 +129,13 @@ private class FakeReconcileWalletDao : BitcoinWalletDao {
     override fun observeById(id: String): Flow<BitcoinWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
 
+    override suspend fun findByNetworkAndAddress(
+        network: String,
+        receiveAddress: String,
+    ): BitcoinWalletEntity? = items.value.find {
+        it.network == network && it.receiveAddress == receiveAddress
+    }
+
     override suspend fun mockWalletIds(): List<String> =
         items.value.filter { it.id.startsWith("mock:") }.map { it.id }
 

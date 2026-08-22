@@ -3,6 +3,7 @@
 /local.properties
 .idea/
 /dev-doc/
+.cursor/
 .DS_Store
 /build
 /captures

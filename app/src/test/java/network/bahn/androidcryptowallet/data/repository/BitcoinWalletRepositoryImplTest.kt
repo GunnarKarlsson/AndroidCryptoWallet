@@ -78,6 +78,132 @@ class BitcoinWalletRepositoryImplTest {
     }
 
     @Test
+    fun restoreWritesWalletForChosenNetwork() = runTest {
+        val engine = FakeBitcoinKeyEngine()
+        val store = FakeBitcoinMnemonicStore()
+        val networkStore = FakeWalletSelectedBitcoinNetworkStore()
+        val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
+
+        repo.restoreWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(1, wallets.size)
+        assertEquals(BitcoinNetwork.TESTNET4, wallets.single().network)
+        assertEquals(TESTNET_ADDRESS, wallets.single().receiveAddress)
+        assertEquals(BitcoinScriptType.BIP84, wallets.single().scriptType)
+        assertEquals(BitcoinWalletKind.HD, wallets.single().kind)
+        assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
+        assertEquals(null, store.saved[wallets.single().id]?.passphrase)
+        assertEquals(
+            listOf(BitcoinNetwork.TESTNET4, BitcoinNetwork.TESTNET4),
+            engine.deriveNetworks,
+        )
+        assertEquals(2, engine.validateCalls)
+    }
+
+    @Test
+    fun restoreExistingSeedDoesNotInsertAgain() = runTest {
+        val engine = FakeBitcoinKeyEngine()
+        val store = FakeBitcoinMnemonicStore()
+        val remote = FakeWalletBitcoinRemoteDataSource()
+        val repo = createRepository(engine = engine, store = store, remote = remote)
+
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        repo.renameWallet(id, "Savings")
+        repo.refreshBalance(id)
+        val validateAfterCreate = engine.validateCalls
+        val deriveAfterCreate = engine.deriveNetworks.size
+        val savedAfterCreate = store.saved.size
+
+        repo.restoreWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(1, wallets.size)
+        assertEquals(id, wallets.single().id)
+        assertEquals("Savings", wallets.single().name)
+        assertEquals(12_345L, wallets.single().confirmedBalanceSatoshis)
+        assertEquals(savedAfterCreate, store.saved.size)
+        assertEquals(validateAfterCreate + 1, engine.validateCalls)
+        assertEquals(deriveAfterCreate + 1, engine.deriveNetworks.size)
+    }
+
+    @Test
+    fun restoreDifferentPassphraseCreatesAnotherWallet() = runTest {
+        val engine = FakeBitcoinKeyEngine(
+            passphraseAddresses = mapOf("other-pass" to "tb1qother"),
+        )
+        val store = FakeBitcoinMnemonicStore()
+        val repo = createRepository(engine = engine, store = store)
+
+        repo.restoreWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = "other-pass")
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(2, wallets.size)
+        assertEquals(setOf(TESTNET_ADDRESS, "tb1qother"), wallets.map { it.receiveAddress }.toSet())
+        assertEquals(2, store.saved.size)
+    }
+
+    @Test
+    fun restoreDifferentNetworkCreatesAnotherWallet() = runTest {
+        val store = FakeBitcoinMnemonicStore()
+        val repo = createRepository(store = store)
+
+        repo.restoreWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(BitcoinNetwork.MAINNET, VALID_WORDS, passphrase = null)
+
+        assertEquals(2, store.saved.size)
+    }
+
+    @Test
+    fun restoreRejectsInvalidMnemonic() = runTest {
+        val engine = FakeBitcoinKeyEngine()
+        val store = FakeBitcoinMnemonicStore()
+        val repo = createRepository(engine = engine, store = store)
+
+        try {
+            repo.restoreWallet(BitcoinNetwork.TESTNET4, listOf("not", "valid"), null)
+            error("expected InvalidBitcoinMnemonicException")
+        } catch (_: InvalidBitcoinMnemonicException) {
+        }
+
+        assertTrue(repo.observeWallets().first().isEmpty())
+        assertTrue(store.saved.isEmpty())
+        assertTrue(engine.deriveNetworks.isEmpty())
+    }
+
+    @Test
+    fun restoreExistingWatchOnlyDoesNotInsertHd() = runTest {
+        val engine = FakeBitcoinKeyEngine()
+        val store = FakeBitcoinMnemonicStore()
+        val walletDao = FakeBitcoinWalletDao()
+        val repo = createRepository(engine = engine, store = store, walletDao = walletDao)
+        walletDao.insert(
+            BitcoinWalletEntity(
+                id = "mock:TESTNET4:$TESTNET_ADDRESS",
+                network = BitcoinNetwork.TESTNET4.name,
+                receiveAddress = TESTNET_ADDRESS,
+                derivationIndex = 0,
+                scriptType = BitcoinScriptType.EXTERNAL.name,
+                kind = BitcoinWalletKind.WATCH_ONLY.name,
+                name = "Watch",
+                confirmedBalanceSatoshis = 99L,
+            ),
+        )
+
+        repo.restoreWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(1, wallets.size)
+        assertEquals(BitcoinWalletKind.WATCH_ONLY, wallets.single().kind)
+        assertEquals("Watch", wallets.single().name)
+        assertEquals(99L, wallets.single().confirmedBalanceSatoshis)
+        assertTrue(store.saved.isEmpty())
+        assertEquals(1, engine.validateCalls)
+    }
+
+    @Test
     fun observeFollowsNetworkSwitchWithoutExtraDerive() = runTest {
         val engine = FakeBitcoinKeyEngine()
         val store = FakeBitcoinMnemonicStore()
@@ -389,7 +515,9 @@ private val TX_TWO = BitcoinTransactionSummary(
     feeSatoshis = 20L,
 )
 
-private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
+private class FakeBitcoinKeyEngine(
+    private val passphraseAddresses: Map<String, String> = emptyMap(),
+) : BitcoinKeyEngine {
     val deriveNetworks = mutableListOf<BitcoinNetwork>()
     val buildAndSignCalls = mutableListOf<BuildAndSignCall>()
     var validateCalls = 0
@@ -409,10 +537,12 @@ private class FakeBitcoinKeyEngine : BitcoinKeyEngine {
         network: BitcoinNetwork,
     ): BitcoinReceiveAddress {
         deriveNetworks += network
-        val address = when (network) {
+        val base = when (network) {
             BitcoinNetwork.TESTNET4 -> TESTNET_ADDRESS
             BitcoinNetwork.MAINNET -> MAINNET_ADDRESS
         }
+        val phrase = passphrase?.takeIf { it.isNotEmpty() }
+        val address = phrase?.let { passphraseAddresses[it] } ?: base
         return BitcoinReceiveAddress(network, address, 0)
     }
 
@@ -488,6 +618,13 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
 
     override fun observeById(id: String): Flow<BitcoinWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
+
+    override suspend fun findByNetworkAndAddress(
+        network: String,
+        receiveAddress: String,
+    ): BitcoinWalletEntity? = items.value.find {
+        it.network == network && it.receiveAddress == receiveAddress
+    }
 
     override suspend fun insert(entity: BitcoinWalletEntity) {
         items.update { it + entity }
