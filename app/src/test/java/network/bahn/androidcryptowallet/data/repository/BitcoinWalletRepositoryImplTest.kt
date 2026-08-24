@@ -17,7 +17,6 @@ import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.BitcoinAddressBalance
-import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
@@ -49,10 +48,7 @@ class BitcoinWalletRepositoryImplTest {
         assertEquals(BitcoinWalletKind.HD, wallets.single().kind)
         assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
         assertEquals(null, store.saved[wallets.single().id]?.passphrase)
-        assertEquals(BitcoinNetwork.TESTNET4, store.saved[wallets.single().id]?.public?.network)
-        assertEquals(TESTNET_ADDRESS, store.saved[wallets.single().id]?.public?.receiveAddress)
-        assertEquals(0, store.saved[wallets.single().id]?.public?.derivationIndex)
-        assertEquals(BitcoinScriptType.BIP84, store.saved[wallets.single().id]?.public?.scriptType)
+        assertEquals(BitcoinNetwork.TESTNET4, store.saved[wallets.single().id]?.network)
         assertEquals(listOf(BitcoinNetwork.TESTNET4), engine.deriveNetworks)
         assertEquals(1, engine.validateCalls)
 
@@ -587,23 +583,24 @@ private data class BuildAndSignCall(
 private data class SavedHdWallet(
     val mnemonic: String,
     val passphrase: String?,
-    val public: BitcoinHdWalletPublic,
+    val network: BitcoinNetwork,
 )
 
 private class FakeBitcoinMnemonicStore : BitcoinMnemonicStore {
     val saved = mutableMapOf<String, SavedHdWallet>()
 
     override fun save(
+        walletId: String,
         mnemonic: String,
         passphrase: String?,
-        public: BitcoinHdWalletPublic,
+        network: BitcoinNetwork,
     ) {
-        saved[public.id] = SavedHdWallet(mnemonic, passphrase, public)
+        saved[walletId] = SavedHdWallet(mnemonic, passphrase, network)
     }
 
     override fun listHdWalletIds(): List<String> = saved.keys.sorted()
 
-    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = saved[walletId]?.public
+    override fun loadNetwork(walletId: String): BitcoinNetwork? = saved[walletId]?.network
 
     override fun loadMnemonic(walletId: String): String? = saved[walletId]?.mnemonic
 

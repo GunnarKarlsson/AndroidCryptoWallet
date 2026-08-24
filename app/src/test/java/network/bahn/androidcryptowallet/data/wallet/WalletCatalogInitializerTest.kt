@@ -9,7 +9,9 @@ import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
-import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
+import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,6 +22,7 @@ class WalletCatalogInitializerTest {
         val dao = FakeCatalogWalletDao()
         val initializer = WalletCatalogInitializer(
             hdWalletRoomReconciler = HdWalletRoomReconciler(
+                keyEngine = UnusedCatalogKeyEngine(),
                 mnemonicStore = FakeCatalogMnemonicStore(),
                 walletDao = dao,
             ),
@@ -39,6 +42,7 @@ class WalletCatalogInitializerTest {
         val dao = FakeCatalogWalletDao()
         val initializer = WalletCatalogInitializer(
             hdWalletRoomReconciler = HdWalletRoomReconciler(
+                keyEngine = UnusedCatalogKeyEngine(),
                 mnemonicStore = ThrowingCatalogMnemonicStore(),
                 walletDao = dao,
             ),
@@ -57,6 +61,7 @@ class WalletCatalogInitializerTest {
         val dao = ThrowingMockIdsWalletDao()
         val initializer = WalletCatalogInitializer(
             hdWalletRoomReconciler = HdWalletRoomReconciler(
+                keyEngine = UnusedCatalogKeyEngine(),
                 mnemonicStore = FakeCatalogMnemonicStore(),
                 walletDao = dao,
             ),
@@ -71,16 +76,42 @@ class WalletCatalogInitializerTest {
     }
 }
 
+private class UnusedCatalogKeyEngine : BitcoinKeyEngine {
+    override fun generateMnemonic(): List<String> = error("unused")
+
+    override fun validateMnemonic(words: List<String>) = error("unused")
+
+    override fun deriveReceiveAddress(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        network: BitcoinNetwork,
+    ): BitcoinReceiveAddress = error("unused")
+
+    override fun isValidAddress(network: BitcoinNetwork, address: String): Boolean = error("unused")
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        network: BitcoinNetwork,
+        fundingTxHexes: List<String>,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+        changeAddress: String,
+    ): BitcoinSignedTransaction = error("unused")
+}
+
 private class FakeCatalogMnemonicStore : BitcoinMnemonicStore {
     override fun save(
+        walletId: String,
         mnemonic: String,
         passphrase: String?,
-        public: BitcoinHdWalletPublic,
+        network: BitcoinNetwork,
     ) = Unit
 
     override fun listHdWalletIds(): List<String> = emptyList()
 
-    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = null
+    override fun loadNetwork(walletId: String): BitcoinNetwork? = null
 
     override fun loadMnemonic(walletId: String): String? = null
 
@@ -89,14 +120,15 @@ private class FakeCatalogMnemonicStore : BitcoinMnemonicStore {
 
 private class ThrowingCatalogMnemonicStore : BitcoinMnemonicStore {
     override fun save(
+        walletId: String,
         mnemonic: String,
         passphrase: String?,
-        public: BitcoinHdWalletPublic,
+        network: BitcoinNetwork,
     ) = Unit
 
     override fun listHdWalletIds(): List<String> = error("encrypted store unavailable")
 
-    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = null
+    override fun loadNetwork(walletId: String): BitcoinNetwork? = null
 
     override fun loadMnemonic(walletId: String): String? = null
 

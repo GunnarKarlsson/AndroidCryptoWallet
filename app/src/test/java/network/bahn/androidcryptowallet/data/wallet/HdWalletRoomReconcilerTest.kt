@@ -9,9 +9,10 @@ import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
-import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
+import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
+import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -19,33 +20,55 @@ import org.junit.Test
 
 class HdWalletRoomReconcilerTest {
     @Test
-    fun emptySnapshotLeavesDaoUnchanged() = runTest {
+    fun emptyStoreLeavesDaoUnchanged() = runTest {
         val dao = FakeReconcileWalletDao()
         val store = FakeReconcileMnemonicStore()
-        HdWalletRoomReconciler(store, dao).reconcile()
+        val engine = FakeReconcileKeyEngine()
+        HdWalletRoomReconciler(engine, store, dao).reconcile()
         assertTrue(dao.observeByNetwork(BitcoinNetwork.TESTNET4.name).first().isEmpty())
+        assertTrue(engine.deriveCalls.isEmpty())
     }
 
     @Test
-    fun emptyDaoInsertsHdRowFromSnapshotWithoutMnemonic() = runTest {
+    fun emptyDaoInsertsHdRowByDerivingFromMnemonic() = runTest {
         val dao = FakeReconcileWalletDao()
         val store = FakeReconcileMnemonicStore().apply {
             save(
-                mnemonic = "secret words",
-                passphrase = null,
-                public = SNAPSHOT,
+                walletId = WALLET_ID,
+                mnemonic = MNEMONIC,
+                passphrase = "secret-pass",
+                network = BitcoinNetwork.TESTNET4,
             )
         }
+        val engine = FakeReconcileKeyEngine()
 
-        HdWalletRoomReconciler(store, dao).reconcile()
+        HdWalletRoomReconciler(engine, store, dao).reconcile()
 
         val row = dao.observeByNetwork(BitcoinNetwork.TESTNET4.name).first().single()
-        assertEquals(SNAPSHOT.id, row.id)
-        assertEquals(SNAPSHOT.receiveAddress, row.receiveAddress)
+        assertEquals(WALLET_ID, row.id)
+        assertEquals(DERIVED_ADDRESS, row.receiveAddress)
+        assertEquals(0, row.derivationIndex)
         assertEquals(BitcoinWalletKind.HD.name, row.kind)
         assertEquals(BitcoinScriptType.BIP84.name, row.scriptType)
         assertEquals(null, row.confirmedBalanceSatoshis)
-        assertTrue(row.id.startsWith("mock:").not())
+        assertEquals(
+            listOf(DeriveCall(MNEMONIC.split(" "), "secret-pass", BitcoinNetwork.TESTNET4)),
+            engine.deriveCalls,
+        )
+    }
+
+    @Test
+    fun skipsWhenMnemonicOrNetworkMissing() = runTest {
+        val dao = FakeReconcileWalletDao()
+        val store = FakeReconcileMnemonicStore()
+        store.put(id = "no-mnemonic", mnemonic = null, network = BitcoinNetwork.TESTNET4)
+        store.put(id = "no-network", mnemonic = MNEMONIC, network = null)
+        val engine = FakeReconcileKeyEngine()
+
+        HdWalletRoomReconciler(engine, store, dao).reconcile()
+
+        assertTrue(dao.observeByNetwork(BitcoinNetwork.TESTNET4.name).first().isEmpty())
+        assertTrue(engine.deriveCalls.isEmpty())
     }
 
     @Test
@@ -53,26 +76,34 @@ class HdWalletRoomReconcilerTest {
         val dao = FakeReconcileWalletDao()
         dao.insertIgnore(
             BitcoinWalletEntity(
-                id = SNAPSHOT.id,
-                network = SNAPSHOT.network.name,
-                receiveAddress = SNAPSHOT.receiveAddress,
-                derivationIndex = SNAPSHOT.derivationIndex,
-                scriptType = SNAPSHOT.scriptType.name,
+                id = WALLET_ID,
+                network = BitcoinNetwork.TESTNET4.name,
+                receiveAddress = "tb1qstale",
+                derivationIndex = 0,
+                scriptType = BitcoinScriptType.BIP84.name,
                 kind = BitcoinWalletKind.HD.name,
                 name = "Savings",
                 confirmedBalanceSatoshis = 99L,
             ),
         )
         val store = FakeReconcileMnemonicStore().apply {
-            save(mnemonic = "secret words", passphrase = null, public = SNAPSHOT)
+            save(
+                walletId = WALLET_ID,
+                mnemonic = MNEMONIC,
+                passphrase = null,
+                network = BitcoinNetwork.TESTNET4,
+            )
         }
+        val engine = FakeReconcileKeyEngine()
 
-        HdWalletRoomReconciler(store, dao).reconcile()
+        HdWalletRoomReconciler(engine, store, dao).reconcile()
 
         val rows = dao.observeByNetwork(BitcoinNetwork.TESTNET4.name).first()
         assertEquals(1, rows.size)
         assertEquals(99L, rows.single().confirmedBalanceSatoshis)
         assertEquals("Savings", rows.single().name)
+        assertEquals("tb1qstale", rows.single().receiveAddress)
+        assertEquals(1, engine.deriveCalls.size)
     }
 
     @Test
@@ -80,44 +111,95 @@ class HdWalletRoomReconcilerTest {
         val dao = FakeReconcileWalletDao()
         val store = FakeReconcileMnemonicStore().apply {
             save(
-                mnemonic = "unused",
+                walletId = "mock:TESTNET4:tb1qfake",
+                mnemonic = MNEMONIC,
                 passphrase = null,
-                public = SNAPSHOT.copy(id = "mock:TESTNET4:tb1qfake"),
+                network = BitcoinNetwork.TESTNET4,
             )
         }
+        val engine = FakeReconcileKeyEngine()
 
-        HdWalletRoomReconciler(store, dao).reconcile()
+        HdWalletRoomReconciler(engine, store, dao).reconcile()
 
         assertTrue(dao.observeByNetwork(BitcoinNetwork.TESTNET4.name).first().isEmpty())
+        assertTrue(engine.deriveCalls.isEmpty())
     }
 }
 
-private val SNAPSHOT = BitcoinHdWalletPublic(
-    id = "hd-restore-1",
-    network = BitcoinNetwork.TESTNET4,
-    receiveAddress = "tb1qrestore",
-    derivationIndex = 0,
-    scriptType = BitcoinScriptType.BIP84,
+private const val WALLET_ID = "hd-restore-1"
+private const val MNEMONIC = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+private const val DERIVED_ADDRESS = "tb1qderived"
+
+private data class DeriveCall(
+    val mnemonicWords: List<String>,
+    val passphrase: String?,
+    val network: BitcoinNetwork,
 )
 
-private class FakeReconcileMnemonicStore : BitcoinMnemonicStore {
-    private val snapshots = mutableMapOf<String, BitcoinHdWalletPublic>()
+private class FakeReconcileKeyEngine : BitcoinKeyEngine {
+    val deriveCalls = mutableListOf<DeriveCall>()
 
-    override fun save(
-        mnemonic: String,
+    override fun generateMnemonic(): List<String> = error("unused")
+
+    override fun validateMnemonic(words: List<String>) = error("unused")
+
+    override fun deriveReceiveAddress(
+        mnemonicWords: List<String>,
         passphrase: String?,
-        public: BitcoinHdWalletPublic,
-    ) {
-        snapshots[public.id] = public
+        network: BitcoinNetwork,
+    ): BitcoinReceiveAddress {
+        deriveCalls += DeriveCall(mnemonicWords, passphrase, network)
+        return BitcoinReceiveAddress(network, DERIVED_ADDRESS, 0)
     }
 
-    override fun listHdWalletIds(): List<String> = snapshots.keys.sorted()
+    override fun isValidAddress(network: BitcoinNetwork, address: String): Boolean = error("unused")
 
-    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? = snapshots[walletId]
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        network: BitcoinNetwork,
+        fundingTxHexes: List<String>,
+        recipientAddress: String,
+        amountSatoshis: Long,
+        feeRateSatPerVbyte: Long,
+        changeAddress: String,
+    ): BitcoinSignedTransaction = error("unused")
+}
 
-    override fun loadMnemonic(walletId: String): String? = null
+private class FakeReconcileMnemonicStore : BitcoinMnemonicStore {
+    private val mnemonics = mutableMapOf<String, String?>()
+    private val passphrases = mutableMapOf<String, String?>()
+    private val networks = mutableMapOf<String, BitcoinNetwork?>()
 
-    override fun loadPassphrase(walletId: String): String? = null
+    override fun save(
+        walletId: String,
+        mnemonic: String,
+        passphrase: String?,
+        network: BitcoinNetwork,
+    ) {
+        put(walletId, mnemonic, network, passphrase)
+    }
+
+    fun put(
+        id: String,
+        mnemonic: String?,
+        network: BitcoinNetwork?,
+        passphrase: String? = null,
+    ) {
+        mnemonics[id] = mnemonic
+        networks[id] = network
+        passphrases[id] = passphrase
+    }
+
+    override fun listHdWalletIds(): List<String> = mnemonics.keys.sorted()
+
+    override fun loadNetwork(walletId: String): BitcoinNetwork? = networks[walletId]
+
+    override fun loadMnemonic(walletId: String): String? =
+        mnemonics[walletId]?.takeIf { it.isNotEmpty() }
+
+    override fun loadPassphrase(walletId: String): String? =
+        passphrases[walletId]?.takeIf { it.isNotEmpty() }
 }
 
 private class FakeReconcileWalletDao : BitcoinWalletDao {

@@ -9,25 +9,33 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Re-inserts HD wallet public rows from the encrypted snapshot if Room was dropped.
- * Does not touch watch-only mock ids or delete existing HD rows.
+ * Re-inserts HD wallet public rows by deriving the receive address from the encrypted
+ * mnemonic if Room was dropped. Does not touch watch-only mock ids or delete existing HD rows.
  */
 @Singleton
 class HdWalletRoomReconciler @Inject constructor(
+    private val keyEngine: BitcoinKeyEngine,
     private val mnemonicStore: BitcoinMnemonicStore,
     private val walletDao: BitcoinWalletDao,
 ) {
     suspend fun reconcile() {
         mnemonicStore.listHdWalletIds().forEach { walletId ->
             if (walletId.startsWith(MOCK_ID_PREFIX)) return@forEach
-            val snapshot = mnemonicStore.loadPublic(walletId) ?: return@forEach
+            val mnemonic = mnemonicStore.loadMnemonic(walletId) ?: return@forEach
+            val network = mnemonicStore.loadNetwork(walletId) ?: return@forEach
+            val passphrase = mnemonicStore.loadPassphrase(walletId)
+            val derived = keyEngine.deriveReceiveAddress(
+                mnemonicWords = mnemonic.split(" "),
+                passphrase = passphrase,
+                network = network,
+            )
             walletDao.insertIgnore(
                 BitcoinWallet(
-                    id = snapshot.id,
-                    network = snapshot.network,
-                    receiveAddress = snapshot.receiveAddress,
-                    derivationIndex = snapshot.derivationIndex,
-                    scriptType = snapshot.scriptType,
+                    id = walletId,
+                    network = network,
+                    receiveAddress = derived.address,
+                    derivationIndex = derived.index,
+                    scriptType = derived.scriptType,
                     kind = BitcoinWalletKind.HD,
                 ).toEntity(),
             )

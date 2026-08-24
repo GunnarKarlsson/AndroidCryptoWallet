@@ -17,7 +17,6 @@ import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
-import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
@@ -65,15 +64,10 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
             kind = BitcoinWalletKind.HD,
         )
         mnemonicStore.save(
+            walletId = wallet.id,
             mnemonic = mnemonicWords.joinToString(" "),
             passphrase = passphrase?.takeIf { it.isNotEmpty() },
-            public = BitcoinHdWalletPublic(
-                id = wallet.id,
-                network = wallet.network,
-                receiveAddress = wallet.receiveAddress,
-                derivationIndex = wallet.derivationIndex,
-                scriptType = wallet.scriptType,
-            ),
+            network = network,
         )
         walletDao.insert(wallet.toEntity())
     }

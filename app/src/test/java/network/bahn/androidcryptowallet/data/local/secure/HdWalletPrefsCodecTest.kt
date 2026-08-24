@@ -1,7 +1,6 @@
 package network.bahn.androidcryptowallet.data.local.secure
 
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
-import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -9,53 +8,46 @@ import org.junit.Test
 
 class HdWalletPrefsCodecTest {
     @Test
-    fun walletIdsFromNetworkKeysIgnoreMnemonicOnlyOrphans() {
+    fun walletIdsFromMnemonicKeysIgnoreNetworkOnlyOrphans() {
         val ids = HdWalletPrefsCodec.walletIdsFromKeys(
             setOf(
-                "mnemonic_orphan",
-                "passphrase_orphan",
+                "network_orphan",
+                "address_orphan",
+                "mnemonic_hd-1",
+                "passphrase_hd-1",
                 "network_hd-1",
-                "address_hd-1",
-                "network_hd-2",
+                "mnemonic_hd-2",
             ),
         )
         assertEquals(listOf("hd-1", "hd-2"), ids)
     }
 
     @Test
-    fun loadPublicReadsSnapshotFields() {
+    fun loadNetworkReadsStoredNetwork() {
         val walletId = "hd-1"
-        val public = HdWalletPrefsCodec.loadPublic(
+        val network = HdWalletPrefsCodec.loadNetwork(
             walletId = walletId,
-            strings = mapOf(
-                "network_$walletId" to BitcoinNetwork.TESTNET4.name,
-                "address_$walletId" to "tb1qabc",
-                "script_$walletId" to BitcoinScriptType.BIP84.name,
-            ),
-            ints = mapOf("index_$walletId" to 0),
+            strings = mapOf("network_$walletId" to BitcoinNetwork.TESTNET4.name),
         )
-        assertEquals(walletId, public?.id)
-        assertEquals(BitcoinNetwork.TESTNET4, public?.network)
-        assertEquals("tb1qabc", public?.receiveAddress)
-        assertEquals(0, public?.derivationIndex)
-        assertEquals(BitcoinScriptType.BIP84, public?.scriptType)
+        assertEquals(BitcoinNetwork.TESTNET4, network)
     }
 
     @Test
-    fun loadPublicReturnsNullWithoutNetworkOrAddress() {
+    fun loadNetworkReturnsNullWithoutNetwork() {
         assertNull(
-            HdWalletPrefsCodec.loadPublic(
+            HdWalletPrefsCodec.loadNetwork(
                 walletId = "hd-1",
                 strings = mapOf("mnemonic_hd-1" to "abandon abandon"),
-                ints = emptyMap(),
             ),
         )
     }
 
     @Test
-    fun mnemonicPrefixIsNotUsedForListing() {
+    fun leftoverAddressKeysAreNotUsedForListing() {
         assertTrue(
-            HdWalletPrefsCodec.walletIdsFromKeys(setOf("mnemonic_only")).isEmpty(),
+            HdWalletPrefsCodec.walletIdsFromKeys(
+                setOf("address_hd-1", "index_hd-1", "script_hd-1", "network_hd-1"),
+            ).isEmpty(),
         )
     }
 }

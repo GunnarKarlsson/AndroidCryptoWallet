@@ -5,13 +5,13 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
-import network.bahn.androidcryptowallet.domain.model.BitcoinHdWalletPublic
+import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Stores BIP-39 seed material (mnemonic + optional passphrase) and a public snapshot
- * (network, receive address, derivation index, script type), keyed by wallet id.
+ * Stores BIP-39 seed material (mnemonic + optional passphrase) and the derivation
+ * network, keyed by wallet id. Receive address, index, and script type live in Room.
  * Does not store BIP-32 xprv or per-address private keys; those are derived in memory.
  */
 @Singleton
@@ -34,38 +34,32 @@ class EncryptedBitcoinMnemonicStore @Inject constructor(
     }
 
     override fun save(
+        walletId: String,
         mnemonic: String,
         passphrase: String?,
-        public: BitcoinHdWalletPublic,
+        network: BitcoinNetwork,
     ) {
         prefs.edit()
-            .putString(HdWalletPrefsCodec.MNEMONIC_PREFIX + public.id, mnemonic)
-            .putString(HdWalletPrefsCodec.PASSPHRASE_PREFIX + public.id, passphrase.orEmpty())
-            .putString(HdWalletPrefsCodec.NETWORK_PREFIX + public.id, public.network.name)
-            .putString(HdWalletPrefsCodec.ADDRESS_PREFIX + public.id, public.receiveAddress)
-            .putInt(HdWalletPrefsCodec.INDEX_PREFIX + public.id, public.derivationIndex)
-            .putString(HdWalletPrefsCodec.SCRIPT_PREFIX + public.id, public.scriptType.name)
+            .putString(HdWalletPrefsCodec.MNEMONIC_PREFIX + walletId, mnemonic)
+            .putString(HdWalletPrefsCodec.PASSPHRASE_PREFIX + walletId, passphrase.orEmpty())
+            .putString(HdWalletPrefsCodec.NETWORK_PREFIX + walletId, network.name)
+            .remove(LEGACY_ADDRESS_PREFIX + walletId)
+            .remove(LEGACY_INDEX_PREFIX + walletId)
+            .remove(LEGACY_SCRIPT_PREFIX + walletId)
             .apply()
     }
 
     override fun listHdWalletIds(): List<String> =
         HdWalletPrefsCodec.walletIdsFromKeys(prefs.all.keys)
 
-    override fun loadPublic(walletId: String): BitcoinHdWalletPublic? {
-        val strings = mapOf(
-            HdWalletPrefsCodec.NETWORK_PREFIX + walletId to
-                prefs.getString(HdWalletPrefsCodec.NETWORK_PREFIX + walletId, null),
-            HdWalletPrefsCodec.ADDRESS_PREFIX + walletId to
-                prefs.getString(HdWalletPrefsCodec.ADDRESS_PREFIX + walletId, null),
-            HdWalletPrefsCodec.SCRIPT_PREFIX + walletId to
-                prefs.getString(HdWalletPrefsCodec.SCRIPT_PREFIX + walletId, null),
+    override fun loadNetwork(walletId: String): BitcoinNetwork? =
+        HdWalletPrefsCodec.loadNetwork(
+            walletId,
+            mapOf(
+                HdWalletPrefsCodec.NETWORK_PREFIX + walletId to
+                    prefs.getString(HdWalletPrefsCodec.NETWORK_PREFIX + walletId, null),
+            ),
         )
-        val ints = mapOf(
-            HdWalletPrefsCodec.INDEX_PREFIX + walletId to
-                prefs.getInt(HdWalletPrefsCodec.INDEX_PREFIX + walletId, 0),
-        )
-        return HdWalletPrefsCodec.loadPublic(walletId, strings, ints)
-    }
 
     override fun loadMnemonic(walletId: String): String? =
         prefs.getString(HdWalletPrefsCodec.MNEMONIC_PREFIX + walletId, null)
@@ -77,5 +71,8 @@ class EncryptedBitcoinMnemonicStore @Inject constructor(
 
     private companion object {
         const val PREFS_FILE = "bitcoin_mnemonic"
+        const val LEGACY_ADDRESS_PREFIX = "address_"
+        const val LEGACY_INDEX_PREFIX = "index_"
+        const val LEGACY_SCRIPT_PREFIX = "script_"
     }
 }
