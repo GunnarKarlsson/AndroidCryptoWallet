@@ -20,9 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SendBitcoinUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ValidateBitcoinAddressUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.BitcoinSendRoute
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 import javax.inject.Inject
@@ -34,15 +32,12 @@ sealed interface BitcoinSendEvent {
 @HiltViewModel
 class BitcoinSendViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    observeBitcoinWallet: ObserveBitcoinWalletUseCase,
-    private val sendBitcoin: SendBitcoinUseCase,
-    private val validateBitcoinAddress: ValidateBitcoinAddressUseCase,
+    private val walletRepository: BitcoinWalletRepository,
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
             ?: savedStateHandle.toRoute<BitcoinSendRoute>().walletId
-    private val observeWallet = observeBitcoinWallet
-    private val wallet: StateFlow<BitcoinWallet?> = observeBitcoinWallet(walletId)
+    private val wallet: StateFlow<BitcoinWallet?> = walletRepository.observeWallet(walletId)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -90,7 +85,7 @@ class BitcoinSendViewModel @Inject constructor(
         if (sendJob?.isActive == true) return
         val current = form.value
         sendJob = viewModelScope.launch {
-            val currentWallet = observeWallet(walletId).first()
+            val currentWallet = walletRepository.observeWallet(walletId).first()
             if (currentWallet == null) {
                 form.update { it.copy(errorMessage = WALLET_MISSING) }
                 return@launch
@@ -109,13 +104,13 @@ class BitcoinSendViewModel @Inject constructor(
                 return@launch
             }
             val recipient = current.recipient.trim()
-            if (!validateBitcoinAddress(currentWallet.network, recipient)) {
+            if (!walletRepository.isValidAddress(currentWallet.network, recipient)) {
                 form.update { it.copy(errorMessage = INVALID_ADDRESS) }
                 return@launch
             }
             form.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
-                sendBitcoin(
+                walletRepository.send(
                     walletId = walletId,
                     recipientAddress = recipient,
                     amountSatoshis = amountSatoshis,

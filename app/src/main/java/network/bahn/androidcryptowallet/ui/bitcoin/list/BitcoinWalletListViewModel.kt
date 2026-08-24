@@ -9,23 +9,21 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletsUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveWalletCatalogReadyUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import javax.inject.Inject
 
 @HiltViewModel
 class BitcoinWalletListViewModel @Inject constructor(
-    observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
-    observeBitcoinWallets: ObserveBitcoinWalletsUseCase,
-    observeWalletCatalogReady: ObserveWalletCatalogReadyUseCase,
-    private val setBitcoinNetwork: SetBitcoinNetworkUseCase,
+    walletRepository: BitcoinWalletRepository,
+    private val networkStatusRepository: BitcoinNetworkStatusRepository,
+    catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {
     val uiState: StateFlow<BitcoinWalletListUiState> = combine(
-        observeSelectedBitcoinNetwork(),
-        observeBitcoinWallets(),
-        observeWalletCatalogReady(),
+        networkStatusRepository.selectedNetwork(),
+        walletRepository.observeWallets(),
+        catalogReadiness.observeReady(),
     ) { network, wallets, ready ->
         BitcoinWalletListUiState(
             selectedNetwork = network,
@@ -40,7 +38,7 @@ class BitcoinWalletListViewModel @Inject constructor(
 
     fun onNetworkSelected(network: BitcoinNetwork) {
         viewModelScope.launch {
-            setBitcoinNetwork(network)
+            networkStatusRepository.setNetwork(network)
         }
     }
 }

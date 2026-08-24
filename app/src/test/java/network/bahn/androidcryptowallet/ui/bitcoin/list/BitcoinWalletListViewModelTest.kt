@@ -16,10 +16,6 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletsUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveWalletCatalogReadyUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -100,18 +96,9 @@ class BitcoinWalletListViewModelTest {
         wallets: MutableStateFlow<List<BitcoinWallet>> = MutableStateFlow(emptyList()),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(false),
     ) = BitcoinWalletListViewModel(
-        observeSelectedBitcoinNetwork = ObserveSelectedBitcoinNetworkUseCase(
-            FakeListNetworkRepository(network),
-        ),
-        observeBitcoinWallets = ObserveBitcoinWalletsUseCase(
-            FakeListWalletRepository(wallets),
-        ),
-        observeWalletCatalogReady = ObserveWalletCatalogReadyUseCase(
-            FakeCatalogReadiness(ready),
-        ),
-        setBitcoinNetwork = SetBitcoinNetworkUseCase(
-            FakeListNetworkRepository(network),
-        ),
+        walletRepository = FakeListWalletRepository(wallets),
+        networkStatusRepository = FakeListNetworkRepository(network),
+        catalogReadiness = FakeCatalogReadiness(ready),
     )
 }
 

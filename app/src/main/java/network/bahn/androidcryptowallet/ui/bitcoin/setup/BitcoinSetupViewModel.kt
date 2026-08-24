@@ -14,16 +14,14 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
-import network.bahn.androidcryptowallet.domain.usecase.CreateBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.GenerateBitcoinMnemonicUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class BitcoinSetupViewModel @Inject constructor(
-    observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
-    private val generateBitcoinMnemonic: GenerateBitcoinMnemonicUseCase,
-    private val createBitcoinWallet: CreateBitcoinWalletUseCase,
+    private val walletRepository: BitcoinWalletRepository,
+    networkStatusRepository: BitcoinNetworkStatusRepository,
 ) : ViewModel() {
     private val createNetwork = MutableStateFlow(BitcoinNetwork.TESTNET4)
     private val mnemonicWords = MutableStateFlow<List<String>>(emptyList())
@@ -56,7 +54,7 @@ class BitcoinSetupViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            createNetwork.value = observeSelectedBitcoinNetwork().first()
+            createNetwork.value = networkStatusRepository.selectedNetwork().first()
         }
     }
 
@@ -70,7 +68,7 @@ class BitcoinSetupViewModel @Inject constructor(
 
     fun ensureMnemonicGenerated() {
         if (mnemonicWords.value.isEmpty()) {
-            mnemonicWords.value = generateBitcoinMnemonic()
+            mnemonicWords.value = walletRepository.generateMnemonic()
         }
     }
 
@@ -82,7 +80,7 @@ class BitcoinSetupViewModel @Inject constructor(
             isCreating.value = true
             errorMessage.value = null
             try {
-                createBitcoinWallet(
+                walletRepository.createWallet(
                     network = createNetwork.value,
                     mnemonicWords = words,
                     passphrase = passphrase.value.takeIf { it.isNotBlank() },

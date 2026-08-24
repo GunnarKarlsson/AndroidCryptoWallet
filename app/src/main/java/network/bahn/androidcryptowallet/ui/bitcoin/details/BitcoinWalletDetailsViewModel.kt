@@ -18,20 +18,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
-import network.bahn.androidcryptowallet.domain.usecase.GetCachedBitcoinWalletTransactionsUseCase
-import network.bahn.androidcryptowallet.domain.usecase.LoadBitcoinWalletTransactionsUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RefreshBitcoinWalletBalanceUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.BitcoinWalletDetailsRoute
 import javax.inject.Inject
 
 @HiltViewModel
 class BitcoinWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val observeBitcoinWallet: ObserveBitcoinWalletUseCase,
-    private val refreshBitcoinWalletBalance: RefreshBitcoinWalletBalanceUseCase,
-    private val getCachedBitcoinWalletTransactions: GetCachedBitcoinWalletTransactionsUseCase,
-    private val loadBitcoinWalletTransactions: LoadBitcoinWalletTransactionsUseCase,
+    private val walletRepository: BitcoinWalletRepository,
 ) : ViewModel() {
     private val routeHandle = savedStateHandle
     private val walletId = savedStateHandle.toRoute<BitcoinWalletDetailsRoute>().walletId
@@ -44,7 +38,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     private var hasEntered = false
 
     val uiState: StateFlow<BitcoinWalletDetailsUiState> = combine(
-        observeBitcoinWallet(walletId),
+        walletRepository.observeWallet(walletId),
         isRefreshing,
         errorMessage,
         txLoadState,
@@ -104,7 +98,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         loadMoreJob = viewModelScope.launch {
             txLoadState.update { it.copy(isLoadingMore = true, errorMessage = null) }
             try {
-                val page = loadBitcoinWalletTransactions(walletId, cursor)
+                val page = walletRepository.getTransactions(walletId, cursor)
                 lastConfirmedTxid = page.lastConfirmedTxid ?: lastConfirmedTxid
                 txLoadState.update { current ->
                     val existing = current.transactions.map { it.txid }.toSet()
@@ -134,13 +128,13 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         if (isRefreshing.value) return
         viewModelScope.launch {
             if (!force) {
-                val wallet = observeBitcoinWallet(walletId).first()
+                val wallet = walletRepository.observeWallet(walletId).first()
                 if (wallet?.confirmedBalanceSatoshis != null) return@launch
             }
             errorMessage.value = null
             isRefreshing.value = true
             try {
-                refreshBitcoinWalletBalance(walletId)
+                walletRepository.refreshBalance(walletId)
             } catch (e: Exception) {
                 Log.e(TAG, "Balance refresh failed", e)
                 errorMessage.value = e.message?.takeIf { it.isNotBlank() }
@@ -158,7 +152,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
             lastConfirmedTxid = null
             txLoadState.value = TxLoadState(isLoading = true)
             try {
-                val cached = getCachedBitcoinWalletTransactions(walletId)
+                val cached = walletRepository.getCachedTransactions(walletId)
                 if (cached != null) {
                     lastConfirmedTxid = cached.lastConfirmedTxid
                     txLoadState.value = TxLoadState(
@@ -168,7 +162,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
                     )
                     return@launch
                 }
-                applyFirstPage(loadBitcoinWalletTransactions(walletId))
+                applyFirstPage(walletRepository.getTransactions(walletId))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -195,7 +189,7 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
                 )
             }
             try {
-                applyFirstPage(loadBitcoinWalletTransactions(walletId))
+                applyFirstPage(walletRepository.getTransactions(walletId))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

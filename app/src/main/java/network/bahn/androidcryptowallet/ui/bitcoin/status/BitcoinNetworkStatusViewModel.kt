@@ -12,25 +12,19 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinNetworkStatusUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RefreshBitcoinBlockHeightUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class BitcoinNetworkStatusViewModel @Inject constructor(
-    private val observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
-    observeBitcoinNetworkStatus: ObserveBitcoinNetworkStatusUseCase,
-    private val setBitcoinNetwork: SetBitcoinNetworkUseCase,
-    private val refreshBlockHeight: RefreshBitcoinBlockHeightUseCase,
+    private val networkStatusRepository: BitcoinNetworkStatusRepository,
 ) : ViewModel() {
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<BitcoinNetworkStatusUiState> = combine(
-        observeSelectedBitcoinNetwork(),
-        observeBitcoinNetworkStatus(),
+        networkStatusRepository.selectedNetwork(),
+        networkStatusRepository.observeStatus(),
         isRefreshing,
         errorMessage,
     ) { network, status, refreshing, error ->
@@ -49,7 +43,7 @@ class BitcoinNetworkStatusViewModel @Inject constructor(
 
     fun onEnter() {
         viewModelScope.launch {
-            onRefresh(observeSelectedBitcoinNetwork().first())
+            onRefresh(networkStatusRepository.selectedNetwork().first())
         }
     }
 
@@ -62,8 +56,8 @@ class BitcoinNetworkStatusViewModel @Inject constructor(
             errorMessage.value = null
             isRefreshing.value = true
             try {
-                setBitcoinNetwork(network)
-                refreshBlockHeight()
+                networkStatusRepository.setNetwork(network)
+                networkStatusRepository.refreshBlockHeight()
             } catch (e: Exception) {
                 Log.e(TAG, "Refresh failed for $network", e)
                 errorMessage.value = e.message?.takeIf { it.isNotBlank() }

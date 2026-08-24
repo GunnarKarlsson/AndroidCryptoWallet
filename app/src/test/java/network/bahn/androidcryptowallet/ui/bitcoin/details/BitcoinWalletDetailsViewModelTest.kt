@@ -16,10 +16,6 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
-import network.bahn.androidcryptowallet.domain.usecase.GetCachedBitcoinWalletTransactionsUseCase
-import network.bahn.androidcryptowallet.domain.usecase.LoadBitcoinWalletTransactionsUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RefreshBitcoinWalletBalanceUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -293,10 +289,7 @@ class BitcoinWalletDetailsViewModelTest {
         savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
     ) = BitcoinWalletDetailsViewModel(
         savedStateHandle = savedStateHandle,
-        observeBitcoinWallet = ObserveBitcoinWalletUseCase(repo),
-        refreshBitcoinWalletBalance = RefreshBitcoinWalletBalanceUseCase(repo),
-        getCachedBitcoinWalletTransactions = GetCachedBitcoinWalletTransactionsUseCase(repo),
-        loadBitcoinWalletTransactions = LoadBitcoinWalletTransactionsUseCase(repo),
+        walletRepository = repo,
     )
 }
 

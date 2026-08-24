@@ -16,9 +16,6 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SendBitcoinUseCase
-import network.bahn.androidcryptowallet.domain.usecase.ValidateBitcoinAddressUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -197,9 +194,7 @@ class BitcoinSendViewModelTest {
         repo: FakeSendWalletRepository,
     ) = BitcoinSendViewModel(
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
-        observeBitcoinWallet = ObserveBitcoinWalletUseCase(repo),
-        sendBitcoin = SendBitcoinUseCase(repo),
-        validateBitcoinAddress = ValidateBitcoinAddressUseCase(repo),
+        walletRepository = repo,
     )
 }
 

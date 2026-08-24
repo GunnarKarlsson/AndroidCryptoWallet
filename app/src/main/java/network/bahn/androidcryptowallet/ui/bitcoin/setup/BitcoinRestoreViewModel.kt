@@ -14,16 +14,14 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
-import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RestoreBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class BitcoinRestoreViewModel @Inject constructor(
-    observeSelectedBitcoinNetwork: ObserveSelectedBitcoinNetworkUseCase,
-    private val restoreBitcoinWallet: RestoreBitcoinWalletUseCase,
-    private val setBitcoinNetwork: SetBitcoinNetworkUseCase,
+    private val walletRepository: BitcoinWalletRepository,
+    private val networkStatusRepository: BitcoinNetworkStatusRepository,
 ) : ViewModel() {
     private val restoreNetwork = MutableStateFlow(BitcoinNetwork.TESTNET4)
     private val mnemonicWords = MutableStateFlow(List(RESTORE_MNEMONIC_WORD_COUNT) { "" })
@@ -56,7 +54,7 @@ class BitcoinRestoreViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            restoreNetwork.value = observeSelectedBitcoinNetwork().first()
+            restoreNetwork.value = networkStatusRepository.selectedNetwork().first()
         }
     }
 
@@ -91,12 +89,12 @@ class BitcoinRestoreViewModel @Inject constructor(
             isRestoring.value = true
             errorMessage.value = null
             try {
-                restoreBitcoinWallet(
+                walletRepository.restoreWallet(
                     network = restoreNetwork.value,
                     mnemonicWords = words,
                     passphrase = passphrase.value.takeIf { it.isNotBlank() },
                 )
-                setBitcoinNetwork(restoreNetwork.value)
+                networkStatusRepository.setNetwork(restoreNetwork.value)
                 mnemonicWords.value = List(RESTORE_MNEMONIC_WORD_COUNT) { "" }
                 passphrase.value = ""
                 eventsChannel.send(BitcoinRestoreEvent.WalletRestored)

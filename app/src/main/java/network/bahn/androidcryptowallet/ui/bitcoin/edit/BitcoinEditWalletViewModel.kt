@@ -19,8 +19,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RenameBitcoinWalletUseCase
+import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.BitcoinEditWalletRoute
 import javax.inject.Inject
 
@@ -31,8 +30,7 @@ sealed interface BitcoinEditWalletEvent {
 @HiltViewModel
 class BitcoinEditWalletViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    observeBitcoinWallet: ObserveBitcoinWalletUseCase,
-    private val renameBitcoinWallet: RenameBitcoinWalletUseCase,
+    private val walletRepository: BitcoinWalletRepository,
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
@@ -44,7 +42,7 @@ class BitcoinEditWalletViewModel @Inject constructor(
     val events = eventsChannel.receiveAsFlow()
 
     val uiState: StateFlow<BitcoinEditWalletUiState> = combine(
-        observeBitcoinWallet(walletId),
+        walletRepository.observeWallet(walletId),
         form,
     ) { wallet, formState ->
         BitcoinEditWalletUiState(
@@ -61,7 +59,7 @@ class BitcoinEditWalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val wallet = observeBitcoinWallet(walletId).filterNotNull().first()
+            val wallet = walletRepository.observeWallet(walletId).filterNotNull().first()
             if (!form.value.userEdited) {
                 form.update {
                     it.copy(
@@ -88,7 +86,7 @@ class BitcoinEditWalletViewModel @Inject constructor(
         confirmJob = viewModelScope.launch {
             form.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
-                renameBitcoinWallet(walletId, form.value.name)
+                walletRepository.renameWallet(walletId, form.value.name)
                 eventsChannel.send(BitcoinEditWalletEvent.Saved)
             } catch (e: CancellationException) {
                 throw e

@@ -17,9 +17,6 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.InvalidBitcoinMnemonicException
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
-import network.bahn.androidcryptowallet.domain.usecase.ObserveSelectedBitcoinNetworkUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RestoreBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.SetBitcoinNetworkUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -66,7 +63,7 @@ class BitcoinRestoreViewModelTest {
     }
 
     @Test
-    fun blankPhraseDoesNotCallUseCase() = runTest {
+    fun blankPhraseDoesNotCallRepository() = runTest {
         val walletRepo = FakeRestoreWalletRepository()
         val viewModel = createViewModel(walletRepo)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -164,7 +161,7 @@ class BitcoinRestoreViewModelTest {
     }
 
     @Test
-    fun incompleteSlotsDoNotCallUseCase() = runTest {
+    fun incompleteSlotsDoNotCallRepository() = runTest {
         val walletRepo = FakeRestoreWalletRepository()
         val viewModel = createViewModel(walletRepo)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -215,9 +212,8 @@ class BitcoinRestoreViewModelTest {
         walletRepo: FakeRestoreWalletRepository,
         networkRepo: FakeRestoreNetworkRepository = FakeRestoreNetworkRepository(),
     ) = BitcoinRestoreViewModel(
-        observeSelectedBitcoinNetwork = ObserveSelectedBitcoinNetworkUseCase(networkRepo),
-        restoreBitcoinWallet = RestoreBitcoinWalletUseCase(walletRepo),
-        setBitcoinNetwork = SetBitcoinNetworkUseCase(networkRepo),
+        walletRepository = walletRepo,
+        networkStatusRepository = networkRepo,
     )
 }
 

@@ -15,8 +15,6 @@ import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
-import network.bahn.androidcryptowallet.domain.usecase.ObserveBitcoinWalletUseCase
-import network.bahn.androidcryptowallet.domain.usecase.RenameBitcoinWalletUseCase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -140,8 +138,7 @@ class BitcoinEditWalletViewModelTest {
         repo: FakeEditWalletRepository,
     ) = BitcoinEditWalletViewModel(
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
-        observeBitcoinWallet = ObserveBitcoinWalletUseCase(repo),
-        renameBitcoinWallet = RenameBitcoinWalletUseCase(repo),
+        walletRepository = repo,
     )
 }
 
