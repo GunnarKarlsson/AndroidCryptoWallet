@@ -29,6 +29,9 @@ import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSelectNetworkScr
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupEvent
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupViewModel
 import network.bahn.androidcryptowallet.ui.bitcoin.status.BitcoinNetworkStatusScreen
+import network.bahn.androidcryptowallet.ui.chain.ChainSelectScreen
+import network.bahn.androidcryptowallet.ui.chain.SupportedChain
+import network.bahn.androidcryptowallet.ui.ethereum.list.EthereumWalletListScreen
 
 @Composable
 fun WalletNavHost(
@@ -36,16 +39,32 @@ fun WalletNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = BitcoinWalletListRoute,
+        startDestination = ChainSelectRoute,
     ) {
+        composable<ChainSelectRoute> {
+            ChainSelectScreen(
+                onChainSelected = { chain ->
+                    when (chain) {
+                        SupportedChain.BITCOIN -> navController.navigate(BitcoinWalletListRoute)
+                        SupportedChain.ETHEREUM -> navController.navigate(EthereumWalletListRoute)
+                    }
+                },
+            )
+        }
         composable<BitcoinWalletListRoute> {
             BitcoinWalletListScreen(
+                onBack = { navController.popBackStack() },
                 onCreateWallet = { navController.navigate(BitcoinCreateGraphRoute) },
                 onRestoreWallet = { navController.navigate(BitcoinRestoreGraphRoute) },
                 onNetworkStatus = { navController.navigate(BitcoinNetworkStatusRoute) },
                 onWalletClick = { walletId ->
                     navController.navigate(BitcoinWalletDetailsRoute(walletId))
                 },
+            )
+        }
+        composable<EthereumWalletListRoute> {
+            EthereumWalletListScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable<BitcoinWalletDetailsRoute> { entry ->

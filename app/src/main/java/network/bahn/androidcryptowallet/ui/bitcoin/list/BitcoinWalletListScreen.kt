@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.ui.bitcoin.list
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,12 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.SettingsBackupRestore
@@ -28,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -67,6 +66,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
 fun BitcoinWalletListScreen(
+    onBack: () -> Unit,
     onCreateWallet: () -> Unit,
     onRestoreWallet: () -> Unit,
     onNetworkStatus: () -> Unit,
@@ -76,6 +76,7 @@ fun BitcoinWalletListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     BitcoinWalletListContent(
         uiState = uiState,
+        onBack = onBack,
         onNetworkSelected = viewModel::onNetworkSelected,
         onCreateWallet = onCreateWallet,
         onRestoreWallet = onRestoreWallet,
@@ -88,6 +89,7 @@ fun BitcoinWalletListScreen(
 @Composable
 private fun BitcoinWalletListContent(
     uiState: BitcoinWalletListUiState,
+    onBack: () -> Unit,
     onNetworkSelected: (BitcoinNetwork) -> Unit,
     onCreateWallet: () -> Unit,
     onRestoreWallet: () -> Unit,
@@ -104,13 +106,12 @@ private fun BitcoinWalletListContent(
                 TopAppBar(
                     title = { Text(stringResource(R.string.wallets_title)) },
                     navigationIcon = {
-                        Image(
-                            painter = painterResource(R.drawable.ic_logo),
-                            contentDescription = stringResource(R.string.varna_logo),
-                            modifier = Modifier
-                                .padding(start = 12.dp)
-                                .size(32.dp),
-                        )
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = stringResource(R.string.navigate_back),
+                            )
+                        }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.White,
@@ -343,6 +344,7 @@ private fun BitcoinWalletListLoadingPreview() {
     WalletTheme {
         BitcoinWalletListContent(
             uiState = BitcoinWalletListUiState(),
+            onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
             onRestoreWallet = {},
@@ -358,6 +360,7 @@ private fun BitcoinWalletListEmptyPreview() {
     WalletTheme {
         BitcoinWalletListContent(
             uiState = BitcoinWalletListUiState(isLoading = false),
+            onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
             onRestoreWallet = {},
@@ -399,6 +402,7 @@ private fun BitcoinWalletListPopulatedPreview() {
                     ),
                 ),
             ),
+            onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
             onRestoreWallet = {},

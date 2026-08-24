@@ -3,7 +3,13 @@ package network.bahn.androidcryptowallet.ui.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
+data object ChainSelectRoute
+
+@Serializable
 data object BitcoinWalletListRoute
+
+@Serializable
+data object EthereumWalletListRoute
 
 @Serializable
 data object BitcoinCreateGraphRoute
