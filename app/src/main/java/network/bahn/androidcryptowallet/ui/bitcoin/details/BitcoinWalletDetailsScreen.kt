@@ -130,29 +130,21 @@ private fun BitcoinWalletDetailsContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onEdit) {
-                            Icon(
-                                imageVector = Icons.Outlined.Edit,
-                                contentDescription = stringResource(R.string.edit_wallet),
-                            )
-                        }
-                        Column(modifier = Modifier.weight(1f, fill = false)) {
+                    Column {
+                        Text(
+                            text = StringUtils.walletDisplayName(
+                                name = uiState.wallet?.name,
+                                fallback = stringResource(R.string.wallet_list_item_label),
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        if (uiState.isWatchOnly) {
                             Text(
-                                text = StringUtils.walletDisplayName(
-                                    name = uiState.wallet?.name,
-                                    fallback = stringResource(R.string.wallet_list_item_label),
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                                text = stringResource(R.string.wallet_watch_only),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                            if (uiState.isWatchOnly) {
-                                Text(
-                                    text = stringResource(R.string.wallet_watch_only),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
                         }
                     }
                 },
@@ -165,22 +157,11 @@ private fun BitcoinWalletDetailsContent(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = onRefresh,
-                        enabled = !uiState.isRefreshing,
-                    ) {
-                        if (uiState.isRefreshing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Outlined.Refresh,
-                                contentDescription = stringResource(R.string.refresh_balance),
-                            )
-                        }
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            imageVector = Icons.Outlined.Edit,
+                            contentDescription = stringResource(R.string.edit_wallet),
+                        )
                     }
                 },
             )
@@ -226,6 +207,25 @@ private fun BitcoinWalletDetailsContent(
                         )
                     },
                     errorMessage = uiState.errorMessage,
+                    trailing = {
+                        IconButton(
+                            onClick = onRefresh,
+                            enabled = !uiState.isRefreshing,
+                        ) {
+                            if (uiState.isRefreshing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Outlined.Refresh,
+                                    contentDescription = stringResource(R.string.refresh_balance),
+                                )
+                            }
+                        }
+                    },
                 )
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -477,6 +477,7 @@ private fun DetailCard(
     caption: String? = null,
     errorMessage: String? = null,
     valueFontFamily: FontFamily? = null,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -489,13 +490,25 @@ private fun DetailCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(
+                    start = 24.dp,
+                    end = if (trailing != null) 8.dp else 24.dp,
+                    top = if (trailing != null) 8.dp else 24.dp,
+                    bottom = 24.dp,
+                ),
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                trailing?.invoke()
+            }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = value,
@@ -570,6 +583,7 @@ private fun BitcoinWalletDetailsScreenPreview() {
             uiState = BitcoinWalletDetailsUiState(
                 wallet = previewWallet(),
                 isLoadingTransactions = true,
+                isRefreshing = true,
             ),
             onRefresh = {},
             onRefreshTransactions = {},
