@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.ui.bitcoin.setup
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,10 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
@@ -21,9 +18,10 @@ import javax.inject.Inject
 @HiltViewModel
 class BitcoinSetupViewModel @Inject constructor(
     private val walletRepository: BitcoinWalletRepository,
-    networkStatusRepository: BitcoinNetworkStatusRepository,
+    private val networkStatusRepository: BitcoinNetworkStatusRepository,
 ) : ViewModel() {
-    private val createNetwork = MutableStateFlow(BitcoinNetwork.TESTNET4)
+    private val session = BitcoinSetupSession(networkStatusRepository, viewModelScope)
+    private val createNetwork = session.network
     private val mnemonicWords = MutableStateFlow<List<String>>(emptyList())
     private val passphrase = MutableStateFlow("")
     private val isCreating = MutableStateFlow(false)
@@ -52,12 +50,6 @@ class BitcoinSetupViewModel @Inject constructor(
         initialValue = BitcoinSetupUiState(),
     )
 
-    init {
-        viewModelScope.launch {
-            createNetwork.value = networkStatusRepository.selectedNetwork().first()
-        }
-    }
-
     fun onCreateNetworkSelected(network: BitcoinNetwork) {
         createNetwork.value = network
     }
@@ -75,26 +67,23 @@ class BitcoinSetupViewModel @Inject constructor(
     fun confirm() {
         ensureMnemonicGenerated()
         val words = mnemonicWords.value
-        if (words.isEmpty() || isCreating.value) return
-        viewModelScope.launch {
-            isCreating.value = true
-            errorMessage.value = null
-            try {
-                walletRepository.createWallet(
-                    network = createNetwork.value,
-                    mnemonicWords = words,
-                    passphrase = passphrase.value.takeIf { it.isNotBlank() },
-                )
-                mnemonicWords.value = emptyList()
-                passphrase.value = ""
-                eventsChannel.send(BitcoinSetupEvent.WalletCreated)
-            } catch (e: Exception) {
-                Log.e(TAG, "Create wallet failed", e)
-                errorMessage.value = e.message?.takeIf { it.isNotBlank() }
-                    ?: CREATE_FAILED_FALLBACK
-            } finally {
-                isCreating.value = false
-            }
+        if (words.isEmpty()) return
+        session.submit(
+            submitting = isCreating,
+            errorMessage = errorMessage,
+            logTag = TAG,
+            failureLog = "Create wallet failed",
+            fallbackError = CREATE_FAILED_FALLBACK,
+        ) {
+            walletRepository.createWallet(
+                network = createNetwork.value,
+                mnemonicWords = words,
+                passphrase = passphrase.value.takeIf { it.isNotBlank() },
+            )
+            networkStatusRepository.setNetwork(createNetwork.value)
+            mnemonicWords.value = emptyList()
+            passphrase.value = ""
+            eventsChannel.send(BitcoinSetupEvent.WalletCreated)
         }
     }
 
