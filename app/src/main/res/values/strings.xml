@@ -67,6 +67,10 @@
     <string name="network_value">Network: %1$s</string>
     <string name="send_title">Send</string>
     <string name="receive_title">Receive</string>
+    <string name="receive_copy">Copy</string>
+    <string name="receive_share">Share</string>
+    <string name="receive_share_chooser">Share address</string>
+    <string name="receive_qr_content_description">QR code for this wallet address</string>
     <string name="send_placeholder">Send is not available yet.</string>
     <string name="receive_placeholder">Receive is not available yet.</string>
     <string name="send_recipient_label">Recipient</string>

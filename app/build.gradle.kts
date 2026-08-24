@@ -112,6 +112,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.security.crypto)
     implementation(libs.bdk.android)
+    implementation(libs.zxing.core)
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
