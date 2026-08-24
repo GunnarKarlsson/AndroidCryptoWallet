@@ -190,6 +190,56 @@ class BitcoinSendViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun remainingBalanceSubtractsAmountAndSelectedFee() = runTest {
+        val repo = FakeSendWalletRepository()
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertEquals(50_000L, viewModel.uiState.value.availableBalanceSatoshis)
+        assertEquals(49_295L, viewModel.uiState.value.remainingBalanceSatoshis)
+        assertFalse(viewModel.uiState.value.wouldOverspend)
+
+        viewModel.onAmountChange("0.00010000")
+
+        assertEquals(39_295L, viewModel.uiState.value.remainingBalanceSatoshis)
+        assertFalse(viewModel.uiState.value.wouldOverspend)
+        job.cancel()
+    }
+
+    @Test
+    fun remainingBalanceUpdatesWhenFeePresetChanges() = runTest {
+        val repo = FakeSendWalletRepository()
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onAmountChange("0.00010000")
+        assertEquals(39_295L, viewModel.uiState.value.remainingBalanceSatoshis)
+
+        viewModel.onFeePresetSelected(SendFeePreset.Fast)
+
+        assertEquals(38_590L, viewModel.uiState.value.remainingBalanceSatoshis)
+        assertEquals(1_410L, viewModel.uiState.value.estimatedFeeSatoshis)
+        job.cancel()
+    }
+
+    @Test
+    fun remainingBalanceIsNegativeWhenAmountPlusFeeExceedsBalance() = runTest {
+        val repo = FakeSendWalletRepository()
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onAmountChange("0.00050000")
+
+        assertEquals(-705L, viewModel.uiState.value.remainingBalanceSatoshis)
+        assertTrue(viewModel.uiState.value.wouldOverspend)
+        job.cancel()
+    }
+
     private fun createViewModel(
         repo: FakeSendWalletRepository,
     ) = BitcoinSendViewModel(

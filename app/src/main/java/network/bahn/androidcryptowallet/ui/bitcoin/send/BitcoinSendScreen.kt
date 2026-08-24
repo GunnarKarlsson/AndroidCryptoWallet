@@ -199,10 +199,8 @@ private fun BitcoinSendContent(
                     )
                 }
             }
-            SendTotalSummary(
-                amount = uiState.amount,
-                feePreset = uiState.feePreset,
-            )
+            SendTotalSummary(uiState = uiState)
+            SendRemainingBalance(uiState = uiState)
             val errorMessage = uiState.errorMessage
             if (errorMessage != null) {
                 Text(
@@ -269,11 +267,10 @@ private fun FeePresetCard(
 
 @Composable
 private fun SendTotalSummary(
-    amount: String,
-    feePreset: SendFeePreset,
+    uiState: BitcoinSendUiState,
 ) {
-    val feeSatoshis = feePreset.satPerVByte * ESTIMATED_TX_VBYTES
-    val amountSatoshis = StringUtils.parseBitcoinAmountToSatoshis(amount)
+    val feeSatoshis = uiState.estimatedFeeSatoshis
+    val amountSatoshis = StringUtils.parseBitcoinAmountToSatoshis(uiState.amount)
     val placeholder = stringResource(R.string.receive_address_placeholder)
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -313,11 +310,54 @@ private fun SendTotalSummary(
 }
 
 @Composable
+private fun SendRemainingBalance(
+    uiState: BitcoinSendUiState,
+) {
+    val remainingSatoshis = uiState.remainingBalanceSatoshis
+    val placeholder = stringResource(R.string.receive_address_placeholder)
+    val overspend = uiState.wouldOverspend
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+        ) {
+            SendSummaryRow(
+                label = stringResource(R.string.send_remaining_label),
+                value = if (remainingSatoshis == null) {
+                    placeholder
+                } else {
+                    stringResource(
+                        R.string.bitcoin_amount,
+                        StringUtils.formatBitcoinAmount(remainingSatoshis),
+                    )
+                },
+                emphasize = true,
+                overspend = overspend,
+            )
+        }
+    }
+}
+
+@Composable
 private fun SendSummaryRow(
     label: String,
     value: String,
     emphasize: Boolean = false,
+    overspend: Boolean = false,
 ) {
+    val contentColor = if (overspend) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.onBackground
+    }
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -330,7 +370,11 @@ private fun SendSummaryRow(
             } else {
                 MaterialTheme.typography.bodyMedium
             },
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (overspend) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
         )
         Text(
             text = value,
@@ -340,12 +384,10 @@ private fun SendSummaryRow(
                 MaterialTheme.typography.bodyMedium
             },
             fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = contentColor,
         )
     }
 }
-
-private const val ESTIMATED_TX_VBYTES = 141L
 
 private fun pastedClipboardText(context: Context): String? {
     val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return null
@@ -359,7 +401,9 @@ private fun pastedClipboardText(context: Context): String? {
 private fun BitcoinSendScreenPreview() {
     WalletTheme {
         BitcoinSendContent(
-            uiState = BitcoinSendUiState(),
+            uiState = BitcoinSendUiState(
+                availableBalanceSatoshis = 4_225_100,
+            ),
             onRecipientChange = {},
             onAmountChange = {},
             onFeePresetSelected = {},
@@ -378,6 +422,7 @@ private fun BitcoinSendScreenFilledPreview() {
                 recipient = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
                 amount = "0.01000000",
                 feePreset = SendFeePreset.Fast,
+                availableBalanceSatoshis = 4_225_100,
             ),
             onRecipientChange = {},
             onAmountChange = {},
@@ -397,6 +442,7 @@ private fun BitcoinSendScreenSubmittingPreview() {
                 recipient = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
                 amount = "0.01000000",
                 isSubmitting = true,
+                availableBalanceSatoshis = 4_225_100,
             ),
             onRecipientChange = {},
             onAmountChange = {},
@@ -415,6 +461,27 @@ private fun BitcoinSendScreenWatchOnlyPreview() {
             uiState = BitcoinSendUiState(
                 isWatchOnly = true,
                 errorMessage = "Watch-only wallets cannot send",
+                availableBalanceSatoshis = 4_225_100,
+            ),
+            onRecipientChange = {},
+            onAmountChange = {},
+            onFeePresetSelected = {},
+            onSend = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BitcoinSendScreenOverspendPreview() {
+    WalletTheme {
+        BitcoinSendContent(
+            uiState = BitcoinSendUiState(
+                recipient = "tb1q6rz28mcfahecdzujk32jvf8u3vf3m48qcx3p34",
+                amount = "0.05000000",
+                feePreset = SendFeePreset.Fast,
+                availableBalanceSatoshis = 4_225_100,
             ),
             onRecipientChange = {},
             onAmountChange = {},

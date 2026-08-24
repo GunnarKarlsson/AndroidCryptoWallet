@@ -60,6 +60,7 @@ class BitcoinSendViewModel @Inject constructor(
             isSubmitting = formState.isSubmitting,
             errorMessage = formState.errorMessage,
             isWatchOnly = currentWallet?.kind == BitcoinWalletKind.WATCH_ONLY,
+            availableBalanceSatoshis = currentWallet?.confirmedBalanceSatoshis,
         )
     }.stateIn(
         scope = viewModelScope,

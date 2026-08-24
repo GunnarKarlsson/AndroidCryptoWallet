@@ -87,6 +87,7 @@
     <string name="send_fee_fast_eta">~10 min</string>
     <string name="send_fee_row">Fee</string>
     <string name="send_total_label">Total</string>
+    <string name="send_remaining_label">Remaining</string>
     <string name="send_action">Send BTC</string>
     <string name="send_error_invalid_address">Enter a valid Bitcoin address for this network</string>
     <string name="send_error_invalid_amount">Enter an amount greater than zero</string>
