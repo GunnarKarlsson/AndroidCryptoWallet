@@ -15,11 +15,6 @@ val localProperties = Properties().apply {
     }
 }
 
-val alchemyKey =
-    System.getenv("ALCHEMY_BTC_API_KEY")
-        ?: localProperties.getProperty("ALCHEMY_BTC_API_KEY")
-        ?: ""
-
 val mockWalletTestnet4 =
     System.getenv("MOCK_BITCOIN_WALLET_TESTNET4")
         ?: localProperties.getProperty("MOCK_BITCOIN_WALLET_TESTNET4")
@@ -29,11 +24,6 @@ val mockWalletMainnet =
     System.getenv("MOCK_BITCOIN_WALLET_MAINNET")
         ?: localProperties.getProperty("MOCK_BITCOIN_WALLET_MAINNET")
         ?: ""
-
-val bitcoinRemoteProvider =
-    System.getenv("BITCOIN_REMOTE_PROVIDER")
-        ?: localProperties.getProperty("BITCOIN_REMOTE_PROVIDER")
-        ?: "MS"
 
 fun String.quotedForBuildConfig(): String {
     val escaped = replace("\\", "\\\\").replace("\"", "\\\"")
@@ -55,17 +45,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "ALCHEMY_BTC_API_KEY", alchemyKey.quotedForBuildConfig())
-        buildConfigField(
-            "String",
-            "ALCHEMY_TESTNET4_BASE_URL",
-            "https://bitcoin-testnet4.g.alchemy.com/v2/".quotedForBuildConfig(),
-        )
-        buildConfigField(
-            "String",
-            "ALCHEMY_MAINNET_BASE_URL",
-            "https://bitcoin-mainnet.g.alchemy.com/v2/".quotedForBuildConfig(),
-        )
         buildConfigField(
             "String",
             "MOCK_BITCOIN_WALLET_TESTNET4",
@@ -75,11 +54,6 @@ android {
             "String",
             "MOCK_BITCOIN_WALLET_MAINNET",
             mockWalletMainnet.quotedForBuildConfig(),
-        )
-        buildConfigField(
-            "String",
-            "BITCOIN_REMOTE_PROVIDER",
-            bitcoinRemoteProvider.quotedForBuildConfig(),
         )
         buildConfigField(
             "String",

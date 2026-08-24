@@ -69,6 +69,6 @@ class BitcoinNetworkStatusViewModel @Inject constructor(
     }
 
     private companion object {
-        const val TAG = "Alchemy"
+        const val TAG = "NetworkStatus"
     }
 }

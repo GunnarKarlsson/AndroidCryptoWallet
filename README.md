@@ -28,6 +28,13 @@ Spending does not use that cached display figure. Right before building a transa
 
 Chain data comes from [mempool.space](https://mempool.space) (Esplora-compatible HTTP: address balance, history, UTXOs, and broadcast). Mainnet uses `https://mempool.space/api/`; testnet4 uses `https://mempool.space/testnet4/api/`. No API key is required for low request quantities.
 
+To add another chain client later:
+
+1. Implement every method on `BitcoinRemoteDataSource` (balance, transactions, UTXOs, transaction hex, broadcast, tip height). Do not ship a partial client.
+2. Add a `@Binds` (or `@Provides`) of that type in Hilt and swap the mempool.space bind in `DataBindsModule`.
+3. Put provider-specific URLs and keys in `local.properties` → BuildConfig, never in git.
+4. Reuse the existing `MsApiFactory` pattern (per-network Retrofit cache) if the API is HTTP.
+
 ## Setup
 
 1. Copy `local.properties.example` to `local.properties` (Android Studio also creates this with `sdk.dir`).

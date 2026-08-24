@@ -8,8 +8,10 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkD
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedBitcoinMnemonicStore
+import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiFactory
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiProvider
+import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
@@ -34,6 +36,12 @@ abstract class DataBindsModule {
     abstract fun bindMsApiProvider(
         impl: MsApiFactory,
     ): MsApiProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindBitcoinRemoteDataSource(
+        impl: MsBitcoinRemoteDataSource,
+    ): BitcoinRemoteDataSource
 
     @Binds
     @Singleton
