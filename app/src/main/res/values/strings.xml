@@ -42,6 +42,7 @@
     <string name="wallets_loading">Loading wallets</string>
     <string name="add_wallet">Add wallet</string>
     <string name="wallet_list_item_label">Bitcoin wallet</string>
+    <string name="ethereum_wallet_list_item_label">Ethereum wallet</string>
     <string name="wallet_watch_only">Watch-only</string>
     <string name="edit_wallet">Edit wallet</string>
     <string name="edit_wallet_title">Edit wallet</string>

@@ -17,6 +17,8 @@ import network.bahn.androidcryptowallet.BuildConfig
 import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
+import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_8_9
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
@@ -33,6 +35,7 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
+            .addMigrations(WALLET_MIGRATION_8_9)
             .build()
 
     @Provides
@@ -46,6 +49,10 @@ object AppModule {
     @Provides
     fun provideBitcoinTransactionDao(database: WalletDatabase): BitcoinTransactionDao =
         database.bitcoinTransactionDao()
+
+    @Provides
+    fun provideEthereumWalletDao(database: WalletDatabase): EthereumWalletDao =
+        database.ethereumWalletDao()
 
     @Provides
     @Singleton

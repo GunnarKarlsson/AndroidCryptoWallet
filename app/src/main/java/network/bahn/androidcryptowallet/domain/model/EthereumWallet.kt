@@ -1,0 +1,14 @@
+package network.bahn.androidcryptowallet.domain.model
+
+/**
+ * Public Ethereum wallet row.
+ * HD wallets keep a BIP-39 mnemonic in the encrypted store, keyed by [id];
+ * [address] is BIP-44 `m/44'/60'/0'/0/{derivationIndex}` (same address on Sepolia and Mainnet).
+ */
+data class EthereumWallet(
+    val id: String,
+    val network: EthereumNetwork,
+    val address: String,
+    val derivationIndex: Int = 0,
+    val name: String? = null,
+)

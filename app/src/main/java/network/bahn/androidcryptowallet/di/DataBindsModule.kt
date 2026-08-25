@@ -6,19 +6,27 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkDataStore
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkDataStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedBitcoinMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EncryptedEthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiFactory
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiProvider
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.EthereumWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.WalletCatalogInitializer
+import network.bahn.androidcryptowallet.data.wallet.Web3jEthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import javax.inject.Singleton
 
@@ -66,6 +74,30 @@ abstract class DataBindsModule {
     abstract fun bindBitcoinWalletRepository(
         impl: BitcoinWalletRepositoryImpl,
     ): BitcoinWalletRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSelectedEthereumNetworkStore(
+        impl: SelectedEthereumNetworkDataStore,
+    ): SelectedEthereumNetworkStore
+
+    @Binds
+    @Singleton
+    abstract fun bindEthereumKeyEngine(
+        impl: Web3jEthereumKeyEngine,
+    ): EthereumKeyEngine
+
+    @Binds
+    @Singleton
+    abstract fun bindEthereumMnemonicStore(
+        impl: EncryptedEthereumMnemonicStore,
+    ): EthereumMnemonicStore
+
+    @Binds
+    @Singleton
+    abstract fun bindEthereumWalletRepository(
+        impl: EthereumWalletRepositoryImpl,
+    ): EthereumWalletRepository
 
     @Binds
     @Singleton

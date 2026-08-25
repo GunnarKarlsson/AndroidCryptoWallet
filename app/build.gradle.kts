@@ -83,6 +83,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    packaging {
+        resources {
+            // web3j crypto pulls tuweni-bytes and tuweni-units, which both ship META-INF/DISCLAIMER.
+            pickFirsts += "META-INF/DISCLAIMER"
+        }
+    }
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
@@ -113,6 +119,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.bdk.android)
     implementation(libs.zxing.core)
+    implementation(libs.web3j.crypto)
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)

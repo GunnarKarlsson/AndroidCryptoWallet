@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
+import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
@@ -30,6 +32,7 @@ class WalletCatalogInitializerTest {
                 config = MockBitcoinWalletConfig.fromRaw("", ""),
                 walletDao = dao,
             ),
+            ethereumHdWalletRoomReconciler = unusedEthereumReconciler(),
         )
 
         assertFalse(initializer.observeReady().first())
@@ -50,6 +53,7 @@ class WalletCatalogInitializerTest {
                 config = MockBitcoinWalletConfig.fromRaw("", ""),
                 walletDao = dao,
             ),
+            ethereumHdWalletRoomReconciler = unusedEthereumReconciler(),
         )
 
         initializer.initialize()
@@ -69,6 +73,7 @@ class WalletCatalogInitializerTest {
                 config = MockBitcoinWalletConfig.fromRaw("tb1qmock", ""),
                 walletDao = dao,
             ),
+            ethereumHdWalletRoomReconciler = unusedEthereumReconciler(),
         )
 
         initializer.initialize()
@@ -185,4 +190,60 @@ private open class FakeCatalogWalletDao : BitcoinWalletDao {
 
 private class ThrowingMockIdsWalletDao : FakeCatalogWalletDao() {
     override suspend fun mockWalletIds(): List<String> = error("dao unavailable")
+}
+
+private fun unusedEthereumReconciler() = EthereumHdWalletRoomReconciler(
+    keyEngine = UnusedEthereumCatalogKeyEngine(),
+    mnemonicStore = EmptyEthereumCatalogMnemonicStore(),
+    walletDao = EmptyEthereumCatalogWalletDao(),
+)
+
+private class UnusedEthereumCatalogKeyEngine : EthereumKeyEngine {
+    override fun generateMnemonic(): List<String> = error("unused")
+
+    override fun validateMnemonic(words: List<String>) = error("unused")
+
+    override fun deriveReceiveAddress(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) = error("unused")
+}
+
+private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
+    override fun save(
+        walletId: String,
+        mnemonic: String,
+        passphrase: String?,
+        network: network.bahn.androidcryptowallet.domain.model.EthereumNetwork,
+    ) = Unit
+
+    override fun listHdWalletIds(): List<String> = emptyList()
+
+    override fun loadNetwork(
+        walletId: String,
+    ): network.bahn.androidcryptowallet.domain.model.EthereumNetwork? = null
+
+    override fun loadMnemonic(walletId: String): String? = null
+
+    override fun loadPassphrase(walletId: String): String? = null
+}
+
+private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
+    override fun observeByNetwork(
+        network: String,
+    ): Flow<List<network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity>> =
+        MutableStateFlow(emptyList())
+
+    override suspend fun findByNetworkAndAddress(
+        network: String,
+        address: String,
+    ) = null
+
+    override suspend fun insert(
+        entity: network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity,
+    ) = Unit
+
+    override suspend fun insertIgnore(
+        entity: network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity,
+    ) = Unit
 }

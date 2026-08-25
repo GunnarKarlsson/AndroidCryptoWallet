@@ -32,6 +32,11 @@ import network.bahn.androidcryptowallet.ui.bitcoin.status.BitcoinNetworkStatusSc
 import network.bahn.androidcryptowallet.ui.chain.ChainSelectScreen
 import network.bahn.androidcryptowallet.ui.chain.SupportedChain
 import network.bahn.androidcryptowallet.ui.ethereum.list.EthereumWalletListScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumConfirmMnemonicScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumCreateWalletScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSetupEvent
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSetupViewModel
 
 @Composable
 fun WalletNavHost(
@@ -65,6 +70,7 @@ fun WalletNavHost(
         composable<EthereumWalletListRoute> {
             EthereumWalletListScreen(
                 onBack = { navController.popBackStack() },
+                onCreateWallet = { navController.navigate(EthereumCreateGraphRoute) },
             )
         }
         composable<BitcoinWalletDetailsRoute> { entry ->
@@ -199,6 +205,60 @@ fun WalletNavHost(
                 )
             }
         }
+        navigation<EthereumCreateGraphRoute>(
+            startDestination = EthereumSelectNetworkRoute,
+        ) {
+            composable<EthereumSelectNetworkRoute> { entry ->
+                val setupViewModel = entry.ethereumCreateGraphViewModel(navController)
+                val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
+                EthereumSelectNetworkScreen(
+                    selectedNetwork = uiState.createNetwork,
+                    onNetworkSelected = setupViewModel::onCreateNetworkSelected,
+                    onContinue = {
+                        setupViewModel.ensureMnemonicGenerated()
+                        navController.navigate(EthereumCreateWalletRoute)
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<EthereumCreateWalletRoute> { entry ->
+                val setupViewModel = entry.ethereumCreateGraphViewModel(navController)
+                val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(setupViewModel) {
+                    setupViewModel.ensureMnemonicGenerated()
+                }
+                EthereumCreateWalletScreen(
+                    words = uiState.mnemonicWords,
+                    passphrase = uiState.passphrase,
+                    onPassphraseChange = setupViewModel::onPassphraseChange,
+                    onContinue = { navController.navigate(EthereumConfirmMnemonicRoute) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<EthereumConfirmMnemonicRoute> { entry ->
+                val setupViewModel = entry.ethereumCreateGraphViewModel(navController)
+                val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(setupViewModel) {
+                    setupViewModel.events.collect { event ->
+                        when (event) {
+                            EthereumSetupEvent.WalletCreated -> {
+                                navController.popBackStack(
+                                    route = EthereumCreateGraphRoute,
+                                    inclusive = true,
+                                )
+                            }
+                        }
+                    }
+                }
+                EthereumConfirmMnemonicScreen(
+                    questions = BitcoinPlaceholderMnemonic.quizQuestions(uiState.mnemonicWords),
+                    isSubmitting = uiState.isCreating,
+                    errorMessage = uiState.errorMessage,
+                    onConfirmed = setupViewModel::confirm,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+        }
     }
 }
 
@@ -218,6 +278,16 @@ private fun NavBackStackEntry.restoreGraphViewModel(
 ): BitcoinRestoreViewModel {
     val parentEntry = remember(this) {
         navController.getBackStackEntry<BitcoinRestoreGraphRoute>()
+    }
+    return hiltViewModel(parentEntry)
+}
+
+@Composable
+private fun NavBackStackEntry.ethereumCreateGraphViewModel(
+    navController: NavHostController,
+): EthereumSetupViewModel {
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry<EthereumCreateGraphRoute>()
     }
     return hiltViewModel(parentEntry)
 }

@@ -46,3 +46,15 @@ data class BitcoinReceiveRoute(val walletId: String)
 
 @Serializable
 data class BitcoinEditWalletRoute(val walletId: String)
+
+@Serializable
+data object EthereumCreateGraphRoute
+
+@Serializable
+data object EthereumSelectNetworkRoute
+
+@Serializable
+data object EthereumCreateWalletRoute
+
+@Serializable
+data object EthereumConfirmMnemonicRoute

@@ -24,6 +24,7 @@ coroutines = "1.10.2"
 bdkAndroid = "3.0.0"
 securityCrypto = "1.1.0-alpha07"
 zxing = "3.5.3"
+web3j = "4.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,6 +62,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 bdk-android = { group = "org.bitcoindevkit", name = "bdk-android", version.ref = "bdkAndroid" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+web3j-crypto = { group = "org.web3j", name = "crypto", version.ref = "web3j" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

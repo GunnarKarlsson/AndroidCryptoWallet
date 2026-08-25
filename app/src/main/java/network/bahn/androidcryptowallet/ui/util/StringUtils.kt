@@ -31,6 +31,9 @@ object StringUtils {
         return address.take(head) + "…" + address.takeLast(tail)
     }
 
+    fun truncateEthereumAddress(address: String, head: Int = 8, tail: Int = 8): String =
+        truncateBitcoinAddress(address, head, tail)
+
     /** 1 BTC = 100_000_000 satoshis. Always eight fractional digits, including zero. */
     fun formatBitcoinAmount(satoshis: Long): String =
         satoshis.toBigDecimal()
