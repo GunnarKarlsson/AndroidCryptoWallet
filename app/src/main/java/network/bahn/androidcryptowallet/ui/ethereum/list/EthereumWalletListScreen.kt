@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.SettingsBackupRestore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -64,6 +65,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 fun EthereumWalletListScreen(
     onBack: () -> Unit,
     onCreateWallet: () -> Unit,
+    onRestoreWallet: () -> Unit,
     onWalletClick: (walletId: String) -> Unit,
     viewModel: EthereumWalletListViewModel = hiltViewModel(),
 ) {
@@ -73,6 +75,7 @@ fun EthereumWalletListScreen(
         onBack = onBack,
         onNetworkSelected = viewModel::onNetworkSelected,
         onCreateWallet = onCreateWallet,
+        onRestoreWallet = onRestoreWallet,
         onWalletClick = onWalletClick,
     )
 }
@@ -84,6 +87,7 @@ private fun EthereumWalletListContent(
     onBack: () -> Unit,
     onNetworkSelected: (EthereumNetwork) -> Unit,
     onCreateWallet: () -> Unit,
+    onRestoreWallet: () -> Unit,
     onWalletClick: (walletId: String) -> Unit,
 ) {
     var showActionsSheet by remember { mutableStateOf(false) }
@@ -203,6 +207,24 @@ private fun EthereumWalletListContent(
                         onCreateWallet()
                     },
             )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.restore_wallet)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.SettingsBackupRestore,
+                        contentDescription = null,
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showActionsSheet = false
+                        onRestoreWallet()
+                    },
+            )
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -277,6 +299,7 @@ private fun EthereumWalletListLoadingPreview() {
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
+            onRestoreWallet = {},
             onWalletClick = {},
         )
     }
@@ -291,6 +314,7 @@ private fun EthereumWalletListEmptyPreview() {
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
+            onRestoreWallet = {},
             onWalletClick = {},
         )
     }
@@ -320,6 +344,7 @@ private fun EthereumWalletListPopulatedPreview() {
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
+            onRestoreWallet = {},
             onWalletClick = {},
         )
     }

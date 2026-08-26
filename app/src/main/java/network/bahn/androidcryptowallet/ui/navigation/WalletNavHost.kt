@@ -37,6 +37,10 @@ import network.bahn.androidcryptowallet.ui.ethereum.receive.EthereumReceiveScree
 import network.bahn.androidcryptowallet.ui.ethereum.send.EthereumSendScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumCreateWalletScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumImportWalletScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumRestoreEvent
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumRestoreSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumRestoreViewModel
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSelectNetworkScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSetupEvent
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSetupViewModel
@@ -74,6 +78,7 @@ fun WalletNavHost(
             EthereumWalletListScreen(
                 onBack = { navController.popBackStack() },
                 onCreateWallet = { navController.navigate(EthereumCreateGraphRoute) },
+                onRestoreWallet = { navController.navigate(EthereumRestoreGraphRoute) },
                 onWalletClick = { walletId ->
                     navController.navigate(EthereumWalletDetailsRoute(walletId))
                 },
@@ -283,6 +288,47 @@ fun WalletNavHost(
                 )
             }
         }
+        navigation<EthereumRestoreGraphRoute>(
+            startDestination = EthereumRestoreSelectNetworkRoute,
+        ) {
+            composable<EthereumRestoreSelectNetworkRoute> { entry ->
+                val restoreViewModel = entry.ethereumRestoreGraphViewModel(navController)
+                val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
+                EthereumRestoreSelectNetworkScreen(
+                    selectedNetwork = uiState.restoreNetwork,
+                    onNetworkSelected = restoreViewModel::onRestoreNetworkSelected,
+                    onContinue = { navController.navigate(EthereumRestoreWalletRoute) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<EthereumRestoreWalletRoute> { entry ->
+                val restoreViewModel = entry.ethereumRestoreGraphViewModel(navController)
+                val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(restoreViewModel) {
+                    restoreViewModel.events.collect { event ->
+                        when (event) {
+                            EthereumRestoreEvent.WalletRestored -> {
+                                navController.popBackStack(
+                                    route = EthereumRestoreGraphRoute,
+                                    inclusive = true,
+                                )
+                            }
+                        }
+                    }
+                }
+                EthereumImportWalletScreen(
+                    mnemonicWords = uiState.mnemonicWords,
+                    passphrase = uiState.passphrase,
+                    isSubmitting = uiState.isRestoring,
+                    canRestore = uiState.canRestore,
+                    errorMessage = uiState.errorMessage,
+                    onMnemonicWordChange = restoreViewModel::onMnemonicWordChange,
+                    onPassphraseChange = restoreViewModel::onPassphraseChange,
+                    onRestore = restoreViewModel::restore,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+        }
     }
 }
 
@@ -312,6 +358,16 @@ private fun NavBackStackEntry.ethereumCreateGraphViewModel(
 ): EthereumSetupViewModel {
     val parentEntry = remember(this) {
         navController.getBackStackEntry<EthereumCreateGraphRoute>()
+    }
+    return hiltViewModel(parentEntry)
+}
+
+@Composable
+private fun NavBackStackEntry.ethereumRestoreGraphViewModel(
+    navController: NavHostController,
+): EthereumRestoreViewModel {
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry<EthereumRestoreGraphRoute>()
     }
     return hiltViewModel(parentEntry)
 }

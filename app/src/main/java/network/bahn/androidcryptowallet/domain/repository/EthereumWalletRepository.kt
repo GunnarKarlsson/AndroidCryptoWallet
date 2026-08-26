@@ -23,5 +23,16 @@ interface EthereumWalletRepository {
         passphrase: String?,
     )
 
+    /**
+     * Restore from a BIP-39 mnemonic (optional passphrase) for [network].
+     * If a wallet already exists for the derived address, this is a no-op.
+     * Otherwise this calls [createWallet].
+     */
+    suspend fun restoreWallet(
+        network: EthereumNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    )
+
     suspend fun refreshBalance(walletId: String)
 }

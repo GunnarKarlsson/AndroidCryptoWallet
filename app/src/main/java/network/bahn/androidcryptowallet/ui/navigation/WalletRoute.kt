@@ -60,6 +60,15 @@ data object EthereumCreateWalletRoute
 data object EthereumConfirmMnemonicRoute
 
 @Serializable
+data object EthereumRestoreGraphRoute
+
+@Serializable
+data object EthereumRestoreSelectNetworkRoute
+
+@Serializable
+data object EthereumRestoreWalletRoute
+
+@Serializable
 data class EthereumWalletDetailsRoute(val walletId: String)
 
 @Serializable

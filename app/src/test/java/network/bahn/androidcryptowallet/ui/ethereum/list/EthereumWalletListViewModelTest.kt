@@ -112,6 +112,12 @@ private class FakeEthListWalletRepository(
         passphrase: String?,
     ) = error("unused")
 
+    override suspend fun restoreWallet(
+        network: EthereumNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) = error("unused")
+
     override suspend fun refreshBalance(walletId: String) = error("unused")
 }
 

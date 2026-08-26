@@ -34,7 +34,7 @@ class EthereumWalletRepositoryImplTest {
         val wallets = repo.observeWallets().first()
         assertEquals(1, wallets.size)
         assertEquals(EthereumNetwork.SEPOLIA, wallets.single().network)
-        assertEquals(SEPOLIA_ADDRESS, wallets.single().address)
+        assertEquals(DEFAULT_ADDRESS, wallets.single().address)
         assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
         assertEquals(null, store.saved[wallets.single().id]?.passphrase)
         assertEquals(EthereumNetwork.SEPOLIA, store.saved[wallets.single().id]?.network)
@@ -71,6 +71,103 @@ class EthereumWalletRepositoryImplTest {
 
         val id = repo.observeWallets().first().single().id
         assertEquals("secret", store.saved[id]?.passphrase)
+    }
+
+    @Test
+    fun restoreWritesWalletForChosenNetwork() = runTest {
+        val engine = FakeEthereumKeyEngine()
+        val store = FakeEthereumMnemonicStore()
+        val networkStore = FakeSelectedEthereumNetworkStore()
+        val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
+
+        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(1, wallets.size)
+        assertEquals(EthereumNetwork.SEPOLIA, wallets.single().network)
+        assertEquals(DEFAULT_ADDRESS, wallets.single().address)
+        assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
+        assertEquals(null, store.saved[wallets.single().id]?.passphrase)
+        assertEquals(2, engine.validateCalls)
+        assertEquals(2, engine.deriveCalls)
+    }
+
+    @Test
+    fun restoreExistingSeedDoesNotInsertAgain() = runTest {
+        val engine = FakeEthereumKeyEngine()
+        val store = FakeEthereumMnemonicStore()
+        val remote = FakeEthereumRemoteDataSource(balanceWei = "12345")
+        val repo = createRepository(engine = engine, store = store, remote = remote)
+
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        repo.refreshBalance(id)
+        val validateAfterCreate = engine.validateCalls
+        val deriveAfterCreate = engine.deriveCalls
+        val savedAfterCreate = store.saved.size
+
+        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(1, wallets.size)
+        assertEquals(id, wallets.single().id)
+        assertEquals("12345", wallets.single().balanceWei)
+        assertEquals(savedAfterCreate, store.saved.size)
+        assertEquals(validateAfterCreate + 1, engine.validateCalls)
+        assertEquals(deriveAfterCreate + 1, engine.deriveCalls)
+    }
+
+    @Test
+    fun restoreDifferentPassphraseCreatesAnotherWallet() = runTest {
+        val engine = FakeEthereumKeyEngine(
+            passphraseAddresses = mapOf("other-pass" to "0x2222222222222222222222222222222222222222"),
+        )
+        val store = FakeEthereumMnemonicStore()
+        val repo = createRepository(engine = engine, store = store)
+
+        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = "other-pass")
+
+        val wallets = repo.observeWallets().first()
+        assertEquals(2, wallets.size)
+        assertEquals(
+            setOf(DEFAULT_ADDRESS, "0x2222222222222222222222222222222222222222"),
+            wallets.map { it.address }.toSet(),
+        )
+        assertEquals(2, store.saved.size)
+    }
+
+    @Test
+    fun restoreDifferentNetworkCreatesAnotherWallet() = runTest {
+        val store = FakeEthereumMnemonicStore()
+        val networkStore = FakeSelectedEthereumNetworkStore()
+        val repo = createRepository(store = store, networkStore = networkStore)
+
+        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EthereumNetwork.MAINNET, VALID_WORDS, passphrase = null)
+
+        assertEquals(2, store.saved.size)
+        networkStore.setNetwork(EthereumNetwork.SEPOLIA)
+        assertEquals(1, repo.observeWallets().first().size)
+        networkStore.setNetwork(EthereumNetwork.MAINNET)
+        assertEquals(1, repo.observeWallets().first().size)
+    }
+
+    @Test
+    fun restoreRejectsInvalidMnemonic() = runTest {
+        val engine = FakeEthereumKeyEngine()
+        val store = FakeEthereumMnemonicStore()
+        val repo = createRepository(engine = engine, store = store)
+
+        try {
+            repo.restoreWallet(EthereumNetwork.SEPOLIA, listOf("not", "valid"), null)
+            error("expected InvalidEthereumMnemonicException")
+        } catch (_: InvalidEthereumMnemonicException) {
+        }
+
+        assertTrue(repo.observeWallets().first().isEmpty())
+        assertTrue(store.saved.isEmpty())
+        assertEquals(0, engine.deriveCalls)
     }
 
     @Test
@@ -112,9 +209,11 @@ class EthereumWalletRepositoryImplTest {
 }
 
 private val VALID_WORDS = List(11) { "abandon" } + "about"
-private const val SEPOLIA_ADDRESS = "0x1111111111111111111111111111111111111111"
+private const val DEFAULT_ADDRESS = "0x1111111111111111111111111111111111111111"
 
-private class FakeEthereumKeyEngine : EthereumKeyEngine {
+private class FakeEthereumKeyEngine(
+    private val passphraseAddresses: Map<String, String> = emptyMap(),
+) : EthereumKeyEngine {
     var validateCalls = 0
     var deriveCalls = 0
 
@@ -130,7 +229,8 @@ private class FakeEthereumKeyEngine : EthereumKeyEngine {
         passphrase: String?,
     ): EthereumReceiveAddress {
         deriveCalls += 1
-        return EthereumReceiveAddress(address = SEPOLIA_ADDRESS, index = 0)
+        val address = passphrase?.let { passphraseAddresses[it] } ?: DEFAULT_ADDRESS
+        return EthereumReceiveAddress(address = address, index = 0)
     }
 }
 
