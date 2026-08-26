@@ -58,3 +58,12 @@ data object EthereumCreateWalletRoute
 
 @Serializable
 data object EthereumConfirmMnemonicRoute
+
+@Serializable
+data class EthereumWalletDetailsRoute(val walletId: String)
+
+@Serializable
+data class EthereumSendRoute(val walletId: String)
+
+@Serializable
+data class EthereumReceiveRoute(val walletId: String)

@@ -32,6 +32,9 @@ import network.bahn.androidcryptowallet.ui.bitcoin.status.BitcoinNetworkStatusSc
 import network.bahn.androidcryptowallet.ui.chain.ChainSelectScreen
 import network.bahn.androidcryptowallet.ui.chain.SupportedChain
 import network.bahn.androidcryptowallet.ui.ethereum.list.EthereumWalletListScreen
+import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsScreen
+import network.bahn.androidcryptowallet.ui.ethereum.receive.EthereumReceiveScreen
+import network.bahn.androidcryptowallet.ui.ethereum.send.EthereumSendScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumCreateWalletScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSelectNetworkScreen
@@ -71,6 +74,27 @@ fun WalletNavHost(
             EthereumWalletListScreen(
                 onBack = { navController.popBackStack() },
                 onCreateWallet = { navController.navigate(EthereumCreateGraphRoute) },
+                onWalletClick = { walletId ->
+                    navController.navigate(EthereumWalletDetailsRoute(walletId))
+                },
+            )
+        }
+        composable<EthereumWalletDetailsRoute> { entry ->
+            val walletId = entry.toRoute<EthereumWalletDetailsRoute>().walletId
+            EthereumWalletDetailsScreen(
+                onBack = { navController.popBackStack() },
+                onSend = { navController.navigate(EthereumSendRoute(walletId)) },
+                onReceive = { navController.navigate(EthereumReceiveRoute(walletId)) },
+            )
+        }
+        composable<EthereumSendRoute> {
+            EthereumSendScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<EthereumReceiveRoute> {
+            EthereumReceiveScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable<BitcoinWalletDetailsRoute> { entry ->

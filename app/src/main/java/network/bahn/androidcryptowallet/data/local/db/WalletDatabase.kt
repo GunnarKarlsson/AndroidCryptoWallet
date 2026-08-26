@@ -11,7 +11,7 @@ import androidx.room.RoomDatabase
         BitcoinWalletTxCacheEntity::class,
         EthereumWalletEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
 )
 abstract class WalletDatabase : RoomDatabase() {

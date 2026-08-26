@@ -10,7 +10,10 @@ import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
+import network.bahn.androidcryptowallet.domain.TimeProvider
+import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
@@ -70,16 +73,41 @@ class EthereumWalletRepositoryImplTest {
         assertEquals("secret", store.saved[id]?.passphrase)
     }
 
+    @Test
+    fun refreshBalancePersistsWeiFromRemote() = runTest {
+        val walletDao = FakeEthereumWalletDao()
+        val remote = FakeEthereumRemoteDataSource(balanceWei = "1000000000000000000")
+        val timeProvider = FakeTimeProvider(nowMillis = 1_700_000_000_000L)
+        val repo = createRepository(
+            walletDao = walletDao,
+            remote = remote,
+            timeProvider = timeProvider,
+        )
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val walletId = repo.observeWallets().first().single().id
+
+        repo.refreshBalance(walletId)
+
+        val wallet = repo.observeWallet(walletId).first()
+        assertEquals("1000000000000000000", wallet?.balanceWei)
+        assertEquals(1_700_000_000_000L, wallet?.balanceUpdatedAtMillis)
+        assertEquals(1, remote.balanceCalls)
+    }
+
     private fun createRepository(
         engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
         store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
         walletDao: FakeEthereumWalletDao = FakeEthereumWalletDao(),
         networkStore: FakeSelectedEthereumNetworkStore = FakeSelectedEthereumNetworkStore(),
+        remote: FakeEthereumRemoteDataSource = FakeEthereumRemoteDataSource(),
+        timeProvider: FakeTimeProvider = FakeTimeProvider(),
     ) = EthereumWalletRepositoryImpl(
         keyEngine = engine,
         mnemonicStore = store,
         walletDao = walletDao,
         selectedEthereumNetworkStore = networkStore,
+        remote = remote,
+        timeProvider = timeProvider,
     )
 }
 
@@ -149,6 +177,9 @@ private class FakeEthereumWalletDao : EthereumWalletDao {
     override fun observeByNetwork(network: String): Flow<List<EthereumWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
+    override fun observeById(id: String): Flow<EthereumWalletEntity?> =
+        items.map { rows -> rows.find { it.id == id } }
+
     override suspend fun findByNetworkAndAddress(
         network: String,
         address: String,
@@ -165,4 +196,43 @@ private class FakeEthereumWalletDao : EthereumWalletDao {
             if (rows.any { it.id == entity.id }) rows else rows + entity
         }
     }
+
+    override suspend fun updateBalance(
+        id: String,
+        balanceWei: String,
+        updatedAtMillis: Long,
+    ) {
+        items.update { rows ->
+            rows.map { row ->
+                if (row.id == id) {
+                    row.copy(
+                        balanceWei = balanceWei,
+                        balanceUpdatedAtMillis = updatedAtMillis,
+                    )
+                } else {
+                    row
+                }
+            }
+        }
+    }
+}
+
+private class FakeEthereumRemoteDataSource(
+    private val balanceWei: String = "0",
+) : EthereumRemoteDataSource {
+    var balanceCalls = 0
+
+    override suspend fun getAddressBalance(
+        network: EthereumNetwork,
+        address: String,
+    ): EthereumAddressBalance {
+        balanceCalls += 1
+        return EthereumAddressBalance(balanceWei = balanceWei)
+    }
+}
+
+private class FakeTimeProvider(
+    private val nowMillis: Long = 0L,
+) : TimeProvider {
+    override fun nowMillis(): Long = nowMillis
 }

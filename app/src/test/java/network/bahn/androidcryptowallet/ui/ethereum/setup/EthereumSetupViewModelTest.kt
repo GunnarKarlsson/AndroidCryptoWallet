@@ -166,6 +166,7 @@ private class FakeEthSetupWalletRepository(
     val createCalls = mutableListOf<EthCreateCall>()
 
     override fun observeWallets(): Flow<List<EthereumWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
     override fun generateMnemonic() = VALID_WORDS
     override suspend fun createWallet(
         network: EthereumNetwork,
@@ -176,6 +177,8 @@ private class FakeEthSetupWalletRepository(
         createError?.let { throw it }
         createCalls += EthCreateCall(network, mnemonicWords, passphrase)
     }
+
+    override suspend fun refreshBalance(walletId: String) = error("unused")
 }
 
 private class FakeEthSetupNetworkStore(

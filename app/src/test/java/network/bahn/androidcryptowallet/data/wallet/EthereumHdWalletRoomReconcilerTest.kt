@@ -158,6 +158,9 @@ private class FakeEthReconcileDao : EthereumWalletDao {
     override fun observeByNetwork(network: String): Flow<List<EthereumWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
+    override fun observeById(id: String): Flow<EthereumWalletEntity?> =
+        items.map { rows -> rows.find { it.id == id } }
+
     override suspend fun findByNetworkAndAddress(
         network: String,
         address: String,
@@ -174,4 +177,10 @@ private class FakeEthReconcileDao : EthereumWalletDao {
             if (rows.any { it.id == entity.id }) rows else rows + entity
         }
     }
+
+    override suspend fun updateBalance(
+        id: String,
+        balanceWei: String,
+        updatedAtMillis: Long,
+    ) = Unit
 }

@@ -1,6 +1,9 @@
 package network.bahn.androidcryptowallet.ui.ethereum.list
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,6 +64,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 fun EthereumWalletListScreen(
     onBack: () -> Unit,
     onCreateWallet: () -> Unit,
+    onWalletClick: (walletId: String) -> Unit,
     viewModel: EthereumWalletListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,6 +73,7 @@ fun EthereumWalletListScreen(
         onBack = onBack,
         onNetworkSelected = viewModel::onNetworkSelected,
         onCreateWallet = onCreateWallet,
+        onWalletClick = onWalletClick,
     )
 }
 
@@ -79,6 +84,7 @@ private fun EthereumWalletListContent(
     onBack: () -> Unit,
     onNetworkSelected: (EthereumNetwork) -> Unit,
     onCreateWallet: () -> Unit,
+    onWalletClick: (walletId: String) -> Unit,
 ) {
     var showActionsSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -137,7 +143,10 @@ private fun EthereumWalletListContent(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(uiState.wallets, key = { it.id }) { wallet ->
-                            EthereumWalletListItem(wallet = wallet)
+                            EthereumWalletListItem(
+                                wallet = wallet,
+                                onClick = { onWalletClick(wallet.id) },
+                            )
                         }
                     }
                 }
@@ -200,8 +209,12 @@ private fun EthereumWalletListContent(
 }
 
 @Composable
-private fun EthereumWalletListItem(wallet: EthereumWallet) {
+private fun EthereumWalletListItem(
+    wallet: EthereumWallet,
+    onClick: () -> Unit,
+) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -209,27 +222,47 @@ private fun EthereumWalletListItem(wallet: EthereumWallet) {
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = StringUtils.walletDisplayName(
+                        name = wallet.name,
+                        fallback = stringResource(R.string.ethereum_wallet_list_item_label),
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = StringUtils.truncateEthereumAddress(wallet.address),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = StringUtils.walletDisplayName(
-                    name = wallet.name,
-                    fallback = stringResource(R.string.ethereum_wallet_list_item_label),
-                ),
+                text = if (wallet.balanceWei == null) {
+                    stringResource(R.string.receive_address_placeholder)
+                } else {
+                    stringResource(
+                        R.string.ethereum_amount,
+                        StringUtils.formatEthereumAmount(wallet.balanceWei),
+                    )
+                },
                 style = MaterialTheme.typography.titleMedium,
+                fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.End,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = StringUtils.truncateEthereumAddress(wallet.address),
-                style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -244,6 +277,7 @@ private fun EthereumWalletListLoadingPreview() {
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
+            onWalletClick = {},
         )
     }
 }
@@ -257,6 +291,7 @@ private fun EthereumWalletListEmptyPreview() {
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
+            onWalletClick = {},
         )
     }
 }
@@ -285,6 +320,7 @@ private fun EthereumWalletListPopulatedPreview() {
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
+            onWalletClick = {},
         )
     }
 }

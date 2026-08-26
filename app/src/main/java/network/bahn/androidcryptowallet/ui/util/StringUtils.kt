@@ -44,6 +44,13 @@ object StringUtils {
     fun walletDisplayName(name: String?, fallback: String): String =
         name?.trim()?.takeIf { it.isNotEmpty() } ?: fallback
 
+    /** 1 ETH = 10^18 wei. Always eighteen fractional digits, including zero. */
+    fun formatEthereumAmount(wei: String): String =
+        wei.toBigDecimal()
+            .movePointLeft(18)
+            .setScale(18, java.math.RoundingMode.UNNECESSARY)
+            .toPlainString()
+
     fun parseBitcoinAmountToSatoshis(amount: String): Long? {
         val trimmed = amount.trim()
         if (trimmed.isEmpty() || trimmed == ".") return null

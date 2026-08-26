@@ -104,12 +104,15 @@ private class FakeEthListWalletRepository(
     private val wallets: MutableStateFlow<List<EthereumWallet>>,
 ) : EthereumWalletRepository {
     override fun observeWallets(): Flow<List<EthereumWallet>> = wallets
+    override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
     override fun generateMnemonic() = error("unused")
     override suspend fun createWallet(
         network: EthereumNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
+
+    override suspend fun refreshBalance(walletId: String) = error("unused")
 }
 
 private class FakeEthListNetworkStore(

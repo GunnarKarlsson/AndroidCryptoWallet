@@ -8,6 +8,8 @@ interface EthereumWalletRepository {
     /** Wallets for the currently selected network. Public data only. */
     fun observeWallets(): Flow<List<EthereumWallet>>
 
+    fun observeWallet(id: String): Flow<EthereumWallet?>
+
     /** BIP-39: generate a 12-word mnemonic. Does not persist. */
     fun generateMnemonic(): List<String>
 
@@ -20,4 +22,6 @@ interface EthereumWalletRepository {
         mnemonicWords: List<String>,
         passphrase: String?,
     )
+
+    suspend fun refreshBalance(walletId: String)
 }

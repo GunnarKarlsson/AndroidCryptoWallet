@@ -59,6 +59,7 @@
     <string name="network_status_title">Network status</string>
     <string name="wallet_balance">Balance</string>
     <string name="bitcoin_amount">%1$s BTC</string>
+    <string name="ethereum_amount">%1$s ETH</string>
     <string name="unconfirmed_balance">Unconfirmed %1$s BTC</string>
     <string name="refresh_balance">Refresh balance</string>
     <string name="address_copied">Address copied</string>

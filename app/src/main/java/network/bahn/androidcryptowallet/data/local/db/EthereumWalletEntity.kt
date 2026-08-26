@@ -13,6 +13,8 @@ data class EthereumWalletEntity(
     val address: String,
     val derivationIndex: Int,
     val name: String? = null,
+    val balanceWei: String? = null,
+    val balanceUpdatedAtMillis: Long? = null,
 )
 
 fun EthereumWalletEntity.toDomain(): EthereumWallet = EthereumWallet(
@@ -21,6 +23,8 @@ fun EthereumWalletEntity.toDomain(): EthereumWallet = EthereumWallet(
     address = address,
     derivationIndex = derivationIndex,
     name = name,
+    balanceWei = balanceWei,
+    balanceUpdatedAtMillis = balanceUpdatedAtMillis,
 )
 
 fun EthereumWallet.toEntity(): EthereumWalletEntity = EthereumWalletEntity(
@@ -29,4 +33,6 @@ fun EthereumWallet.toEntity(): EthereumWalletEntity = EthereumWalletEntity(
     address = address,
     derivationIndex = derivationIndex,
     name = name,
+    balanceWei = balanceWei,
+    balanceUpdatedAtMillis = balanceUpdatedAtMillis,
 )

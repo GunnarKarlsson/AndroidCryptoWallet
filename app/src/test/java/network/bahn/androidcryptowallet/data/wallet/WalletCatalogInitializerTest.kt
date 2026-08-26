@@ -234,6 +234,11 @@ private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
     ): Flow<List<network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity>> =
         MutableStateFlow(emptyList())
 
+    override fun observeById(
+        id: String,
+    ): Flow<network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity?> =
+        MutableStateFlow(null)
+
     override suspend fun findByNetworkAndAddress(
         network: String,
         address: String,
@@ -245,5 +250,11 @@ private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
 
     override suspend fun insertIgnore(
         entity: network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity,
+    ) = Unit
+
+    override suspend fun updateBalance(
+        id: String,
+        balanceWei: String,
+        updatedAtMillis: Long,
     ) = Unit
 }

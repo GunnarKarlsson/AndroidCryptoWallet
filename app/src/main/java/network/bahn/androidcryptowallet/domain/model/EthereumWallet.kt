@@ -11,4 +11,7 @@ data class EthereumWallet(
     val address: String,
     val derivationIndex: Int = 0,
     val name: String? = null,
+    /** Decimal wei string from the last successful balance refresh; null if never fetched. */
+    val balanceWei: String? = null,
+    val balanceUpdatedAtMillis: Long? = null,
 )

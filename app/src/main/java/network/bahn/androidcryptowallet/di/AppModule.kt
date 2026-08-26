@@ -19,7 +19,9 @@ import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_8_9
+import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_9_10
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
+import network.bahn.androidcryptowallet.data.remote.eth.EthereumRpcConfig
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
 import network.bahn.androidcryptowallet.domain.TimeProvider
@@ -35,7 +37,7 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
-            .addMigrations(WALLET_MIGRATION_8_9)
+            .addMigrations(WALLET_MIGRATION_8_9, WALLET_MIGRATION_9_10)
             .build()
 
     @Provides
@@ -73,6 +75,13 @@ object AppModule {
     fun provideMsBitcoinConfig(): MsBitcoinConfig = MsBitcoinConfig(
         testnet4BaseUrl = BuildConfig.MS_TESTNET4_BASE_URL,
         mainnetBaseUrl = BuildConfig.MS_MAINNET_BASE_URL,
+    )
+
+    @Provides
+    @Singleton
+    fun provideEthereumRpcConfig(): EthereumRpcConfig = EthereumRpcConfig(
+        sepoliaRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com",
+        mainnetRpcUrl = "https://ethereum.publicnode.com",
     )
 
     @Provides
