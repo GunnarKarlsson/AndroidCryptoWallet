@@ -116,6 +116,8 @@ private class FakeCatalogMnemonicStore : BitcoinMnemonicStore {
 
     override fun listHdWalletIds(): List<String> = emptyList()
 
+    override fun delete(walletId: String) = Unit
+
     override fun loadNetwork(walletId: String): BitcoinNetwork? = null
 
     override fun loadMnemonic(walletId: String): String? = null
@@ -132,6 +134,8 @@ private class ThrowingCatalogMnemonicStore : BitcoinMnemonicStore {
     ) = Unit
 
     override fun listHdWalletIds(): List<String> = error("encrypted store unavailable")
+
+    override fun delete(walletId: String) = Unit
 
     override fun loadNetwork(walletId: String): BitcoinNetwork? = null
 
@@ -172,6 +176,10 @@ private open class FakeCatalogWalletDao : BitcoinWalletDao {
     override suspend fun deleteByIds(ids: List<String>) {
         val idSet = ids.toSet()
         items.update { rows -> rows.filter { it.id !in idSet } }
+    }
+
+    override suspend fun deleteById(id: String) {
+        deleteByIds(listOf(id))
     }
 
     override suspend fun updateBalance(

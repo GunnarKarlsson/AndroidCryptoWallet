@@ -250,6 +250,7 @@ private class FakeRestoreWalletRepository(
         restoreCalls += RestoreCall(network, mnemonicWords, passphrase)
     }
     override suspend fun refreshBalance(walletId: String) = error("unused")
+    override suspend fun deleteWallet(walletId: String) = error("unused")
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
     override suspend fun getCachedTransactions(walletId: String) = error("unused")
     override suspend fun getTransactions(

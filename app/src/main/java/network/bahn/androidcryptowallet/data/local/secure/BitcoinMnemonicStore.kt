@@ -17,6 +17,9 @@ interface BitcoinMnemonicStore {
 
     fun listHdWalletIds(): List<String>
 
+    /** Remove mnemonic, passphrase, and network prefs for [walletId]. Idempotent. */
+    fun delete(walletId: String)
+
     fun loadNetwork(walletId: String): BitcoinNetwork?
 
     fun loadMnemonic(walletId: String): String?

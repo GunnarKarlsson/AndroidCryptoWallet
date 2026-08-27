@@ -193,6 +193,12 @@ private class FakeReconcileMnemonicStore : BitcoinMnemonicStore {
 
     override fun listHdWalletIds(): List<String> = mnemonics.keys.sorted()
 
+    override fun delete(walletId: String) {
+        mnemonics.remove(walletId)
+        passphrases.remove(walletId)
+        networks.remove(walletId)
+    }
+
     override fun loadNetwork(walletId: String): BitcoinNetwork? = networks[walletId]
 
     override fun loadMnemonic(walletId: String): String? =
@@ -234,6 +240,10 @@ private class FakeReconcileWalletDao : BitcoinWalletDao {
     override suspend fun deleteByIds(ids: List<String>) {
         val idSet = ids.toSet()
         items.update { rows -> rows.filter { it.id !in idSet } }
+    }
+
+    override suspend fun deleteById(id: String) {
+        deleteByIds(listOf(id))
     }
 
     override suspend fun updateBalance(

@@ -174,6 +174,7 @@ private class FakeEditWalletRepository(
         passphrase: String?,
     ) = error("unused")
     override suspend fun refreshBalance(walletId: String) = error("unused")
+    override suspend fun deleteWallet(walletId: String) = error("unused")
     override suspend fun renameWallet(walletId: String, name: String?) {
         renameGate?.await()
         renameError?.let { throw it }

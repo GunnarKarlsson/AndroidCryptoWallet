@@ -8,11 +8,13 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,24 +30,34 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     private val walletRepository: BitcoinWalletRepository,
 ) : ViewModel() {
     private val routeHandle = savedStateHandle
-    private val walletId = savedStateHandle.toRoute<BitcoinWalletDetailsRoute>().walletId
+    private val walletId: String =
+        savedStateHandle.get<String>("walletId")
+            ?: savedStateHandle.toRoute<BitcoinWalletDetailsRoute>().walletId
     private val isRefreshing = MutableStateFlow(false)
+    private val deleteState = MutableStateFlow(DeleteState())
     private val errorMessage = MutableStateFlow<String?>(null)
     private val txLoadState = MutableStateFlow(TxLoadState())
+    private val eventsChannel = Channel<BitcoinWalletDetailsEvent>(Channel.BUFFERED)
     private var lastConfirmedTxid: String? = null
     private var firstPageJob: Job? = null
     private var loadMoreJob: Job? = null
+    private var deleteJob: Job? = null
     private var hasEntered = false
+
+    val events = eventsChannel.receiveAsFlow()
 
     val uiState: StateFlow<BitcoinWalletDetailsUiState> = combine(
         walletRepository.observeWallet(walletId),
         isRefreshing,
+        deleteState,
         errorMessage,
         txLoadState,
-    ) { wallet, refreshing, error, txs ->
+    ) { wallet, refreshing, delete, error, txs ->
         BitcoinWalletDetailsUiState(
             wallet = wallet,
             isRefreshing = refreshing,
+            showDeleteConfirmDialog = delete.showConfirmDialog,
+            isDeleting = delete.isDeleting,
             errorMessage = error,
             transactions = txs.transactions,
             isLoadingTransactions = txs.isLoading,
@@ -84,6 +96,37 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
 
     fun onRefresh() {
         refreshBalance(force = true)
+    }
+
+    fun onDeleteClick() {
+        if (deleteState.value.isDeleting) return
+        errorMessage.value = null
+        deleteState.update { it.copy(showConfirmDialog = true) }
+    }
+
+    fun onDismissDeleteConfirm() {
+        if (deleteState.value.isDeleting) return
+        deleteState.update { it.copy(showConfirmDialog = false) }
+    }
+
+    fun onConfirmDelete() {
+        if (deleteJob?.isActive == true) return
+        deleteJob = viewModelScope.launch {
+            errorMessage.value = null
+            deleteState.update { it.copy(isDeleting = true) }
+            try {
+                walletRepository.deleteWallet(walletId)
+                deleteState.update { it.copy(showConfirmDialog = false) }
+                eventsChannel.send(BitcoinWalletDetailsEvent.WalletDeleted)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Delete failed", e)
+                deleteState.value = DeleteState()
+                errorMessage.value = e.message?.takeIf { it.isNotBlank() }
+                    ?: DELETE_FAILED
+            }
+        }
     }
 
     fun onRefreshTransactions() {
@@ -225,8 +268,14 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
         val errorMessage: String? = null,
     )
 
+    private data class DeleteState(
+        val showConfirmDialog: Boolean = false,
+        val isDeleting: Boolean = false,
+    )
+
     companion object {
         const val RELOAD_WALLET_KEY = "reload_wallet"
         private const val TAG = "WalletDetails"
+        private const val DELETE_FAILED = "Could not delete wallet"
     }
 }

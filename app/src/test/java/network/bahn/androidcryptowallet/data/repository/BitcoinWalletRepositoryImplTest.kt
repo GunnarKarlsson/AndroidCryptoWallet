@@ -223,6 +223,34 @@ class BitcoinWalletRepositoryImplTest {
     }
 
     @Test
+    fun deleteRemovesMnemonicAndRoomRow() = runTest {
+        val store = FakeBitcoinMnemonicStore()
+        val repo = createRepository(store = store)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = "secret")
+        val walletId = repo.observeWallets().first().single().id
+
+        repo.deleteWallet(walletId)
+
+        assertTrue(repo.observeWallets().first().isEmpty())
+        assertTrue(store.saved.isEmpty())
+        assertEquals(null, repo.observeWallet(walletId).first())
+    }
+
+    @Test
+    fun deleteUnknownIdIsNoOp() = runTest {
+        val store = FakeBitcoinMnemonicStore()
+        val repo = createRepository(store = store)
+        repo.createWallet(BitcoinNetwork.TESTNET4, VALID_WORDS, passphrase = null)
+        val existingId = repo.observeWallets().first().single().id
+
+        repo.deleteWallet("missing-id")
+
+        assertEquals(1, repo.observeWallets().first().size)
+        assertEquals(existingId, repo.observeWallets().first().single().id)
+        assertEquals(1, store.saved.size)
+    }
+
+    @Test
     fun refreshBalanceCachesSatoshisForWallet() = runTest {
         val remote = FakeWalletBitcoinRemoteDataSource()
         val repo = createRepository(remote = remote)
@@ -600,6 +628,10 @@ private class FakeBitcoinMnemonicStore : BitcoinMnemonicStore {
 
     override fun listHdWalletIds(): List<String> = saved.keys.sorted()
 
+    override fun delete(walletId: String) {
+        saved.remove(walletId)
+    }
+
     override fun loadNetwork(walletId: String): BitcoinNetwork? = saved[walletId]?.network
 
     override fun loadMnemonic(walletId: String): String? = saved[walletId]?.mnemonic
@@ -639,6 +671,10 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
     override suspend fun deleteByIds(ids: List<String>) {
         val idSet = ids.toSet()
         items.update { rows -> rows.filter { it.id !in idSet } }
+    }
+
+    override suspend fun deleteById(id: String) {
+        deleteByIds(listOf(id))
     }
 
     override suspend fun updateBalance(

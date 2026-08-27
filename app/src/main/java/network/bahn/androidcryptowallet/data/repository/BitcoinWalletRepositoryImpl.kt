@@ -99,6 +99,11 @@ class BitcoinWalletRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun deleteWallet(walletId: String) {
+        mnemonicStore.delete(walletId)
+        walletDao.deleteById(walletId)
+    }
+
     override suspend fun renameWallet(walletId: String, name: String?) {
         walletDao.observeById(walletId).first()
             ?: error("Wallet not found")

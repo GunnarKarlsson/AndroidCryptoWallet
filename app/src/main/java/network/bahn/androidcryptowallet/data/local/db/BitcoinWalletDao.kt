@@ -31,6 +31,9 @@ interface BitcoinWalletDao {
     @Query("DELETE FROM bitcoin_wallet WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
 
+    @Query("DELETE FROM bitcoin_wallet WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     @Query(
         """
         UPDATE bitcoin_wallet

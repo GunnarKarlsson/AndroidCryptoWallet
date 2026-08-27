@@ -8,6 +8,8 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 data class BitcoinWalletDetailsUiState(
     val wallet: BitcoinWallet? = null,
     val isRefreshing: Boolean = false,
+    val showDeleteConfirmDialog: Boolean = false,
+    val isDeleting: Boolean = false,
     val errorMessage: String? = null,
     val transactions: List<BitcoinTransactionSummary> = emptyList(),
     val isLoadingTransactions: Boolean = true,
@@ -22,4 +24,8 @@ data class BitcoinWalletDetailsUiState(
     val unconfirmedBalanceSatoshis: Long? get() = wallet?.unconfirmedBalanceSatoshis
     val balanceUpdatedAtMillis: Long? get() = wallet?.balanceUpdatedAtMillis
     val isWatchOnly: Boolean get() = wallet?.kind == BitcoinWalletKind.WATCH_ONLY
+}
+
+sealed interface BitcoinWalletDetailsEvent {
+    data object WalletDeleted : BitcoinWalletDetailsEvent
 }

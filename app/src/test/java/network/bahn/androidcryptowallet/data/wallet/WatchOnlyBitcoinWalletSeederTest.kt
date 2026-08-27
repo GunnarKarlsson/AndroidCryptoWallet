@@ -180,6 +180,10 @@ private class FakeSeedBitcoinWalletDao : BitcoinWalletDao {
         items.update { rows -> rows.filter { it.id !in idSet } }
     }
 
+    override suspend fun deleteById(id: String) {
+        deleteByIds(listOf(id))
+    }
+
     override suspend fun updateBalance(
         id: String,
         confirmedSatoshis: Long,

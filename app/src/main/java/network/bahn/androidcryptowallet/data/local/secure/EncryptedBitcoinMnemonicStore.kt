@@ -52,6 +52,14 @@ class EncryptedBitcoinMnemonicStore @Inject constructor(
     override fun listHdWalletIds(): List<String> =
         HdWalletPrefsCodec.walletIdsFromKeys(prefs.all.keys)
 
+    override fun delete(walletId: String) {
+        prefs.edit()
+            .remove(HdWalletPrefsCodec.MNEMONIC_PREFIX + walletId)
+            .remove(HdWalletPrefsCodec.PASSPHRASE_PREFIX + walletId)
+            .remove(HdWalletPrefsCodec.NETWORK_PREFIX + walletId)
+            .apply()
+    }
+
     override fun loadNetwork(walletId: String): BitcoinNetwork? =
         HdWalletPrefsCodec.loadNetwork(
             walletId,

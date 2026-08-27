@@ -284,6 +284,81 @@ class BitcoinWalletDetailsViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun onDeleteClickShowsConfirmDialog() = runTest {
+        val viewModel = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        viewModel.onDeleteClick()
+
+        assertEquals(true, viewModel.uiState.value.showDeleteConfirmDialog)
+        job.cancel()
+    }
+
+    @Test
+    fun onDismissDeleteConfirmHidesDialog() = runTest {
+        val viewModel = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onDeleteClick()
+
+        viewModel.onDismissDeleteConfirm()
+
+        assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
+        job.cancel()
+    }
+
+    @Test
+    fun onConfirmDeleteCallsRepoAndEmitsWalletDeleted() = runTest {
+        val repo = FakeDetailsWalletRepository()
+        val viewModel = createViewModel(repo)
+        val events = mutableListOf<BitcoinWalletDetailsEvent>()
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
+            viewModel.events.collect { events += it }
+        }
+        viewModel.onDeleteClick()
+
+        viewModel.onConfirmDelete()
+
+        assertEquals(listOf(WALLET.id), repo.deleteWalletCalls)
+        assertEquals(listOf(BitcoinWalletDetailsEvent.WalletDeleted), events)
+        assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
+        collectJob.cancel()
+        eventsJob.cancel()
+    }
+
+    @Test
+    fun onConfirmDeleteFailureSurfacesError() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            deleteError = IllegalStateException("boom"),
+        )
+        val viewModel = createViewModel(repo)
+        val events = mutableListOf<BitcoinWalletDetailsEvent>()
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
+            viewModel.events.collect { events += it }
+        }
+        viewModel.onDeleteClick()
+
+        viewModel.onConfirmDelete()
+
+        assertEquals(listOf(WALLET.id), repo.deleteWalletCalls)
+        assertEquals(emptyList<BitcoinWalletDetailsEvent>(), events)
+        assertEquals(false, viewModel.uiState.value.isDeleting)
+        assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
+        assertEquals("boom", viewModel.uiState.value.errorMessage)
+        collectJob.cancel()
+        eventsJob.cancel()
+    }
+
     private fun createViewModel(
         repo: FakeDetailsWalletRepository = FakeDetailsWalletRepository(),
         savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
@@ -334,9 +409,11 @@ private class FakeDetailsWalletRepository(
     var nextPage: BitcoinTransactionPage = pageOf(),
     var cachedPage: BitcoinTransactionPage? = null,
     var transactionsError: Exception? = null,
+    private val deleteError: Exception? = null,
 ) : BitcoinWalletRepository {
     val txCursors = mutableListOf<String?>()
     var refreshBalanceCalls = 0
+    val deleteWalletCalls = mutableListOf<String>()
 
     override fun observeWallets(): Flow<List<BitcoinWallet>> = emptyFlow()
     override fun observeWallet(id: String): Flow<BitcoinWallet?> = wallet
@@ -355,6 +432,12 @@ private class FakeDetailsWalletRepository(
 
     override suspend fun refreshBalance(walletId: String) {
         refreshBalanceCalls++
+    }
+
+    override suspend fun deleteWallet(walletId: String) {
+        deleteWalletCalls += walletId
+        if (deleteError != null) throw deleteError
+        wallet.value = null
     }
 
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")

@@ -39,6 +39,12 @@ interface BitcoinWalletRepository {
     suspend fun refreshBalance(walletId: String)
 
     /**
+     * Permanently remove [walletId]: encrypted mnemonic/passphrase/network keys first,
+     * then the Room row (transaction and cache rows cascade). Idempotent if already gone.
+     */
+    suspend fun deleteWallet(walletId: String)
+
+    /**
      * Persist a display name for [walletId]. Blank or whitespace-only [name] is stored as null
      * so the UI can fall back to the default label.
      */
