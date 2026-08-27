@@ -54,6 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
 import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
@@ -246,15 +247,12 @@ private fun EthereumWalletListItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
-            Text(
-                text = StringUtils.walletDisplayName(
+            WalletListItemTitle(
+                name = StringUtils.walletDisplayName(
                     name = wallet.name,
                     fallback = stringResource(R.string.ethereum_wallet_list_item_label),
                 ),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                chainIconRes = R.drawable.ic_chain_ethereum,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(

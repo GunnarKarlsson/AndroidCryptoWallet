@@ -58,6 +58,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinNetworkDropdown
+import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -270,15 +271,12 @@ private fun BitcoinWalletListItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
-            Text(
-                text = StringUtils.walletDisplayName(
+            WalletListItemTitle(
+                name = StringUtils.walletDisplayName(
                     name = wallet.name,
                     fallback = stringResource(R.string.wallet_list_item_label),
                 ),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                chainIconRes = R.drawable.ic_chain_bitcoin,
             )
             if (wallet.kind == BitcoinWalletKind.WATCH_ONLY) {
                 Spacer(modifier = Modifier.height(2.dp))
