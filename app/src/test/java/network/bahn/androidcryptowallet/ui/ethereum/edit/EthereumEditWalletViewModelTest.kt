@@ -185,4 +185,11 @@ private class FakeEthEditWalletRepository(
         renameError?.let { throw it }
         renameCalls += RenameCall(walletId, name)
     }
+
+    override suspend fun getCachedTransactions(walletId: String) = error("unused")
+
+    override suspend fun getTransactions(
+        walletId: String,
+        afterCursor: network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor?,
+    ) = error("unused")
 }

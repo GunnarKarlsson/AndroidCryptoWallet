@@ -14,6 +14,8 @@ import network.bahn.androidcryptowallet.data.local.secure.EncryptedEthereumMnemo
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.BlockscoutEthereumTransactionRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.eth.JsonRpcEthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiFactory
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiProvider
@@ -58,6 +60,12 @@ abstract class DataBindsModule {
     abstract fun bindEthereumRemoteDataSource(
         impl: JsonRpcEthereumRemoteDataSource,
     ): EthereumRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindEthereumTransactionRemoteDataSource(
+        impl: BlockscoutEthereumTransactionRemoteDataSource,
+    ): EthereumTransactionRemoteDataSource
 
     @Binds
     @Singleton

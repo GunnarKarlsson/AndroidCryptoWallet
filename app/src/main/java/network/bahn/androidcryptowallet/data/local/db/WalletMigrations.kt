@@ -31,3 +31,38 @@ val WALLET_MIGRATION_9_10 = object : Migration(9, 10) {
         db.execSQL("ALTER TABLE ethereum_wallet ADD COLUMN balanceUpdatedAtMillis INTEGER")
     }
 }
+
+/**
+ * Additive only: ETH transaction tables. Must not alter Bitcoin tables.
+ */
+val WALLET_MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS ethereum_transaction (
+              walletId TEXT NOT NULL,
+              hash TEXT NOT NULL,
+              confirmed INTEGER NOT NULL,
+              blockTimeSeconds INTEGER,
+              netWei TEXT NOT NULL,
+              feeWei TEXT,
+              sortIndex INTEGER NOT NULL,
+              PRIMARY KEY(walletId, hash),
+              FOREIGN KEY(walletId) REFERENCES ethereum_wallet(id) ON DELETE CASCADE
+            )
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_ethereum_transaction_walletId ON ethereum_transaction(walletId)")
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS ethereum_wallet_tx_cache (
+              walletId TEXT NOT NULL PRIMARY KEY,
+              nextCursorJson TEXT,
+              hasMore INTEGER NOT NULL,
+              fetchedAtMillis INTEGER NOT NULL,
+              FOREIGN KEY(walletId) REFERENCES ethereum_wallet(id) ON DELETE CASCADE
+            )
+            """.trimIndent(),
+        )
+    }
+}

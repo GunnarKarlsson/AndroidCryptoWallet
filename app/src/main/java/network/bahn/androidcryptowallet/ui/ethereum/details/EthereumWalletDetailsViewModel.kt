@@ -16,7 +16,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumWalletDetailsRoute
 import javax.inject.Inject
@@ -30,10 +34,13 @@ class EthereumWalletDetailsViewModel @Inject constructor(
         savedStateHandle.get<String>("walletId")
             ?: savedStateHandle.toRoute<EthereumWalletDetailsRoute>().walletId
     private val isRefreshing = MutableStateFlow(false)
-    private val showDeleteConfirmDialog = MutableStateFlow(false)
-    private val isDeleting = MutableStateFlow(false)
+    private val deleteState = MutableStateFlow(DeleteState())
     private val errorMessage = MutableStateFlow<String?>(null)
+    private val txLoadState = MutableStateFlow(TxLoadState())
     private val eventsChannel = Channel<EthereumWalletDetailsEvent>(Channel.BUFFERED)
+    private var nextCursor: EthereumTransactionPaginationCursor? = null
+    private var firstPageJob: Job? = null
+    private var loadMoreJob: Job? = null
     private var deleteJob: Job? = null
     private var hasEntered = false
 
@@ -42,27 +49,34 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     val uiState: StateFlow<EthereumWalletDetailsUiState> = combine(
         walletRepository.observeWallet(walletId),
         isRefreshing,
-        showDeleteConfirmDialog,
-        isDeleting,
+        deleteState,
         errorMessage,
-    ) { wallet, refreshing, showDelete, deleting, error ->
+        txLoadState,
+    ) { wallet, refreshing, delete, error, txs ->
         EthereumWalletDetailsUiState(
             wallet = wallet,
             isRefreshing = refreshing,
-            showDeleteConfirmDialog = showDelete,
-            isDeleting = deleting,
+            showDeleteConfirmDialog = delete.showConfirmDialog,
+            isDeleting = delete.isDeleting,
             errorMessage = error,
+            transactions = txs.transactions,
+            isLoadingTransactions = txs.isLoading,
+            isRefreshingTransactions = txs.isRefreshing,
+            isLoadingMoreTransactions = txs.isLoadingMore,
+            hasMoreTransactions = txs.hasMore,
+            transactionsErrorMessage = txs.errorMessage,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumWalletDetailsUiState(),
+        initialValue = EthereumWalletDetailsUiState(isLoadingTransactions = true),
     )
 
     fun onEnter() {
         if (hasEntered) return
         hasEntered = true
         refreshBalance(force = false)
+        loadCachedOrFetch()
     }
 
     fun onRefresh() {
@@ -70,33 +84,70 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     }
 
     fun onDeleteClick() {
-        if (isDeleting.value) return
+        if (deleteState.value.isDeleting) return
         errorMessage.value = null
-        showDeleteConfirmDialog.value = true
+        deleteState.update { it.copy(showConfirmDialog = true) }
     }
 
     fun onDismissDeleteConfirm() {
-        if (isDeleting.value) return
-        showDeleteConfirmDialog.value = false
+        if (deleteState.value.isDeleting) return
+        deleteState.update { it.copy(showConfirmDialog = false) }
     }
 
     fun onConfirmDelete() {
         if (deleteJob?.isActive == true) return
         deleteJob = viewModelScope.launch {
             errorMessage.value = null
-            isDeleting.value = true
+            deleteState.update { it.copy(isDeleting = true) }
             try {
                 walletRepository.deleteWallet(walletId)
-                showDeleteConfirmDialog.value = false
+                deleteState.update { it.copy(showConfirmDialog = false) }
                 eventsChannel.send(EthereumWalletDetailsEvent.WalletDeleted)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Delete failed", e)
-                isDeleting.value = false
-                showDeleteConfirmDialog.value = false
+                deleteState.value = DeleteState()
                 errorMessage.value = e.message?.takeIf { it.isNotBlank() }
                     ?: DELETE_FAILED
+            }
+        }
+    }
+
+    fun onRefreshTransactions() {
+        loadFirstPageFromNetwork(showFullSpinner = txLoadState.value.transactions.isEmpty())
+    }
+
+    fun onLoadMore() {
+        val state = txLoadState.value
+        if (state.isLoading || state.isRefreshing || state.isLoadingMore || !state.hasMore) return
+        val cursor = nextCursor ?: return
+        if (loadMoreJob?.isActive == true) return
+        loadMoreJob = viewModelScope.launch {
+            txLoadState.update { it.copy(isLoadingMore = true, errorMessage = null) }
+            try {
+                val page = walletRepository.getTransactions(walletId, cursor)
+                nextCursor = page.nextCursor
+                txLoadState.update { current ->
+                    val existing = current.transactions.map { it.hash }.toSet()
+                    current.copy(
+                        transactions = current.transactions +
+                            page.transactions.filter { it.hash !in existing },
+                        isLoadingMore = false,
+                        hasMore = page.hasMore,
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Load more transactions failed", e)
+                txLoadState.update {
+                    it.copy(
+                        isLoadingMore = false,
+                        errorMessage = e.message?.takeIf { it.isNotBlank() }
+                            ?: "Could not load transactions",
+                    )
+                }
             }
         }
     }
@@ -121,6 +172,91 @@ class EthereumWalletDetailsViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadCachedOrFetch() {
+        firstPageJob?.cancel()
+        loadMoreJob?.cancel()
+        firstPageJob = viewModelScope.launch {
+            nextCursor = null
+            txLoadState.value = TxLoadState(isLoading = true)
+            try {
+                val cached = walletRepository.getCachedTransactions(walletId)
+                if (cached != null) {
+                    nextCursor = cached.nextCursor
+                    txLoadState.value = TxLoadState(
+                        transactions = cached.transactions,
+                        isLoading = false,
+                        hasMore = false,
+                    )
+                    return@launch
+                }
+                applyFirstPage(walletRepository.getTransactions(walletId))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Load transactions failed", e)
+                txLoadState.value = TxLoadState(
+                    isLoading = false,
+                    errorMessage = e.message?.takeIf { it.isNotBlank() }
+                        ?: "Could not load transactions",
+                )
+            }
+        }
+    }
+
+    private fun loadFirstPageFromNetwork(showFullSpinner: Boolean) {
+        firstPageJob?.cancel()
+        loadMoreJob?.cancel()
+        firstPageJob = viewModelScope.launch {
+            nextCursor = null
+            txLoadState.update {
+                it.copy(
+                    isLoading = showFullSpinner,
+                    isRefreshing = !showFullSpinner,
+                    errorMessage = null,
+                )
+            }
+            try {
+                applyFirstPage(walletRepository.getTransactions(walletId))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Refresh transactions failed", e)
+                txLoadState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        errorMessage = e.message?.takeIf { it.isNotBlank() }
+                            ?: "Could not load transactions",
+                    )
+                }
+            }
+        }
+    }
+
+    private fun applyFirstPage(page: EthereumTransactionPage) {
+        nextCursor = page.nextCursor
+        txLoadState.value = TxLoadState(
+            transactions = page.transactions,
+            isLoading = false,
+            isRefreshing = false,
+            hasMore = page.hasMore,
+        )
+    }
+
+    private data class TxLoadState(
+        val transactions: List<EthereumTransactionSummary> = emptyList(),
+        val isLoading: Boolean = true,
+        val isRefreshing: Boolean = false,
+        val isLoadingMore: Boolean = false,
+        val hasMore: Boolean = false,
+        val errorMessage: String? = null,
+    )
+
+    private data class DeleteState(
+        val showConfirmDialog: Boolean = false,
+        val isDeleting: Boolean = false,
+    )
 
     companion object {
         private const val TAG = "EthWalletDetails"

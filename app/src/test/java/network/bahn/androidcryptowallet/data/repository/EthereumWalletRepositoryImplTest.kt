@@ -6,16 +6,25 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
+import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionEntity
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
+import network.bahn.androidcryptowallet.data.local.db.EthereumWalletTxCacheEntity
+import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -260,25 +269,131 @@ class EthereumWalletRepositoryImplTest {
         assertEquals(0, engine.deriveCalls)
     }
 
+    @Test
+    fun getCachedTransactionsReturnsNullWhenNeverFetched() = runTest {
+        val repo = createRepository()
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val walletId = repo.observeWallets().first().single().id
+
+        assertEquals(null, repo.getCachedTransactions(walletId))
+    }
+
+    @Test
+    fun getTransactionsPersistsFirstPageAndReturnsCache() = runTest {
+        val txRemote = FakeEthereumTransactionRemoteDataSource(
+            firstPage = EthereumTransactionPage(
+                transactions = listOf(TX_SUMMARY),
+                nextCursor = EthereumTransactionPaginationCursor(
+                    blockNumber = 1L,
+                    index = 2,
+                    hash = "0xabc",
+                    insertedAt = null,
+                    value = null,
+                    fee = null,
+                    itemsCount = 50,
+                ),
+                hasMore = true,
+            ),
+        )
+        val transactionDao = FakeEthereumTransactionDao()
+        val timeProvider = FakeTimeProvider(nowMillis = 1_700_000_000_000L)
+        val json = Json { ignoreUnknownKeys = true }
+        val repo = createRepository(
+            transactionDao = transactionDao,
+            transactionRemote = txRemote,
+            timeProvider = timeProvider,
+            json = json,
+        )
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val walletId = repo.observeWallets().first().single().id
+
+        val page = repo.getTransactions(walletId)
+
+        assertEquals(listOf(TX_SUMMARY), page.transactions)
+        assertEquals(1, txRemote.txCalls.size)
+        assertEquals(null, txRemote.txCalls.single().afterCursor)
+        val cached = repo.getCachedTransactions(walletId)
+        assertEquals(listOf(TX_SUMMARY), cached?.transactions)
+        assertEquals(1, transactionDao.transactions.size)
+        assertEquals(walletId, transactionDao.transactions.single().walletId)
+        assertEquals(TX_SUMMARY.hash, transactionDao.transactions.single().hash)
+        assertEquals(true, transactionDao.cache?.hasMore)
+    }
+
+    @Test
+    fun getTransactionsAppendUsesCursor() = runTest {
+        val cursor = EthereumTransactionPaginationCursor(
+            blockNumber = 1L,
+            index = 2,
+            hash = "0xabc",
+            insertedAt = null,
+            value = null,
+            fee = null,
+            itemsCount = 50,
+        )
+        val txRemote = FakeEthereumTransactionRemoteDataSource(
+            firstPage = EthereumTransactionPage(
+                transactions = listOf(TX_SUMMARY),
+                nextCursor = cursor,
+                hasMore = true,
+            ),
+            nextPage = EthereumTransactionPage(
+                transactions = listOf(TX_SUMMARY_2),
+                nextCursor = null,
+                hasMore = false,
+            ),
+        )
+        val transactionDao = FakeEthereumTransactionDao()
+        val repo = createRepository(
+            transactionDao = transactionDao,
+            transactionRemote = txRemote,
+        )
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val walletId = repo.observeWallets().first().single().id
+        repo.getTransactions(walletId)
+
+        val page = repo.getTransactions(walletId, cursor)
+
+        assertEquals(listOf(TX_SUMMARY_2), page.transactions)
+        assertEquals(cursor, txRemote.txCalls.last().afterCursor)
+        assertEquals(2, transactionDao.transactions.size)
+    }
+
     private fun createRepository(
         engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
         store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
         walletDao: FakeEthereumWalletDao = FakeEthereumWalletDao(),
+        transactionDao: FakeEthereumTransactionDao = FakeEthereumTransactionDao(),
         networkStore: FakeSelectedEthereumNetworkStore = FakeSelectedEthereumNetworkStore(),
         remote: FakeEthereumRemoteDataSource = FakeEthereumRemoteDataSource(),
+        transactionRemote: FakeEthereumTransactionRemoteDataSource = FakeEthereumTransactionRemoteDataSource(),
         timeProvider: FakeTimeProvider = FakeTimeProvider(),
+        json: Json = Json { ignoreUnknownKeys = true },
     ) = EthereumWalletRepositoryImpl(
         keyEngine = engine,
         mnemonicStore = store,
         walletDao = walletDao,
+        transactionDao = transactionDao,
         selectedEthereumNetworkStore = networkStore,
         remote = remote,
+        transactionRemote = transactionRemote,
         timeProvider = timeProvider,
+        json = json,
     )
 }
 
 private val VALID_WORDS = List(11) { "abandon" } + "about"
 private const val DEFAULT_ADDRESS = "0x1111111111111111111111111111111111111111"
+
+private val TX_SUMMARY = EthereumTransactionSummary(
+    hash = "0xabc",
+    confirmed = true,
+    blockTimeSeconds = 1_700_000_000L,
+    netWei = "1000000000000000000",
+    feeWei = "21000000000000",
+)
+
+private val TX_SUMMARY_2 = TX_SUMMARY.copy(hash = "0xdef")
 
 private class FakeEthereumKeyEngine(
     private val passphraseAddresses: Map<String, String> = emptyMap(),
@@ -420,4 +535,77 @@ private class FakeTimeProvider(
     private val nowMillis: Long = 0L,
 ) : TimeProvider {
     override fun nowMillis(): Long = nowMillis
+}
+
+private class FakeEthereumTransactionDao : EthereumTransactionDao {
+    val transactions = mutableListOf<EthereumTransactionEntity>()
+    var cache: EthereumWalletTxCacheEntity? = null
+
+    override suspend fun listByWalletId(walletId: String): List<EthereumTransactionEntity> =
+        transactions.filter { it.walletId == walletId }.sortedBy { it.sortIndex }
+
+    override suspend fun maxSortIndex(walletId: String): Int =
+        transactions.filter { it.walletId == walletId }.maxOfOrNull { it.sortIndex } ?: -1
+
+    override suspend fun cacheForWallet(walletId: String): EthereumWalletTxCacheEntity? =
+        cache?.takeIf { it.walletId == walletId }
+
+    override suspend fun upsertTransactions(entities: List<EthereumTransactionEntity>) {
+        entities.forEach { entity ->
+            transactions.removeAll { it.walletId == entity.walletId && it.hash == entity.hash }
+            transactions += entity
+        }
+    }
+
+    override suspend fun deleteByWalletId(walletId: String) {
+        transactions.removeAll { it.walletId == walletId }
+    }
+
+    override suspend fun upsertCache(entity: EthereumWalletTxCacheEntity) {
+        cache = entity
+    }
+
+    override suspend fun replaceWalletTransactions(
+        walletId: String,
+        transactions: List<EthereumTransactionEntity>,
+        cache: EthereumWalletTxCacheEntity,
+    ) {
+        deleteByWalletId(walletId)
+        upsertTransactions(transactions)
+        upsertCache(cache)
+    }
+
+    override suspend fun appendWalletTransactions(
+        transactions: List<EthereumTransactionEntity>,
+        cache: EthereumWalletTxCacheEntity,
+    ) {
+        upsertTransactions(transactions)
+        upsertCache(cache)
+    }
+}
+
+private class FakeEthereumTransactionRemoteDataSource(
+    private val firstPage: EthereumTransactionPage = EthereumTransactionPage(
+        transactions = emptyList(),
+        nextCursor = null,
+        hasMore = false,
+    ),
+    private val nextPage: EthereumTransactionPage = firstPage,
+) : EthereumTransactionRemoteDataSource {
+    data class TxCall(
+        val network: EthereumNetwork,
+        val address: String,
+        val afterCursor: EthereumTransactionPaginationCursor?,
+    )
+
+    val txCalls = mutableListOf<TxCall>()
+
+    override suspend fun getAddressTransactions(
+        network: EthereumNetwork,
+        address: String,
+        afterCursor: EthereumTransactionPaginationCursor?,
+    ): EthereumTransactionPage {
+        txCalls += TxCall(network, address, afterCursor)
+        return if (afterCursor == null) firstPage else nextPage
+    }
 }

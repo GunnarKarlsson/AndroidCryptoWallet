@@ -3,6 +3,7 @@ package network.bahn.androidcryptowallet.ui.ethereum.details
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
@@ -35,6 +37,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -43,10 +46,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
@@ -86,6 +93,8 @@ fun EthereumWalletDetailsScreen(
     EthereumWalletDetailsContent(
         uiState = uiState,
         onRefresh = viewModel::onRefresh,
+        onRefreshTransactions = viewModel::onRefreshTransactions,
+        onLoadMore = viewModel::onLoadMore,
         onSend = onSend,
         onReceive = onReceive,
         onBack = onBack,
@@ -101,6 +110,8 @@ fun EthereumWalletDetailsScreen(
 private fun EthereumWalletDetailsContent(
     uiState: EthereumWalletDetailsUiState,
     onRefresh: () -> Unit,
+    onRefreshTransactions: () -> Unit,
+    onLoadMore: () -> Unit,
     onSend: () -> Unit,
     onReceive: () -> Unit,
     onBack: () -> Unit,
@@ -115,6 +126,17 @@ private fun EthereumWalletDetailsContent(
     val copiedMessage = stringResource(R.string.address_copied)
     val address = uiState.address
     val balanceWei = uiState.balanceWei ?: "0"
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState, uiState.hasMoreTransactions) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisible = info.visibleItemsInfo.lastOrNull()?.index ?: return@snapshotFlow false
+            lastVisible >= info.totalItemsCount - 2
+        }.collect { nearEnd ->
+            if (nearEnd) onLoadMore()
+        }
+    }
 
     if (uiState.showDeleteConfirmDialog) {
         AlertDialog(
@@ -193,6 +215,7 @@ private fun EthereumWalletDetailsContent(
         },
     ) { innerPadding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
@@ -266,7 +289,175 @@ private fun EthereumWalletDetailsContent(
                     }
                 }
             }
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.wallet_transactions),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(
+                        onClick = onRefreshTransactions,
+                        enabled = !uiState.isLoadingTransactions &&
+                            !uiState.isRefreshingTransactions,
+                    ) {
+                        if (uiState.isRefreshingTransactions) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Outlined.Refresh,
+                                contentDescription = stringResource(R.string.refresh_transactions),
+                            )
+                        }
+                    }
+                }
+            }
+            item { Spacer(modifier = Modifier.height(4.dp)) }
+            when {
+                uiState.isLoadingTransactions && uiState.transactions.isEmpty() -> {
+                    item {
+                        val loadingDescription = stringResource(R.string.wallet_transactions_loading)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.semantics {
+                                    contentDescription = loadingDescription
+                                },
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                }
+                uiState.transactions.isEmpty() && uiState.transactionsErrorMessage == null -> {
+                    item {
+                        Text(
+                            text = stringResource(R.string.wallet_transactions_empty),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                else -> {
+                    items(uiState.transactions.size, key = { uiState.transactions[it].hash }) { index ->
+                        EthereumTransactionRow(tx = uiState.transactions[index])
+                    }
+                }
+            }
+            uiState.transactionsErrorMessage?.let { message ->
+                item {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+            if (uiState.isLoadingMoreTransactions) {
+                item {
+                    val loadingMore = stringResource(R.string.wallet_transactions_loading_more)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(22.dp)
+                                .semantics { contentDescription = loadingMore },
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun EthereumTransactionRow(tx: EthereumTransactionSummary) {
+    val netWei = tx.netWei.toBigIntegerOrNull() ?: java.math.BigInteger.ZERO
+    val amount = StringUtils.formatEthereumAmount(tx.netWei)
+    val signedAmount = if (netWei > java.math.BigInteger.ZERO) "+$amount" else amount
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.ethereum_amount, signedAmount),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                EthereumTxStatusMarker(confirmed = tx.confirmed)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = StringUtils.truncateEthereumAddress(tx.hash),
+                style = MaterialTheme.typography.bodyMedium,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (tx.confirmed && tx.blockTimeSeconds != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = StringUtils.formatDateTime(tx.blockTimeSeconds * 1_000L),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EthereumTxStatusMarker(confirmed: Boolean) {
+    val label = if (confirmed) {
+        stringResource(R.string.tx_status_confirmed)
+    } else {
+        stringResource(R.string.tx_status_mempool)
+    }
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = if (confirmed) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer
+        },
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
     }
 }
 
@@ -403,6 +594,44 @@ private fun previewWallet() = EthereumWallet(
 
 @Preview(showBackground = true)
 @Composable
+private fun EthereumWalletDetailsWithTransactionsPreview() {
+    WalletTheme {
+        EthereumWalletDetailsContent(
+            uiState = EthereumWalletDetailsUiState(
+                wallet = previewWallet(),
+                transactions = listOf(
+                    EthereumTransactionSummary(
+                        hash = "0x1bf67e8fd7f28df862dd8c0adf023a0e836c051802f4682c9f15c0e9bf7d722e",
+                        confirmed = true,
+                        blockTimeSeconds = 1_787_613_816L,
+                        netWei = "1000000000000000000",
+                        feeWei = "32125058233059",
+                    ),
+                    EthereumTransactionSummary(
+                        hash = "0x0972edf7fbab6883e4b52648beb8b2404491f4e2800f7ecd4409e5f4bb782878",
+                        confirmed = true,
+                        blockTimeSeconds = 1_787_493_624L,
+                        netWei = "100000000000000",
+                        feeWei = "33661273633823",
+                    ),
+                ),
+            ),
+            onRefresh = {},
+            onRefreshTransactions = {},
+            onLoadMore = {},
+            onSend = {},
+            onReceive = {},
+            onBack = {},
+            onEdit = {},
+            onDeleteClick = {},
+            onDismissDeleteConfirm = {},
+            onConfirmDelete = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 private fun EthereumWalletDetailsZeroBalancePreview() {
     WalletTheme {
         EthereumWalletDetailsContent(
@@ -410,6 +639,8 @@ private fun EthereumWalletDetailsZeroBalancePreview() {
                 wallet = previewWallet().copy(balanceWei = "0"),
             ),
             onRefresh = {},
+            onRefreshTransactions = {},
+            onLoadMore = {},
             onSend = {},
             onReceive = {},
             onBack = {},
@@ -431,6 +662,8 @@ private fun EthereumWalletDetailsScreenPreview() {
                 isRefreshing = true,
             ),
             onRefresh = {},
+            onRefreshTransactions = {},
+            onLoadMore = {},
             onSend = {},
             onReceive = {},
             onBack = {},

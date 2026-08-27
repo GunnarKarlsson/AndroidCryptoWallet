@@ -2,6 +2,8 @@ package network.bahn.androidcryptowallet.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 
 interface EthereumWalletRepository {
@@ -47,4 +49,19 @@ interface EthereumWalletRepository {
      * (UI falls back to "Ethereum wallet").
      */
     suspend fun renameWallet(walletId: String, name: String?)
+
+    /**
+     * Previously fetched transactions for this wallet, or null if they have never been fetched.
+     * An empty list means a fetch ran and the address had no transactions.
+     */
+    suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage?
+
+    /**
+     * Fetch a live transaction page for the wallet address and persist it.
+     * [afterCursor] null replaces the cached first page; otherwise the page is appended.
+     */
+    suspend fun getTransactions(
+        walletId: String,
+        afterCursor: EthereumTransactionPaginationCursor? = null,
+    ): EthereumTransactionPage
 }

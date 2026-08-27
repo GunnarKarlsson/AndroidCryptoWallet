@@ -17,10 +17,13 @@ import network.bahn.androidcryptowallet.BuildConfig
 import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_8_9
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_9_10
+import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_10_11
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
+import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumExplorerConfig
 import network.bahn.androidcryptowallet.data.remote.eth.EthereumRpcConfig
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
@@ -37,7 +40,7 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
-            .addMigrations(WALLET_MIGRATION_8_9, WALLET_MIGRATION_9_10)
+            .addMigrations(WALLET_MIGRATION_8_9, WALLET_MIGRATION_9_10, WALLET_MIGRATION_10_11)
             .build()
 
     @Provides
@@ -55,6 +58,10 @@ object AppModule {
     @Provides
     fun provideEthereumWalletDao(database: WalletDatabase): EthereumWalletDao =
         database.ethereumWalletDao()
+
+    @Provides
+    fun provideEthereumTransactionDao(database: WalletDatabase): EthereumTransactionDao =
+        database.ethereumTransactionDao()
 
     @Provides
     @Singleton
@@ -82,6 +89,13 @@ object AppModule {
     fun provideEthereumRpcConfig(): EthereumRpcConfig = EthereumRpcConfig(
         sepoliaRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com",
         mainnetRpcUrl = "https://ethereum.publicnode.com",
+    )
+
+    @Provides
+    @Singleton
+    fun provideEthereumExplorerConfig(): EthereumExplorerConfig = EthereumExplorerConfig(
+        sepoliaBaseUrl = "https://eth-sepolia.blockscout.com/api/v2",
+        mainnetBaseUrl = "https://eth.blockscout.com/api/v2",
     )
 
     @Provides

@@ -189,6 +189,11 @@ private class FakeEthSetupWalletRepository(
     override suspend fun deleteWallet(walletId: String) = error("unused")
 
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
+    override suspend fun getCachedTransactions(walletId: String) = error("unused")
+    override suspend fun getTransactions(
+        walletId: String,
+        afterCursor: network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor?,
+    ) = error("unused")
 }
 
 private class FakeEthSetupNetworkStore(

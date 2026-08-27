@@ -5,15 +5,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
+import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EthereumWalletTxCacheEntity
+import network.bahn.androidcryptowallet.data.local.db.nextCursor
 import network.bahn.androidcryptowallet.data.local.db.toDomain
 import network.bahn.androidcryptowallet.data.local.db.toEntity
+import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import java.util.UUID
@@ -25,9 +33,12 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     private val keyEngine: EthereumKeyEngine,
     private val mnemonicStore: EthereumMnemonicStore,
     private val walletDao: EthereumWalletDao,
+    private val transactionDao: EthereumTransactionDao,
     private val selectedEthereumNetworkStore: SelectedEthereumNetworkStore,
     private val remote: EthereumRemoteDataSource,
+    private val transactionRemote: EthereumTransactionRemoteDataSource,
     private val timeProvider: TimeProvider,
+    private val json: Json,
 ) : EthereumWalletRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeWallets(): Flow<List<EthereumWallet>> =
@@ -98,5 +109,52 @@ class EthereumWalletRepositoryImpl @Inject constructor(
             ?: error("Wallet not found")
         val trimmed = name?.trim()?.takeIf { it.isNotEmpty() }
         walletDao.updateName(walletId, trimmed)
+    }
+
+    override suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage? {
+        val cache = transactionDao.cacheForWallet(walletId) ?: return null
+        val transactions = transactionDao.listByWalletId(walletId).map { it.toDomain() }
+        return EthereumTransactionPage(
+            transactions = transactions,
+            nextCursor = cache.nextCursor(json),
+            hasMore = cache.hasMore,
+        )
+    }
+
+    override suspend fun getTransactions(
+        walletId: String,
+        afterCursor: EthereumTransactionPaginationCursor?,
+    ): EthereumTransactionPage {
+        val wallet = walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        val page = transactionRemote.getAddressTransactions(
+            network = EthereumNetwork.valueOf(wallet.network),
+            address = wallet.address,
+            afterCursor = afterCursor,
+        )
+        persistTransactions(walletId, page, replace = afterCursor == null)
+        return page
+    }
+
+    private suspend fun persistTransactions(
+        walletId: String,
+        page: EthereumTransactionPage,
+        replace: Boolean,
+    ) {
+        val startIndex = if (replace) 0 else transactionDao.maxSortIndex(walletId) + 1
+        val entities = page.transactions.mapIndexed { index, tx ->
+            tx.toEntity(walletId = walletId, sortIndex = startIndex + index)
+        }
+        val cache = EthereumWalletTxCacheEntity(
+            walletId = walletId,
+            nextCursorJson = page.nextCursor?.toJson(json),
+            hasMore = page.hasMore,
+            fetchedAtMillis = timeProvider.nowMillis(),
+        )
+        if (replace) {
+            transactionDao.replaceWalletTransactions(walletId, entities, cache)
+        } else {
+            transactionDao.appendWalletTransactions(entities, cache)
+        }
     }
 }
