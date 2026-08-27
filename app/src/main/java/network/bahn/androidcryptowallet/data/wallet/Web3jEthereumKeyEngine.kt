@@ -5,8 +5,13 @@ import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicExce
 import org.bitcoindevkit.Mnemonic
 import org.bitcoindevkit.WordCount
 import org.web3j.crypto.Bip32ECKeyPair
+import org.web3j.crypto.Credentials
 import org.web3j.crypto.Keys
 import org.web3j.crypto.MnemonicUtils
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.utils.Numeric
+import java.math.BigInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,6 +53,61 @@ class Web3jEthereumKeyEngine @Inject constructor() : EthereumKeyEngine {
         mnemonicWords: List<String>,
         passphrase: String?,
     ): EthereumReceiveAddress {
+        val derived = deriveKeyPair(mnemonicWords, passphrase)
+        // EIP-55 mixed-case checksum over the 0x address.
+        val checksummed = Keys.toChecksumAddress(Keys.getAddress(derived))
+        val address = if (checksummed.startsWith("0x")) checksummed else "0x$checksummed"
+        return EthereumReceiveAddress(address = address, index = RECEIVE_INDEX)
+    }
+
+    override fun isValidAddress(address: String): Boolean {
+        val trimmed = address.trim()
+        if (!ADDRESS_PATTERN.matches(trimmed)) return false
+        val hex = trimmed.drop(2)
+        // Mixed-case addresses must match EIP-55 checksum.
+        if (hex.any { it.isLetter() } &&
+            hex != hex.lowercase() &&
+            hex != hex.uppercase()
+        ) {
+            return try {
+                Keys.toChecksumAddress(trimmed) == trimmed
+            } catch (_: Exception) {
+                false
+            }
+        }
+        return true
+    }
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        chainId: Long,
+        to: String,
+        valueWei: BigInteger,
+        nonce: Long,
+        gasLimit: Long,
+        maxPriorityFeePerGasWei: BigInteger,
+        maxFeePerGasWei: BigInteger,
+    ): String {
+        val keyPair = deriveKeyPair(mnemonicWords, passphrase)
+        val credentials = Credentials.create(keyPair)
+        val rawTransaction = RawTransaction.createEtherTransaction(
+            chainId,
+            BigInteger.valueOf(nonce),
+            BigInteger.valueOf(gasLimit),
+            to,
+            valueWei,
+            maxPriorityFeePerGasWei,
+            maxFeePerGasWei,
+        )
+        val signed = TransactionEncoder.signMessage(rawTransaction, credentials)
+        return Numeric.toHexString(signed)
+    }
+
+    private fun deriveKeyPair(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ): Bip32ECKeyPair {
         validateMnemonic(mnemonicWords)
         val phrase = normalize(mnemonicWords).joinToString(" ")
         // BIP-39: optional passphrase is the "25th word".
@@ -61,11 +121,7 @@ class Web3jEthereumKeyEngine @Inject constructor() : EthereumKeyEngine {
             0, // external (receive)
             RECEIVE_INDEX,
         )
-        val derived = Bip32ECKeyPair.deriveKeyPair(master, path)
-        // EIP-55 mixed-case checksum over the 0x address.
-        val checksummed = Keys.toChecksumAddress(Keys.getAddress(derived))
-        val address = if (checksummed.startsWith("0x")) checksummed else "0x$checksummed"
-        return EthereumReceiveAddress(address = address, index = RECEIVE_INDEX)
+        return Bip32ECKeyPair.deriveKeyPair(master, path)
     }
 
     private fun normalize(words: List<String>): List<String> =
@@ -73,5 +129,6 @@ class Web3jEthereumKeyEngine @Inject constructor() : EthereumKeyEngine {
 
     private companion object {
         const val RECEIVE_INDEX = 0
+        val ADDRESS_PATTERN = Regex("^0[xX][0-9a-fA-F]{40}$")
     }
 }

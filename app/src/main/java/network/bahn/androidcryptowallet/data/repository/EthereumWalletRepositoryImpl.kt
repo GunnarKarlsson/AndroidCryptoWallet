@@ -1,10 +1,12 @@
 package network.bahn.androidcryptowallet.data.repository
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
@@ -19,11 +21,15 @@ import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
+import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
+import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EthereumGasQuotes
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import java.math.BigInteger
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -134,6 +140,59 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         )
         persistTransactions(walletId, page, replace = afterCursor == null)
         return page
+    }
+
+    override fun isValidAddress(address: String): Boolean =
+        keyEngine.isValidAddress(address)
+
+    override suspend fun getFeeData(walletId: String): EthereumFeeData {
+        val wallet = walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        return remote.getFeeData(EthereumNetwork.valueOf(wallet.network))
+    }
+
+    override suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountWei: BigInteger,
+        gasPreset: EthereumGasPreset,
+    ): String {
+        if (amountWei <= BigInteger.ZERO) error("Enter an amount greater than zero")
+        val wallet = walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        val mnemonic = mnemonicStore.loadMnemonic(walletId)
+            ?: error("Wallet keys not found")
+        val passphrase = mnemonicStore.loadPassphrase(walletId)
+        val network = EthereumNetwork.valueOf(wallet.network)
+        val nonce = remote.getTransactionCount(network, wallet.address)
+        val feeData = remote.getFeeData(network)
+        val estimatedGas = runCatching {
+            remote.estimateGas(
+                network = network,
+                from = wallet.address,
+                to = recipientAddress,
+                valueWei = amountWei,
+            )
+        }.getOrDefault(EthereumGasQuotes.SIMPLE_TRANSFER_GAS_LIMIT)
+        val gasLimit = maxOf(estimatedGas, EthereumGasQuotes.SIMPLE_TRANSFER_GAS_LIMIT)
+        val quote = EthereumGasQuotes.quote(feeData, gasPreset, gasLimit)
+        val balanceWei = wallet.balanceWei?.let { BigInteger(it) } ?: BigInteger.ZERO
+        val totalNeeded = amountWei.add(BigInteger(quote.estimatedFeeWei))
+        if (balanceWei < totalNeeded) error("Insufficient funds")
+        val signedHex = withContext(Dispatchers.Default) {
+            keyEngine.buildAndSignSend(
+                mnemonicWords = mnemonic.split(" "),
+                passphrase = passphrase,
+                chainId = network.chainId,
+                to = recipientAddress,
+                valueWei = amountWei,
+                nonce = nonce,
+                gasLimit = quote.gasLimit,
+                maxPriorityFeePerGasWei = BigInteger(quote.maxPriorityFeePerGasWei),
+                maxFeePerGasWei = BigInteger(quote.maxFeePerGasWei),
+            )
+        }
+        return remote.sendRawTransaction(network, signedHex)
     }
 
     private suspend fun persistTransactions(

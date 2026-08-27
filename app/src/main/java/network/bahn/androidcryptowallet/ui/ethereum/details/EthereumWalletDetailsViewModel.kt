@@ -30,6 +30,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EthereumWalletRepository,
 ) : ViewModel() {
+    private val routeHandle = savedStateHandle
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
             ?: savedStateHandle.toRoute<EthereumWalletDetailsRoute>().walletId
@@ -72,11 +73,26 @@ class EthereumWalletDetailsViewModel @Inject constructor(
         initialValue = EthereumWalletDetailsUiState(isLoadingTransactions = true),
     )
 
+    init {
+        viewModelScope.launch {
+            routeHandle.getStateFlow(RELOAD_WALLET_KEY, false).collect { reload ->
+                if (!reload) return@collect
+                routeHandle[RELOAD_WALLET_KEY] = false
+                onReturnFromSend()
+            }
+        }
+    }
+
     fun onEnter() {
         if (hasEntered) return
         hasEntered = true
         refreshBalance(force = false)
         loadCachedOrFetch()
+    }
+
+    fun onReturnFromSend() {
+        refreshBalance(force = true)
+        loadFirstPageFromNetwork(showFullSpinner = txLoadState.value.transactions.isEmpty())
     }
 
     fun onRefresh() {
@@ -261,5 +277,6 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     companion object {
         private const val TAG = "EthWalletDetails"
         private const val DELETE_FAILED = "Could not delete wallet"
+        const val RELOAD_WALLET_KEY = "reload_wallet"
     }
 }

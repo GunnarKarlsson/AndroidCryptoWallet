@@ -2,8 +2,10 @@ package network.bahn.androidcryptowallet.data.wallet
 
 import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.math.BigInteger
 
 class Web3jEthereumKeyEngineTest {
     private val engine = Web3jEthereumKeyEngine()
@@ -23,6 +25,31 @@ class Web3jEthereumKeyEngineTest {
         } catch (e: InvalidEthereumMnemonicException) {
             assertTrue(e.message!!.isNotBlank())
         }
+    }
+
+    @Test
+    fun isValidAddressAcceptsChecksummedAndLowercase() {
+        assertTrue(engine.isValidAddress(ABANDON_ADDRESS))
+        assertTrue(engine.isValidAddress(ABANDON_ADDRESS.lowercase()))
+        assertFalse(engine.isValidAddress("0x1234"))
+        assertFalse(engine.isValidAddress("not-an-address"))
+    }
+
+    @Test
+    fun buildAndSignSendProducesRawHex() {
+        val signed = engine.buildAndSignSend(
+            mnemonicWords = ABANDON_WORDS,
+            passphrase = null,
+            chainId = 11_155_111L,
+            to = "0x2222222222222222222222222222222222222222",
+            valueWei = BigInteger("1000000000000000"),
+            nonce = 0L,
+            gasLimit = 21_000L,
+            maxPriorityFeePerGasWei = BigInteger("1500000000"),
+            maxFeePerGasWei = BigInteger("3500000000"),
+        )
+        assertTrue(signed.startsWith("0x"))
+        assertTrue(signed.length > 10)
     }
 
     private companion object {

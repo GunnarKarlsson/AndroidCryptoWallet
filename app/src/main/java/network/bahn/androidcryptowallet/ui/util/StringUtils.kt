@@ -61,4 +61,16 @@ object StringUtils {
                 .longValueExact()
         }.getOrNull()
     }
+
+    /** 1 ETH = 10^18 wei. Truncates toward zero past 18 fractional digits. */
+    fun parseEthereumAmountToWei(amount: String): java.math.BigInteger? {
+        val trimmed = amount.trim()
+        if (trimmed.isEmpty() || trimmed == ".") return null
+        return runCatching {
+            trimmed.toBigDecimal()
+                .movePointRight(18)
+                .setScale(0, java.math.RoundingMode.DOWN)
+                .toBigIntegerExact()
+        }.getOrNull()
+    }
 }

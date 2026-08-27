@@ -1,10 +1,13 @@
 package network.bahn.androidcryptowallet.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
+import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import java.math.BigInteger
 
 interface EthereumWalletRepository {
     /** Wallets for the currently selected network. Public data only. */
@@ -64,4 +67,20 @@ interface EthereumWalletRepository {
         walletId: String,
         afterCursor: EthereumTransactionPaginationCursor? = null,
     ): EthereumTransactionPage
+
+    fun isValidAddress(address: String): Boolean
+
+    /** Live EIP-1559 fee oracle for the wallet's network. */
+    suspend fun getFeeData(walletId: String): EthereumFeeData
+
+    /**
+     * Build, sign, and broadcast a native ETH transfer from an HD wallet.
+     * Returns the broadcast transaction hash.
+     */
+    suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountWei: BigInteger,
+        gasPreset: EthereumGasPreset,
+    ): String
 }

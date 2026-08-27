@@ -20,6 +20,8 @@ import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransacti
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
+import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
+import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
@@ -28,7 +30,9 @@ import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
+import java.math.BigInteger
 
 class EthereumWalletRepositoryImplTest {
     @Test
@@ -359,6 +363,51 @@ class EthereumWalletRepositoryImplTest {
         assertEquals(2, transactionDao.transactions.size)
     }
 
+    @Test
+    fun sendBroadcastsSignedTransaction() = runTest {
+        val remote = FakeEthereumRemoteDataSource(
+            balanceWei = "1000000000000000000",
+        )
+        val store = FakeEthereumMnemonicStore()
+        val repo = createRepository(store = store, remote = remote)
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val walletId = repo.observeWallets().first().single().id
+        // Balance is set via remote on refresh so send can check funds.
+        repo.refreshBalance(walletId)
+
+        val txHash = repo.send(
+            walletId = walletId,
+            recipientAddress = "0x2222222222222222222222222222222222222222",
+            amountWei = BigInteger("100000000000000000"),
+            gasPreset = EthereumGasPreset.Normal,
+        )
+
+        assertEquals("0xbroadcast", txHash)
+        assertEquals(1, remote.sendRawCalls)
+    }
+
+    @Test
+    fun sendRejectsInsufficientFunds() = runTest {
+        val remote = FakeEthereumRemoteDataSource(balanceWei = "1000")
+        val repo = createRepository(remote = remote)
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val walletId = repo.observeWallets().first().single().id
+        repo.refreshBalance(walletId)
+
+        try {
+            repo.send(
+                walletId = walletId,
+                recipientAddress = "0x2222222222222222222222222222222222222222",
+                amountWei = BigInteger("100000000000000000"),
+                gasPreset = EthereumGasPreset.Normal,
+            )
+            fail("expected insufficient funds")
+        } catch (e: IllegalStateException) {
+            assertEquals("Insufficient funds", e.message)
+        }
+        assertEquals(0, remote.sendRawCalls)
+    }
+
     private fun createRepository(
         engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
         store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
@@ -416,6 +465,21 @@ private class FakeEthereumKeyEngine(
         val address = passphrase?.let { passphraseAddresses[it] } ?: DEFAULT_ADDRESS
         return EthereumReceiveAddress(address = address, index = 0)
     }
+
+    override fun isValidAddress(address: String): Boolean =
+        address.startsWith("0x") && address.length == 42
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        chainId: Long,
+        to: String,
+        valueWei: java.math.BigInteger,
+        nonce: Long,
+        gasLimit: Long,
+        maxPriorityFeePerGasWei: java.math.BigInteger,
+        maxFeePerGasWei: java.math.BigInteger,
+    ): String = "0xsignedraw"
 }
 
 private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
@@ -519,8 +583,16 @@ private class FakeEthereumWalletDao : EthereumWalletDao {
 
 private class FakeEthereumRemoteDataSource(
     private val balanceWei: String = "0",
+    private val feeData: EthereumFeeData = EthereumFeeData(
+        baseFeePerGasWei = "1000000000",
+        suggestedPriorityFeePerGasWei = "1500000000",
+    ),
+    private val nonce: Long = 0L,
+    private val estimatedGas: Long = 21_000L,
+    private val broadcastTxHash: String = "0xbroadcast",
 ) : EthereumRemoteDataSource {
     var balanceCalls = 0
+    var sendRawCalls = 0
 
     override suspend fun getAddressBalance(
         network: EthereumNetwork,
@@ -528,6 +600,28 @@ private class FakeEthereumRemoteDataSource(
     ): EthereumAddressBalance {
         balanceCalls += 1
         return EthereumAddressBalance(balanceWei = balanceWei)
+    }
+
+    override suspend fun getTransactionCount(
+        network: EthereumNetwork,
+        address: String,
+    ): Long = nonce
+
+    override suspend fun estimateGas(
+        network: EthereumNetwork,
+        from: String,
+        to: String,
+        valueWei: java.math.BigInteger,
+    ): Long = estimatedGas
+
+    override suspend fun getFeeData(network: EthereumNetwork): EthereumFeeData = feeData
+
+    override suspend fun sendRawTransaction(
+        network: EthereumNetwork,
+        signedRawHex: String,
+    ): String {
+        sendRawCalls += 1
+        return broadcastTxHash
     }
 }
 

@@ -119,6 +119,20 @@ private class FakeEthReconcileKeyEngine : EthereumKeyEngine {
         deriveCalls += EthDeriveCall(mnemonicWords, passphrase)
         return EthereumReceiveAddress(address = "0xderived", index = 0)
     }
+
+    override fun isValidAddress(address: String): Boolean = error("unused")
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        chainId: Long,
+        to: String,
+        valueWei: java.math.BigInteger,
+        nonce: Long,
+        gasLimit: Long,
+        maxPriorityFeePerGasWei: java.math.BigInteger,
+        maxFeePerGasWei: java.math.BigInteger,
+    ): String = error("unused")
 }
 
 private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {

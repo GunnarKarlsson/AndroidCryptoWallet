@@ -215,6 +215,20 @@ private class UnusedEthereumCatalogKeyEngine : EthereumKeyEngine {
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
+
+    override fun isValidAddress(address: String): Boolean = error("unused")
+
+    override fun buildAndSignSend(
+        mnemonicWords: List<String>,
+        passphrase: String?,
+        chainId: Long,
+        to: String,
+        valueWei: java.math.BigInteger,
+        nonce: Long,
+        gasLimit: Long,
+        maxPriorityFeePerGasWei: java.math.BigInteger,
+        maxFeePerGasWei: java.math.BigInteger,
+    ): String = error("unused")
 }
 
 private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
