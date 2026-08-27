@@ -40,6 +40,7 @@ import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinMnemonicWordGrid
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinPassphraseField
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinPlaceholderMnemonic
 import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupStepHeader
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.DebugNextButton
 import network.bahn.androidcryptowallet.ui.util.SecureWindow
@@ -64,6 +65,7 @@ fun EthereumCreateWalletScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = { Text(stringResource(R.string.create_wallet)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

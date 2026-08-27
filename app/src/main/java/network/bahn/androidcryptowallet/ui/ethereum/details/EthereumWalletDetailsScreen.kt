@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -149,6 +150,7 @@ private fun EthereumWalletDetailsContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = {
                     Text(
                         text = StringUtils.walletDisplayName(

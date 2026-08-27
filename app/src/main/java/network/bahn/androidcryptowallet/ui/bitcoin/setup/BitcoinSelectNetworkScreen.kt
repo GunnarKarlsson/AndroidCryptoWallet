@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinNetworkDropdown
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.DebugNextButton
 
@@ -40,6 +41,7 @@ fun BitcoinSelectNetworkScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = { Text(stringResource(R.string.select_network_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

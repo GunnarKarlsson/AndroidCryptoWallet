@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +28,7 @@ fun EthereumReceiveScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = { Text(stringResource(R.string.receive_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

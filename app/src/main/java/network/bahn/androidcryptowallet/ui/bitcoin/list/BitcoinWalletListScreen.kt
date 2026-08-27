@@ -33,7 +33,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,6 +58,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinNetworkDropdown
 import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -102,6 +102,7 @@ private fun BitcoinWalletListContent(
         topBar = {
             Column {
                 TopAppBar(
+                    colors = walletTopAppBarColors(),
                     title = { Text(stringResource(R.string.wallets_title)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
@@ -111,10 +112,6 @@ private fun BitcoinWalletListContent(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
                 )
                 HorizontalDivider(
                     thickness = 1.dp,

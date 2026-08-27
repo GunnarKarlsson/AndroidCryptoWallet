@@ -32,7 +32,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,6 +55,7 @@ import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
 import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -96,6 +96,7 @@ private fun EthereumWalletListContent(
         topBar = {
             Column {
                 TopAppBar(
+                    colors = walletTopAppBarColors(),
                     title = { Text(stringResource(R.string.ethereum_wallets_title)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
@@ -105,10 +106,6 @@ private fun EthereumWalletListContent(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
                 )
                 HorizontalDivider(
                     thickness = 1.dp,

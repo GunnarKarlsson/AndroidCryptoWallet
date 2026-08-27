@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 
 @Composable
@@ -70,6 +71,7 @@ private fun EthereumEditWalletContent(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = { Text(stringResource(R.string.edit_wallet_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

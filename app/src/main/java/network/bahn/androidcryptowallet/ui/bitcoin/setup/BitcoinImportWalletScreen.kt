@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.DebugNextButton
 import network.bahn.androidcryptowallet.ui.util.SecureWindow
@@ -63,6 +64,7 @@ fun BitcoinImportWalletScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = { Text(stringResource(R.string.restore_wallet_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack, enabled = !isSubmitting) {

@@ -50,6 +50,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -70,6 +71,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinScriptType
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -174,6 +176,7 @@ private fun BitcoinWalletDetailsContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = {
                     Column {
                         Text(
@@ -188,7 +191,7 @@ private fun BitcoinWalletDetailsContent(
                             Text(
                                 text = stringResource(R.string.wallet_watch_only),
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = Color.White.copy(alpha = 0.7f),
                             )
                         }
                     }

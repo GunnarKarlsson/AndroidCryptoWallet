@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +43,7 @@ fun ChainSelectScreen(
         topBar = {
             Column {
                 TopAppBar(
+                    colors = walletTopAppBarColors(),
                     title = { Text(stringResource(R.string.select_chain_title)) },
                     navigationIcon = {
                         Image(
@@ -53,10 +54,6 @@ fun ChainSelectScreen(
                                 .size(32.dp),
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
                 )
                 HorizontalDivider(
                     thickness = 1.dp,

@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.ui.bitcoin.BitcoinNetworkDropdown
+import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -69,6 +70,7 @@ private fun BitcoinNetworkStatusContent(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                colors = walletTopAppBarColors(),
                 title = { Text(stringResource(R.string.network_status_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
