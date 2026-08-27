@@ -145,6 +145,12 @@ private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {
     override fun listHdWalletIds(): List<String> =
         (mnemonics.keys + networks.keys).distinct().sorted()
 
+    override fun delete(walletId: String) {
+        mnemonics.remove(walletId)
+        passphrases.remove(walletId)
+        networks.remove(walletId)
+    }
+
     override fun loadNetwork(walletId: String): EthereumNetwork? = networks[walletId]
 
     override fun loadMnemonic(walletId: String): String? = mnemonics[walletId]
@@ -176,6 +182,10 @@ private class FakeEthReconcileDao : EthereumWalletDao {
         items.update { rows ->
             if (rows.any { it.id == entity.id }) rows else rows + entity
         }
+    }
+
+    override suspend fun deleteById(id: String) {
+        items.update { rows -> rows.filter { it.id != id } }
     }
 
     override suspend fun updateBalance(

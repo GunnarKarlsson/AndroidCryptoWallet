@@ -90,6 +90,81 @@ class EthereumWalletDetailsViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun onDeleteClickShowsConfirmDialog() = runTest {
+        val viewModel = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        viewModel.onDeleteClick()
+
+        assertEquals(true, viewModel.uiState.value.showDeleteConfirmDialog)
+        job.cancel()
+    }
+
+    @Test
+    fun onDismissDeleteConfirmHidesDialog() = runTest {
+        val viewModel = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onDeleteClick()
+
+        viewModel.onDismissDeleteConfirm()
+
+        assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
+        job.cancel()
+    }
+
+    @Test
+    fun onConfirmDeleteCallsRepoAndEmitsWalletDeleted() = runTest {
+        val repo = FakeEthDetailsWalletRepository()
+        val viewModel = createViewModel(repo)
+        val events = mutableListOf<EthereumWalletDetailsEvent>()
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
+            viewModel.events.collect { events += it }
+        }
+        viewModel.onDeleteClick()
+
+        viewModel.onConfirmDelete()
+
+        assertEquals(listOf(WALLET.id), repo.deleteWalletCalls)
+        assertEquals(listOf(EthereumWalletDetailsEvent.WalletDeleted), events)
+        assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
+        collectJob.cancel()
+        eventsJob.cancel()
+    }
+
+    @Test
+    fun onConfirmDeleteFailureSurfacesError() = runTest {
+        val repo = FakeEthDetailsWalletRepository(
+            deleteError = IllegalStateException("boom"),
+        )
+        val viewModel = createViewModel(repo)
+        val events = mutableListOf<EthereumWalletDetailsEvent>()
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
+            viewModel.events.collect { events += it }
+        }
+        viewModel.onDeleteClick()
+
+        viewModel.onConfirmDelete()
+
+        assertEquals(listOf(WALLET.id), repo.deleteWalletCalls)
+        assertEquals(emptyList<EthereumWalletDetailsEvent>(), events)
+        assertEquals(false, viewModel.uiState.value.isDeleting)
+        assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
+        assertEquals("boom", viewModel.uiState.value.errorMessage)
+        collectJob.cancel()
+        eventsJob.cancel()
+    }
+
     private fun createViewModel(
         repo: FakeEthDetailsWalletRepository = FakeEthDetailsWalletRepository(),
         savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
@@ -109,8 +184,10 @@ private val WALLET = EthereumWallet(
 
 private class FakeEthDetailsWalletRepository(
     private val wallet: MutableStateFlow<EthereumWallet?> = MutableStateFlow(WALLET),
+    private val deleteError: Exception? = null,
 ) : EthereumWalletRepository {
     var refreshBalanceCalls = 0
+    val deleteWalletCalls = mutableListOf<String>()
 
     override fun observeWallets(): Flow<List<EthereumWallet>> = emptyFlow()
     override fun observeWallet(id: String): Flow<EthereumWallet?> = wallet
@@ -130,5 +207,11 @@ private class FakeEthDetailsWalletRepository(
 
     override suspend fun refreshBalance(walletId: String) {
         refreshBalanceCalls++
+    }
+
+    override suspend fun deleteWallet(walletId: String) {
+        deleteWalletCalls += walletId
+        if (deleteError != null) throw deleteError
+        wallet.value = null
     }
 }

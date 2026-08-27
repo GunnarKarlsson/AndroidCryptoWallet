@@ -219,6 +219,8 @@ private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
 
     override fun listHdWalletIds(): List<String> = emptyList()
 
+    override fun delete(walletId: String) = Unit
+
     override fun loadNetwork(
         walletId: String,
     ): network.bahn.androidcryptowallet.domain.model.EthereumNetwork? = null
@@ -251,6 +253,8 @@ private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
     override suspend fun insertIgnore(
         entity: network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity,
     ) = Unit
+
+    override suspend fun deleteById(id: String) = Unit
 
     override suspend fun updateBalance(
         id: String,

@@ -16,6 +16,9 @@ interface EthereumMnemonicStore {
 
     fun listHdWalletIds(): List<String>
 
+    /** Remove mnemonic, passphrase, and network prefs for [walletId]. Idempotent. */
+    fun delete(walletId: String)
+
     fun loadNetwork(walletId: String): EthereumNetwork?
 
     fun loadMnemonic(walletId: String): String?

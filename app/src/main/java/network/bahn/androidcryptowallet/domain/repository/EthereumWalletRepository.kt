@@ -35,4 +35,10 @@ interface EthereumWalletRepository {
     )
 
     suspend fun refreshBalance(walletId: String)
+
+    /**
+     * Permanently remove [walletId]: encrypted mnemonic/passphrase/network keys first,
+     * then the Room row. Idempotent if already gone.
+     */
+    suspend fun deleteWallet(walletId: String)
 }

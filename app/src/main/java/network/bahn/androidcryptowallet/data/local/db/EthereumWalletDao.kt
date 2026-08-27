@@ -25,6 +25,9 @@ interface EthereumWalletDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnore(entity: EthereumWalletEntity)
 
+    @Query("DELETE FROM ethereum_wallet WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     @Query(
         """
         UPDATE ethereum_wallet

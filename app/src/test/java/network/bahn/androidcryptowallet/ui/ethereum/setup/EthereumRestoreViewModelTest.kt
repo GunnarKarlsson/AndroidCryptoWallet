@@ -251,6 +251,8 @@ private class FakeEthRestoreWalletRepository(
     }
 
     override suspend fun refreshBalance(walletId: String) = error("unused")
+
+    override suspend fun deleteWallet(walletId: String) = error("unused")
 }
 
 private class FakeEthRestoreNetworkStore(

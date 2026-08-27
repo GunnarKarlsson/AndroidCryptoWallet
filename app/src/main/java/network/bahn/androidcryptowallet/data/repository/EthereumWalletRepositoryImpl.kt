@@ -87,4 +87,9 @@ class EthereumWalletRepositoryImpl @Inject constructor(
             updatedAtMillis = timeProvider.nowMillis(),
         )
     }
+
+    override suspend fun deleteWallet(walletId: String) {
+        mnemonicStore.delete(walletId)
+        walletDao.deleteById(walletId)
+    }
 }
