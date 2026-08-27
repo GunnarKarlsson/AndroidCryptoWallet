@@ -36,6 +36,7 @@
     <string name="select_chain_title">Select chain</string>
     <string name="chain_bitcoin">Bitcoin</string>
     <string name="chain_ethereum">Ethereum</string>
+    <string name="chain_bsc">BSC (Binance Chain)</string>
     <string name="wallets_title">Bitcoin wallets</string>
     <string name="ethereum_wallets_title">Ethereum wallets</string>
     <string name="wallets_empty">No wallets on this network yet.</string>

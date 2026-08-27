@@ -5,9 +5,9 @@ import org.junit.Test
 
 class SupportedChainTest {
     @Test
-    fun hardcodedListIsBitcoinThenEthereum() {
+    fun hardcodedListIsBitcoinThenEthereumThenBsc() {
         assertEquals(
-            listOf(SupportedChain.BITCOIN, SupportedChain.ETHEREUM),
+            listOf(SupportedChain.BITCOIN, SupportedChain.ETHEREUM, SupportedChain.BSC),
             SupportedChains,
         )
     }

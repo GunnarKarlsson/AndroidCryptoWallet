@@ -117,12 +117,14 @@ private val SupportedChain.labelRes: Int
     get() = when (this) {
         SupportedChain.BITCOIN -> R.string.chain_bitcoin
         SupportedChain.ETHEREUM -> R.string.chain_ethereum
+        SupportedChain.BSC -> R.string.chain_bsc
     }
 
 private val SupportedChain.iconRes: Int
     get() = when (this) {
         SupportedChain.BITCOIN -> R.drawable.ic_chain_bitcoin
         SupportedChain.ETHEREUM -> R.drawable.ic_chain_ethereum
+        SupportedChain.BSC -> R.drawable.ic_chain_bsc
     }
 
 @Preview(showBackground = true)

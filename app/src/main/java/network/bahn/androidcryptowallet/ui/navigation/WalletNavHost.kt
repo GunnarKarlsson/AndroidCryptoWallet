@@ -61,6 +61,7 @@ fun WalletNavHost(
                     when (chain) {
                         SupportedChain.BITCOIN -> navController.navigate(BitcoinWalletListRoute)
                         SupportedChain.ETHEREUM -> navController.navigate(EthereumWalletListRoute)
+                        SupportedChain.BSC -> Unit // not wired yet
                     }
                 },
             )
