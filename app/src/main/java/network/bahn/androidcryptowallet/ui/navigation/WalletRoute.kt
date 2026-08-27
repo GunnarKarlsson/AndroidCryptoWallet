@@ -76,3 +76,6 @@ data class EthereumSendRoute(val walletId: String)
 
 @Serializable
 data class EthereumReceiveRoute(val walletId: String)
+
+@Serializable
+data class EthereumEditWalletRoute(val walletId: String)

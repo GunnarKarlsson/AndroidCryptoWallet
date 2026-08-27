@@ -33,6 +33,7 @@ import network.bahn.androidcryptowallet.ui.chain.ChainSelectScreen
 import network.bahn.androidcryptowallet.ui.chain.SupportedChain
 import network.bahn.androidcryptowallet.ui.ethereum.list.EthereumWalletListScreen
 import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsScreen
+import network.bahn.androidcryptowallet.ui.ethereum.edit.EthereumEditWalletScreen
 import network.bahn.androidcryptowallet.ui.ethereum.receive.EthereumReceiveScreen
 import network.bahn.androidcryptowallet.ui.ethereum.send.EthereumSendScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumConfirmMnemonicScreen
@@ -88,8 +89,15 @@ fun WalletNavHost(
             val walletId = entry.toRoute<EthereumWalletDetailsRoute>().walletId
             EthereumWalletDetailsScreen(
                 onBack = { navController.popBackStack() },
+                onEdit = { navController.navigate(EthereumEditWalletRoute(walletId)) },
                 onSend = { navController.navigate(EthereumSendRoute(walletId)) },
                 onReceive = { navController.navigate(EthereumReceiveRoute(walletId)) },
+            )
+        }
+        composable<EthereumEditWalletRoute> {
+            EthereumEditWalletScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() },
             )
         }
         composable<EthereumSendRoute> {

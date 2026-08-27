@@ -261,4 +261,6 @@ private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
         balanceWei: String,
         updatedAtMillis: Long,
     ) = Unit
+
+    override suspend fun updateName(id: String, name: String?) = Unit
 }

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -65,6 +66,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 @Composable
 fun EthereumWalletDetailsScreen(
     onBack: () -> Unit,
+    onEdit: () -> Unit,
     onSend: () -> Unit,
     onReceive: () -> Unit,
     viewModel: EthereumWalletDetailsViewModel = hiltViewModel(),
@@ -86,6 +88,7 @@ fun EthereumWalletDetailsScreen(
         onSend = onSend,
         onReceive = onReceive,
         onBack = onBack,
+        onEdit = onEdit,
         onDeleteClick = viewModel::onDeleteClick,
         onDismissDeleteConfirm = viewModel::onDismissDeleteConfirm,
         onConfirmDelete = viewModel::onConfirmDelete,
@@ -100,6 +103,7 @@ private fun EthereumWalletDetailsContent(
     onSend: () -> Unit,
     onReceive: () -> Unit,
     onBack: () -> Unit,
+    onEdit: () -> Unit,
     onDeleteClick: () -> Unit,
     onDismissDeleteConfirm: () -> Unit,
     onConfirmDelete: () -> Unit,
@@ -171,6 +175,15 @@ private fun EthereumWalletDetailsContent(
                         Icon(
                             imageVector = Icons.Outlined.Delete,
                             contentDescription = stringResource(R.string.delete_wallet),
+                        )
+                    }
+                    IconButton(
+                        onClick = onEdit,
+                        enabled = !uiState.isDeleting,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Edit,
+                            contentDescription = stringResource(R.string.edit_wallet),
                         )
                     }
                 },
@@ -398,6 +411,7 @@ private fun EthereumWalletDetailsZeroBalancePreview() {
             onSend = {},
             onReceive = {},
             onBack = {},
+            onEdit = {},
             onDeleteClick = {},
             onDismissDeleteConfirm = {},
             onConfirmDelete = {},
@@ -418,6 +432,7 @@ private fun EthereumWalletDetailsScreenPreview() {
             onSend = {},
             onReceive = {},
             onBack = {},
+            onEdit = {},
             onDeleteClick = {},
             onDismissDeleteConfirm = {},
             onConfirmDelete = {},

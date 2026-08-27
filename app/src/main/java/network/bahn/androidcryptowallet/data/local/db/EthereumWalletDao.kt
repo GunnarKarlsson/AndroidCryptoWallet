@@ -41,4 +41,7 @@ interface EthereumWalletDao {
         balanceWei: String,
         updatedAtMillis: Long,
     )
+
+    @Query("UPDATE ethereum_wallet SET name = :name WHERE id = :id")
+    suspend fun updateName(id: String, name: String?)
 }

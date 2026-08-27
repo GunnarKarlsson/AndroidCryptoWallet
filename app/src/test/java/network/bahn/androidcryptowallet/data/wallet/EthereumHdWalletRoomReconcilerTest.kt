@@ -193,4 +193,6 @@ private class FakeEthReconcileDao : EthereumWalletDao {
         balanceWei: String,
         updatedAtMillis: Long,
     ) = Unit
+
+    override suspend fun updateName(id: String, name: String?) = Unit
 }

@@ -41,4 +41,10 @@ interface EthereumWalletRepository {
      * then the Room row. Idempotent if already gone.
      */
     suspend fun deleteWallet(walletId: String)
+
+    /**
+     * Update the display name for [walletId]. Blank/whitespace becomes null
+     * (UI falls back to "Ethereum wallet").
+     */
+    suspend fun renameWallet(walletId: String, name: String?)
 }

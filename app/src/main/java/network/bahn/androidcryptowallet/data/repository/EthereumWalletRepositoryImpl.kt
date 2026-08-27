@@ -92,4 +92,11 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         mnemonicStore.delete(walletId)
         walletDao.deleteById(walletId)
     }
+
+    override suspend fun renameWallet(walletId: String, name: String?) {
+        walletDao.observeById(walletId).first()
+            ?: error("Wallet not found")
+        val trimmed = name?.trim()?.takeIf { it.isNotEmpty() }
+        walletDao.updateName(walletId, trimmed)
+    }
 }

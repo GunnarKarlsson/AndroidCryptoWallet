@@ -214,4 +214,6 @@ private class FakeEthDetailsWalletRepository(
         if (deleteError != null) throw deleteError
         wallet.value = null
     }
+
+    override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
 }

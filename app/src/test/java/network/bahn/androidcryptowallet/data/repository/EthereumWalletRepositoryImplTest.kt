@@ -219,6 +219,47 @@ class EthereumWalletRepositoryImplTest {
         assertEquals(1, store.saved.size)
     }
 
+    @Test
+    fun renameWalletPersistsTrimmedNameWithoutTouchingRemote() = runTest {
+        val remote = FakeEthereumRemoteDataSource()
+        val engine = FakeEthereumKeyEngine()
+        val repo = createRepository(engine = engine, remote = remote)
+
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        repo.renameWallet(id, "  Savings  ")
+
+        assertEquals("Savings", repo.observeWallet(id).first()?.name)
+        assertEquals(0, remote.balanceCalls)
+        assertEquals(1, engine.deriveCalls)
+    }
+
+    @Test
+    fun renameWalletBlankBecomesNull() = runTest {
+        val repo = createRepository()
+        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        val id = repo.observeWallets().first().single().id
+        repo.renameWallet(id, "Savings")
+        repo.renameWallet(id, "   ")
+
+        assertEquals(null, repo.observeWallet(id).first()?.name)
+    }
+
+    @Test
+    fun renameWalletMissingThrowsWithoutRemote() = runTest {
+        val remote = FakeEthereumRemoteDataSource()
+        val engine = FakeEthereumKeyEngine()
+        val repo = createRepository(engine = engine, remote = remote)
+        try {
+            repo.renameWallet("missing", "Savings")
+            error("expected Wallet not found")
+        } catch (e: IllegalStateException) {
+            assertEquals("Wallet not found", e.message)
+        }
+        assertEquals(0, remote.balanceCalls)
+        assertEquals(0, engine.deriveCalls)
+    }
+
     private fun createRepository(
         engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
         store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
@@ -348,6 +389,14 @@ private class FakeEthereumWalletDao : EthereumWalletDao {
                 } else {
                     row
                 }
+            }
+        }
+    }
+
+    override suspend fun updateName(id: String, name: String?) {
+        items.update { rows ->
+            rows.map { row ->
+                if (row.id == id) row.copy(name = name) else row
             }
         }
     }
