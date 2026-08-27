@@ -49,7 +49,7 @@ fun ChainSelectScreen(
                             painter = painterResource(R.drawable.ic_logo),
                             contentDescription = stringResource(R.string.varna_logo),
                             modifier = Modifier
-                                .padding(start = 12.dp)
+                                .padding(start = 12.dp, end = 12.dp)
                                 .size(32.dp),
                         )
                     },
