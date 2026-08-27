@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Font Awesome Free: ethereum (CC BY 4.0) https://fontawesome.com/license/free -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <group android:translateX="96">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M311.9 260.8L160 353.6 8 260.8 160 0 311.9 260.8zM160 383.4L8 290.6 160 512 312 290.6 160 383.4z" />
+    </group>
+</vector>

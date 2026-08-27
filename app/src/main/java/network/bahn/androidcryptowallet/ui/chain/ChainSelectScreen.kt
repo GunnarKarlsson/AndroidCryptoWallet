@@ -12,8 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CurrencyBitcoin
-import androidx.compose.material.icons.outlined.Token
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,7 +25,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -98,9 +95,9 @@ private fun ChainListItem(
         headlineContent = { Text(label) },
         leadingContent = {
             Icon(
-                imageVector = chain.icon,
+                painter = painterResource(chain.iconRes),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = Color.Black,
             )
         },
         trailingContent = {
@@ -125,10 +122,10 @@ private val SupportedChain.labelRes: Int
         SupportedChain.ETHEREUM -> R.string.chain_ethereum
     }
 
-private val SupportedChain.icon: ImageVector
+private val SupportedChain.iconRes: Int
     get() = when (this) {
-        SupportedChain.BITCOIN -> Icons.Filled.CurrencyBitcoin
-        SupportedChain.ETHEREUM -> Icons.Outlined.Token
+        SupportedChain.BITCOIN -> R.drawable.ic_chain_bitcoin
+        SupportedChain.ETHEREUM -> R.drawable.ic_chain_ethereum
     }
 
 @Preview(showBackground = true)
