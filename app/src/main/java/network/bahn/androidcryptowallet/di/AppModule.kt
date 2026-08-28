@@ -23,8 +23,8 @@ import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_8_9
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_9_10
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_10_11
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
-import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumExplorerConfig
-import network.bahn.androidcryptowallet.data.remote.eth.EthereumRpcConfig
+import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
 import network.bahn.androidcryptowallet.domain.TimeProvider
@@ -86,16 +86,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideEthereumRpcConfig(): EthereumRpcConfig = EthereumRpcConfig(
-        sepoliaRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com",
-        mainnetRpcUrl = "https://ethereum.publicnode.com",
-    )
-
-    @Provides
-    @Singleton
-    fun provideEthereumExplorerConfig(): EthereumExplorerConfig = EthereumExplorerConfig(
-        sepoliaBaseUrl = "https://eth-sepolia.blockscout.com/api/v2",
-        mainnetBaseUrl = "https://eth.blockscout.com/api/v2",
+    fun provideEvmChainCatalog(): EvmChainCatalog = EvmChainCatalog(
+        rpcUrls = mapOf(
+            EvmNetwork.SEPOLIA to "https://ethereum-sepolia-rpc.publicnode.com",
+            EvmNetwork.MAINNET to "https://ethereum.publicnode.com",
+        ),
+        explorerBaseUrls = mapOf(
+            EvmNetwork.SEPOLIA to "https://eth-sepolia.blockscout.com/api/v2",
+            EvmNetwork.MAINNET to "https://eth.blockscout.com/api/v2",
+        ),
     )
 
     @Provides
