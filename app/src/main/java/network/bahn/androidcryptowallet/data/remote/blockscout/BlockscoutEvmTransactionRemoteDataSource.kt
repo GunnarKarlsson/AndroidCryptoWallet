@@ -15,7 +15,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class BlockscoutEthereumTransactionRemoteDataSource @Inject constructor(
+class BlockscoutEvmTransactionRemoteDataSource @Inject constructor(
     private val client: OkHttpClient,
     private val catalog: EvmChainCatalog,
     private val json: Json,

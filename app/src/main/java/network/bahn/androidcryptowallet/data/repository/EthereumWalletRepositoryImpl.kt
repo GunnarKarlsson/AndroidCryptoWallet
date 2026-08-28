@@ -18,8 +18,8 @@ import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
-import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
-import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.EvmRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.EvmTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EvmFeeData
@@ -42,8 +42,8 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     private val walletDao: EvmWalletDao,
     private val transactionDao: EvmTransactionDao,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
-    private val remote: EthereumRemoteDataSource,
-    private val transactionRemote: EthereumTransactionRemoteDataSource,
+    private val remote: EvmRemoteDataSource,
+    private val transactionRemote: EvmTransactionRemoteDataSource,
     private val timeProvider: TimeProvider,
     private val json: Json,
 ) : EvmWalletRepository {

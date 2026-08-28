@@ -2,7 +2,7 @@ package network.bahn.androidcryptowallet.data.remote.blockscout
 
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
 import network.bahn.androidcryptowallet.data.remote.evm.EvmExplorerKind
-import network.bahn.androidcryptowallet.data.remote.etherscan.EtherscanEthereumTransactionRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.etherscan.EtherscanEvmTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
@@ -10,11 +10,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RoutingEthereumTransactionRemoteDataSource @Inject constructor(
+class RoutingEvmTransactionRemoteDataSource @Inject constructor(
     private val catalog: EvmChainCatalog,
-    private val blockscout: BlockscoutEthereumTransactionRemoteDataSource,
-    private val etherscan: EtherscanEthereumTransactionRemoteDataSource,
-) : EthereumTransactionRemoteDataSource {
+    private val blockscout: BlockscoutEvmTransactionRemoteDataSource,
+    private val etherscan: EtherscanEvmTransactionRemoteDataSource,
+) : EvmTransactionRemoteDataSource {
     override suspend fun getAddressTransactions(
         network: EvmNetwork,
         address: String,

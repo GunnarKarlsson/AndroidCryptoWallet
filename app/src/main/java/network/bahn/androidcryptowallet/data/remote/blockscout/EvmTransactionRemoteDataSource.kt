@@ -4,7 +4,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 
-interface EthereumTransactionRemoteDataSource {
+interface EvmTransactionRemoteDataSource {
     suspend fun getAddressTransactions(
         network: EvmNetwork,
         address: String,

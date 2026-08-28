@@ -16,8 +16,8 @@ import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
-import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
-import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.EvmRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.EvmTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EvmAddressBalance
@@ -110,7 +110,7 @@ class EthereumWalletRepositoryImplTest {
     fun restoreExistingSeedDoesNotInsertAgain() = runTest {
         val engine = FakeEvmKeyEngine()
         val store = FakeEvmMnemonicStore()
-        val remote = FakeEthereumRemoteDataSource(balanceWei = "12345")
+        val remote = FakeEvmRemoteDataSource(balanceWei = "12345")
         val repo = createRepository(engine = engine, store = store, remote = remote)
 
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
@@ -204,7 +204,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun refreshBalancePersistsWeiFromRemote() = runTest {
         val walletDao = FakeEvmWalletDao()
-        val remote = FakeEthereumRemoteDataSource(balanceWei = "1000000000000000000")
+        val remote = FakeEvmRemoteDataSource(balanceWei = "1000000000000000000")
         val timeProvider = FakeTimeProvider(nowMillis = 1_700_000_000_000L)
         val repo = createRepository(
             walletDao = walletDao,
@@ -252,7 +252,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun renameWalletPersistsTrimmedNameWithoutTouchingRemote() = runTest {
-        val remote = FakeEthereumRemoteDataSource()
+        val remote = FakeEvmRemoteDataSource()
         val engine = FakeEvmKeyEngine()
         val repo = createRepository(engine = engine, remote = remote)
 
@@ -278,7 +278,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun renameWalletMissingThrowsWithoutRemote() = runTest {
-        val remote = FakeEthereumRemoteDataSource()
+        val remote = FakeEvmRemoteDataSource()
         val engine = FakeEvmKeyEngine()
         val repo = createRepository(engine = engine, remote = remote)
         try {
@@ -302,7 +302,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun getTransactionsPersistsFirstPageAndReturnsCache() = runTest {
-        val txRemote = FakeEthereumTransactionRemoteDataSource(
+        val txRemote = FakeEvmTransactionRemoteDataSource(
             firstPage = EvmTransactionPage(
                 transactions = listOf(TX_SUMMARY),
                 nextCursor = EvmTransactionPaginationCursor(
@@ -353,7 +353,7 @@ class EthereumWalletRepositoryImplTest {
             fee = null,
             itemsCount = 50,
         )
-        val txRemote = FakeEthereumTransactionRemoteDataSource(
+        val txRemote = FakeEvmTransactionRemoteDataSource(
             firstPage = EvmTransactionPage(
                 transactions = listOf(TX_SUMMARY),
                 nextCursor = cursor,
@@ -383,7 +383,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun sendBroadcastsSignedTransaction() = runTest {
-        val remote = FakeEthereumRemoteDataSource(
+        val remote = FakeEvmRemoteDataSource(
             balanceWei = "1000000000000000000",
         )
         val store = FakeEvmMnemonicStore()
@@ -406,7 +406,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun sendRejectsInsufficientFunds() = runTest {
-        val remote = FakeEthereumRemoteDataSource(balanceWei = "1000")
+        val remote = FakeEvmRemoteDataSource(balanceWei = "1000")
         val repo = createRepository(remote = remote)
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets(EvmFamily.ETHEREUM).first().single().id
@@ -432,8 +432,8 @@ class EthereumWalletRepositoryImplTest {
         walletDao: FakeEvmWalletDao = FakeEvmWalletDao(),
         transactionDao: FakeEvmTransactionDao = FakeEvmTransactionDao(),
         networkStore: FakeSelectedEvmNetworkStore = FakeSelectedEvmNetworkStore(),
-        remote: FakeEthereumRemoteDataSource = FakeEthereumRemoteDataSource(),
-        transactionRemote: FakeEthereumTransactionRemoteDataSource = FakeEthereumTransactionRemoteDataSource(),
+        remote: FakeEvmRemoteDataSource = FakeEvmRemoteDataSource(),
+        transactionRemote: FakeEvmTransactionRemoteDataSource = FakeEvmTransactionRemoteDataSource(),
         timeProvider: FakeTimeProvider = FakeTimeProvider(),
         json: Json = Json { ignoreUnknownKeys = true },
     ) = EthereumWalletRepositoryImpl(
@@ -610,7 +610,7 @@ private class FakeEvmWalletDao : EvmWalletDao {
     }
 }
 
-private class FakeEthereumRemoteDataSource(
+private class FakeEvmRemoteDataSource(
     private val balanceWei: String = "0",
     private val feeData: EvmFeeData = EvmFeeData(
         baseFeePerGasWei = "1000000000",
@@ -619,7 +619,7 @@ private class FakeEthereumRemoteDataSource(
     private val nonce: Long = 0L,
     private val estimatedGas: Long = 21_000L,
     private val broadcastTxHash: String = "0xbroadcast",
-) : EthereumRemoteDataSource {
+) : EvmRemoteDataSource {
     var balanceCalls = 0
     var sendRawCalls = 0
 
@@ -707,14 +707,14 @@ private class FakeEvmTransactionDao : EvmTransactionDao {
     }
 }
 
-private class FakeEthereumTransactionRemoteDataSource(
+private class FakeEvmTransactionRemoteDataSource(
     private val firstPage: EvmTransactionPage = EvmTransactionPage(
         transactions = emptyList(),
         nextCursor = null,
         hasMore = false,
     ),
     private val nextPage: EvmTransactionPage = firstPage,
-) : EthereumTransactionRemoteDataSource {
+) : EvmTransactionRemoteDataSource {
     data class TxCall(
         val network: EvmNetwork,
         val address: String,

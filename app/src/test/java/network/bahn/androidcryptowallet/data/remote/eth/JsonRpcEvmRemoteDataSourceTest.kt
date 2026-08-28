@@ -3,17 +3,17 @@ package network.bahn.androidcryptowallet.data.remote.eth
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class JsonRpcEthereumRemoteDataSourceTest {
+class JsonRpcEvmRemoteDataSourceTest {
     @Test
     fun parseHexWeiConvertsOneEth() {
         assertEquals(
             "1000000000000000000",
-            JsonRpcEthereumRemoteDataSource.parseHexWei("0xde0b6b3a7640000"),
+            JsonRpcEvmRemoteDataSource.parseHexWei("0xde0b6b3a7640000"),
         )
     }
 
     @Test
     fun parseHexWeiConvertsZero() {
-        assertEquals("0", JsonRpcEthereumRemoteDataSource.parseHexWei("0x0"))
+        assertEquals("0", JsonRpcEvmRemoteDataSource.parseHexWei("0x0"))
     }
 }

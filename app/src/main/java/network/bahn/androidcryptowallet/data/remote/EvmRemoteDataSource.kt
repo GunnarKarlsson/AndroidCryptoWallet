@@ -5,7 +5,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import java.math.BigInteger
 
-interface EthereumRemoteDataSource {
+interface EvmRemoteDataSource {
     suspend fun getAddressBalance(
         network: EvmNetwork,
         address: String,

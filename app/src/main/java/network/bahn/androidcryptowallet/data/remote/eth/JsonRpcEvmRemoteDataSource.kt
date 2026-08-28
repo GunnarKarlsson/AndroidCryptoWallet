@@ -16,7 +16,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.EvmRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
 import network.bahn.androidcryptowallet.domain.model.EvmAddressBalance
 import network.bahn.androidcryptowallet.domain.model.EvmFeeData
@@ -30,11 +30,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class JsonRpcEthereumRemoteDataSource @Inject constructor(
+class JsonRpcEvmRemoteDataSource @Inject constructor(
     private val client: OkHttpClient,
     private val catalog: EvmChainCatalog,
     private val json: Json,
-) : EthereumRemoteDataSource {
+) : EvmRemoteDataSource {
     override suspend fun getAddressBalance(
         network: EvmNetwork,
         address: String,
