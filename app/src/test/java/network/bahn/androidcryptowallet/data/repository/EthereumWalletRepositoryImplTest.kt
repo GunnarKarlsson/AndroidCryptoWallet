@@ -7,11 +7,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionEntity
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletTxCacheEntity
+import network.bahn.androidcryptowallet.data.local.db.EvmTransactionDao
+import network.bahn.androidcryptowallet.data.local.db.EvmTransactionEntity
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletTxCacheEntity
 import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
@@ -203,7 +203,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun refreshBalancePersistsWeiFromRemote() = runTest {
-        val walletDao = FakeEthereumWalletDao()
+        val walletDao = FakeEvmWalletDao()
         val remote = FakeEthereumRemoteDataSource(balanceWei = "1000000000000000000")
         val timeProvider = FakeTimeProvider(nowMillis = 1_700_000_000_000L)
         val repo = createRepository(
@@ -317,7 +317,7 @@ class EthereumWalletRepositoryImplTest {
                 hasMore = true,
             ),
         )
-        val transactionDao = FakeEthereumTransactionDao()
+        val transactionDao = FakeEvmTransactionDao()
         val timeProvider = FakeTimeProvider(nowMillis = 1_700_000_000_000L)
         val json = Json { ignoreUnknownKeys = true }
         val repo = createRepository(
@@ -365,7 +365,7 @@ class EthereumWalletRepositoryImplTest {
                 hasMore = false,
             ),
         )
-        val transactionDao = FakeEthereumTransactionDao()
+        val transactionDao = FakeEvmTransactionDao()
         val repo = createRepository(
             transactionDao = transactionDao,
             transactionRemote = txRemote,
@@ -429,8 +429,8 @@ class EthereumWalletRepositoryImplTest {
     private fun createRepository(
         engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
         store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
-        walletDao: FakeEthereumWalletDao = FakeEthereumWalletDao(),
-        transactionDao: FakeEthereumTransactionDao = FakeEthereumTransactionDao(),
+        walletDao: FakeEvmWalletDao = FakeEvmWalletDao(),
+        transactionDao: FakeEvmTransactionDao = FakeEvmTransactionDao(),
         networkStore: FakeSelectedEvmNetworkStore = FakeSelectedEvmNetworkStore(),
         remote: FakeEthereumRemoteDataSource = FakeEthereumRemoteDataSource(),
         transactionRemote: FakeEthereumTransactionRemoteDataSource = FakeEthereumTransactionRemoteDataSource(),
@@ -552,27 +552,27 @@ private class FakeSelectedEvmNetworkStore(
     }
 }
 
-private class FakeEthereumWalletDao : EthereumWalletDao {
-    private val items = MutableStateFlow<List<EthereumWalletEntity>>(emptyList())
+private class FakeEvmWalletDao : EvmWalletDao {
+    private val items = MutableStateFlow<List<EvmWalletEntity>>(emptyList())
 
-    override fun observeByNetwork(network: String): Flow<List<EthereumWalletEntity>> =
+    override fun observeByNetwork(network: String): Flow<List<EvmWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
-    override fun observeById(id: String): Flow<EthereumWalletEntity?> =
+    override fun observeById(id: String): Flow<EvmWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
 
     override suspend fun findByNetworkAndAddress(
         network: String,
         address: String,
-    ): EthereumWalletEntity? = items.value.find {
+    ): EvmWalletEntity? = items.value.find {
         it.network == network && it.address == address
     }
 
-    override suspend fun insert(entity: EthereumWalletEntity) {
+    override suspend fun insert(entity: EvmWalletEntity) {
         items.update { it + entity }
     }
 
-    override suspend fun insertIgnore(entity: EthereumWalletEntity) {
+    override suspend fun insertIgnore(entity: EvmWalletEntity) {
         items.update { rows ->
             if (rows.any { it.id == entity.id }) rows else rows + entity
         }
@@ -660,20 +660,20 @@ private class FakeTimeProvider(
     override fun nowMillis(): Long = nowMillis
 }
 
-private class FakeEthereumTransactionDao : EthereumTransactionDao {
-    val transactions = mutableListOf<EthereumTransactionEntity>()
-    var cache: EthereumWalletTxCacheEntity? = null
+private class FakeEvmTransactionDao : EvmTransactionDao {
+    val transactions = mutableListOf<EvmTransactionEntity>()
+    var cache: EvmWalletTxCacheEntity? = null
 
-    override suspend fun listByWalletId(walletId: String): List<EthereumTransactionEntity> =
+    override suspend fun listByWalletId(walletId: String): List<EvmTransactionEntity> =
         transactions.filter { it.walletId == walletId }.sortedBy { it.sortIndex }
 
     override suspend fun maxSortIndex(walletId: String): Int =
         transactions.filter { it.walletId == walletId }.maxOfOrNull { it.sortIndex } ?: -1
 
-    override suspend fun cacheForWallet(walletId: String): EthereumWalletTxCacheEntity? =
+    override suspend fun cacheForWallet(walletId: String): EvmWalletTxCacheEntity? =
         cache?.takeIf { it.walletId == walletId }
 
-    override suspend fun upsertTransactions(entities: List<EthereumTransactionEntity>) {
+    override suspend fun upsertTransactions(entities: List<EvmTransactionEntity>) {
         entities.forEach { entity ->
             transactions.removeAll { it.walletId == entity.walletId && it.hash == entity.hash }
             transactions += entity
@@ -684,14 +684,14 @@ private class FakeEthereumTransactionDao : EthereumTransactionDao {
         transactions.removeAll { it.walletId == walletId }
     }
 
-    override suspend fun upsertCache(entity: EthereumWalletTxCacheEntity) {
+    override suspend fun upsertCache(entity: EvmWalletTxCacheEntity) {
         cache = entity
     }
 
     override suspend fun replaceWalletTransactions(
         walletId: String,
-        transactions: List<EthereumTransactionEntity>,
-        cache: EthereumWalletTxCacheEntity,
+        transactions: List<EvmTransactionEntity>,
+        cache: EvmWalletTxCacheEntity,
     ) {
         deleteByWalletId(walletId)
         upsertTransactions(transactions)
@@ -699,8 +699,8 @@ private class FakeEthereumTransactionDao : EthereumTransactionDao {
     }
 
     override suspend fun appendWalletTransactions(
-        transactions: List<EthereumTransactionEntity>,
-        cache: EthereumWalletTxCacheEntity,
+        transactions: List<EvmTransactionEntity>,
+        cache: EvmWalletTxCacheEntity,
     ) {
         upsertTransactions(transactions)
         upsertCache(cache)

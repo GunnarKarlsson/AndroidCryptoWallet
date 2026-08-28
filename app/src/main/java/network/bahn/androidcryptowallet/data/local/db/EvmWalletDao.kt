@@ -7,23 +7,23 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface EthereumWalletDao {
+interface EvmWalletDao {
     @Query("SELECT * FROM ethereum_wallet WHERE network = :network ORDER BY id")
-    fun observeByNetwork(network: String): Flow<List<EthereumWalletEntity>>
+    fun observeByNetwork(network: String): Flow<List<EvmWalletEntity>>
 
     @Query("SELECT * FROM ethereum_wallet WHERE id = :id")
-    fun observeById(id: String): Flow<EthereumWalletEntity?>
+    fun observeById(id: String): Flow<EvmWalletEntity?>
 
     @Query(
         "SELECT * FROM ethereum_wallet WHERE network = :network AND address = :address LIMIT 1",
     )
-    suspend fun findByNetworkAndAddress(network: String, address: String): EthereumWalletEntity?
+    suspend fun findByNetworkAndAddress(network: String, address: String): EvmWalletEntity?
 
     @Insert
-    suspend fun insert(entity: EthereumWalletEntity)
+    suspend fun insert(entity: EvmWalletEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIgnore(entity: EthereumWalletEntity)
+    suspend fun insertIgnore(entity: EvmWalletEntity)
 
     @Query("DELETE FROM ethereum_wallet WHERE id = :id")
     suspend fun deleteById(id: String)

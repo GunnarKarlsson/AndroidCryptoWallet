@@ -10,7 +10,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
     primaryKeys = ["walletId", "hash"],
     foreignKeys = [
         ForeignKey(
-            entity = EthereumWalletEntity::class,
+            entity = EvmWalletEntity::class,
             parentColumns = ["id"],
             childColumns = ["walletId"],
             onDelete = ForeignKey.CASCADE,
@@ -18,7 +18,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
     ],
     indices = [Index(value = ["walletId"])],
 )
-data class EthereumTransactionEntity(
+data class EvmTransactionEntity(
     val walletId: String,
     val hash: String,
     val confirmed: Boolean,
@@ -28,7 +28,7 @@ data class EthereumTransactionEntity(
     val sortIndex: Int,
 )
 
-fun EthereumTransactionEntity.toDomain(): EvmTransactionSummary = EvmTransactionSummary(
+fun EvmTransactionEntity.toDomain(): EvmTransactionSummary = EvmTransactionSummary(
     hash = hash,
     confirmed = confirmed,
     blockTimeSeconds = blockTimeSeconds,
@@ -39,7 +39,7 @@ fun EthereumTransactionEntity.toDomain(): EvmTransactionSummary = EvmTransaction
 fun EvmTransactionSummary.toEntity(
     walletId: String,
     sortIndex: Int,
-): EthereumTransactionEntity = EthereumTransactionEntity(
+): EvmTransactionEntity = EvmTransactionEntity(
     walletId = walletId,
     hash = hash,
     confirmed = confirmed,

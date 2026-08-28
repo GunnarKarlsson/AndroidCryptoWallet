@@ -11,21 +11,21 @@ import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCur
     tableName = "ethereum_wallet_tx_cache",
     foreignKeys = [
         ForeignKey(
-            entity = EthereumWalletEntity::class,
+            entity = EvmWalletEntity::class,
             parentColumns = ["id"],
             childColumns = ["walletId"],
             onDelete = ForeignKey.CASCADE,
         ),
     ],
 )
-data class EthereumWalletTxCacheEntity(
+data class EvmWalletTxCacheEntity(
     @PrimaryKey val walletId: String,
     val nextCursorJson: String?,
     val hasMore: Boolean,
     val fetchedAtMillis: Long,
 )
 
-fun EthereumWalletTxCacheEntity.nextCursor(json: Json): EvmTransactionPaginationCursor? =
+fun EvmWalletTxCacheEntity.nextCursor(json: Json): EvmTransactionPaginationCursor? =
     nextCursorJson?.let { json.decodeFromString(it) }
 
 fun EvmTransactionPaginationCursor.toJson(json: Json): String =

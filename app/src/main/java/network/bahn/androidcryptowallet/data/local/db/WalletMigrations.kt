@@ -4,7 +4,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
- * Additive only: creates [ethereum_wallet]. Must not drop or rewrite Bitcoin tables.
+ * Additive only: creates `ethereum_wallet` ([EvmWalletEntity]). Must not drop or rewrite Bitcoin tables.
  */
 val WALLET_MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -23,7 +23,7 @@ val WALLET_MIGRATION_8_9 = object : Migration(8, 9) {
 }
 
 /**
- * Additive only: balance columns on [ethereum_wallet]. Must not alter Bitcoin tables.
+ * Additive only: balance columns on `ethereum_wallet` ([EvmWalletEntity]). Must not alter Bitcoin tables.
  */
 val WALLET_MIGRATION_9_10 = object : Migration(9, 10) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -33,7 +33,8 @@ val WALLET_MIGRATION_9_10 = object : Migration(9, 10) {
 }
 
 /**
- * Additive only: ETH transaction tables. Must not alter Bitcoin tables.
+ * Additive only: EVM transaction tables ([EvmTransactionEntity], [EvmWalletTxCacheEntity]).
+ * Must not alter Bitcoin tables.
  */
 val WALLET_MIGRATION_10_11 = object : Migration(10, 11) {
     override fun migrate(db: SupportSQLiteDatabase) {

@@ -5,9 +5,9 @@ import androidx.room.PrimaryKey
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmWallet
 
-/** Public Ethereum wallet row. No BIP-39 secrets. */
+/** Public EVM wallet row. No BIP-39 secrets. Table name stays `ethereum_wallet`. */
 @Entity(tableName = "ethereum_wallet")
-data class EthereumWalletEntity(
+data class EvmWalletEntity(
     @PrimaryKey val id: String,
     val network: String,
     val address: String,
@@ -17,7 +17,7 @@ data class EthereumWalletEntity(
     val balanceUpdatedAtMillis: Long? = null,
 )
 
-fun EthereumWalletEntity.toDomain(): EvmWallet = EvmWallet(
+fun EvmWalletEntity.toDomain(): EvmWallet = EvmWallet(
     id = id,
     network = EvmNetwork.valueOf(network),
     address = address,
@@ -27,7 +27,7 @@ fun EthereumWalletEntity.toDomain(): EvmWallet = EvmWallet(
     balanceUpdatedAtMillis = balanceUpdatedAtMillis,
 )
 
-fun EvmWallet.toEntity(): EthereumWalletEntity = EthereumWalletEntity(
+fun EvmWallet.toEntity(): EvmWalletEntity = EvmWalletEntity(
     id = id,
     network = network.name,
     address = address,

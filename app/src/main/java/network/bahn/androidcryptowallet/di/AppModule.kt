@@ -17,8 +17,8 @@ import network.bahn.androidcryptowallet.BuildConfig
 import network.bahn.androidcryptowallet.data.local.db.BitcoinNetworkStatusDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EvmTransactionDao
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_8_9
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_9_10
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_10_11
@@ -58,12 +58,12 @@ object AppModule {
         database.bitcoinTransactionDao()
 
     @Provides
-    fun provideEthereumWalletDao(database: WalletDatabase): EthereumWalletDao =
-        database.ethereumWalletDao()
+    fun provideEvmWalletDao(database: WalletDatabase): EvmWalletDao =
+        database.evmWalletDao()
 
     @Provides
-    fun provideEthereumTransactionDao(database: WalletDatabase): EthereumTransactionDao =
-        database.ethereumTransactionDao()
+    fun provideEvmTransactionDao(database: WalletDatabase): EvmTransactionDao =
+        database.evmTransactionDao()
 
     @Provides
     @Singleton

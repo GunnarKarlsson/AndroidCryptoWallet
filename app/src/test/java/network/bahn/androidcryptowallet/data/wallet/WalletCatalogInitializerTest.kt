@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
@@ -203,7 +203,7 @@ private class ThrowingMockIdsWalletDao : FakeCatalogWalletDao() {
 private fun unusedEthereumReconciler() = EthereumHdWalletRoomReconciler(
     keyEngine = UnusedEthereumCatalogKeyEngine(),
     mnemonicStore = EmptyEthereumCatalogMnemonicStore(),
-    walletDao = EmptyEthereumCatalogWalletDao(),
+    walletDao = EmptyEvmCatalogWalletDao(),
 )
 
 private class UnusedEthereumCatalogKeyEngine : EthereumKeyEngine {
@@ -252,15 +252,15 @@ private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
     override fun loadPassphrase(walletId: String): String? = null
 }
 
-private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
+private class EmptyEvmCatalogWalletDao : EvmWalletDao {
     override fun observeByNetwork(
         network: String,
-    ): Flow<List<network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity>> =
+    ): Flow<List<network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity>> =
         MutableStateFlow(emptyList())
 
     override fun observeById(
         id: String,
-    ): Flow<network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity?> =
+    ): Flow<network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity?> =
         MutableStateFlow(null)
 
     override suspend fun findByNetworkAndAddress(
@@ -269,11 +269,11 @@ private class EmptyEthereumCatalogWalletDao : EthereumWalletDao {
     ) = null
 
     override suspend fun insert(
-        entity: network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity,
+        entity: network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity,
     ) = Unit
 
     override suspend fun insertIgnore(
-        entity: network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity,
+        entity: network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity,
     ) = Unit
 
     override suspend fun deleteById(id: String) = Unit

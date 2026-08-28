@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmReceiveAddress
@@ -18,7 +18,7 @@ import org.junit.Test
 class EthereumHdWalletRoomReconcilerTest {
     @Test
     fun emptyStoreLeavesDaoUnchanged() = runTest {
-        val dao = FakeEthReconcileDao()
+        val dao = FakeEvmReconcileDao()
         val store = FakeEthReconcileMnemonicStore()
         val engine = FakeEthReconcileKeyEngine()
         EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
@@ -28,7 +28,7 @@ class EthereumHdWalletRoomReconcilerTest {
 
     @Test
     fun emptyDaoInsertsHdRowByDerivingFromMnemonic() = runTest {
-        val dao = FakeEthReconcileDao()
+        val dao = FakeEvmReconcileDao()
         val store = FakeEthReconcileMnemonicStore().apply {
             save(
                 walletId = WALLET_ID,
@@ -53,7 +53,7 @@ class EthereumHdWalletRoomReconcilerTest {
 
     @Test
     fun skipsWhenMnemonicOrNetworkMissing() = runTest {
-        val dao = FakeEthReconcileDao()
+        val dao = FakeEvmReconcileDao()
         val store = FakeEthReconcileMnemonicStore()
         store.put(id = "no-mnemonic", mnemonic = null, network = EvmNetwork.SEPOLIA)
         store.put(id = "no-network", mnemonic = MNEMONIC, network = null)
@@ -67,9 +67,9 @@ class EthereumHdWalletRoomReconcilerTest {
 
     @Test
     fun existingRoomRowIsNotDuplicated() = runTest {
-        val dao = FakeEthReconcileDao()
+        val dao = FakeEvmReconcileDao()
         dao.insertIgnore(
-            EthereumWalletEntity(
+            EvmWalletEntity(
                 id = WALLET_ID,
                 network = EvmNetwork.SEPOLIA.name,
                 address = "0xexisting",
@@ -172,27 +172,27 @@ private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {
     override fun loadPassphrase(walletId: String): String? = passphrases[walletId]
 }
 
-private class FakeEthReconcileDao : EthereumWalletDao {
-    private val items = MutableStateFlow<List<EthereumWalletEntity>>(emptyList())
+private class FakeEvmReconcileDao : EvmWalletDao {
+    private val items = MutableStateFlow<List<EvmWalletEntity>>(emptyList())
 
-    override fun observeByNetwork(network: String): Flow<List<EthereumWalletEntity>> =
+    override fun observeByNetwork(network: String): Flow<List<EvmWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
-    override fun observeById(id: String): Flow<EthereumWalletEntity?> =
+    override fun observeById(id: String): Flow<EvmWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
 
     override suspend fun findByNetworkAndAddress(
         network: String,
         address: String,
-    ): EthereumWalletEntity? = items.value.find {
+    ): EvmWalletEntity? = items.value.find {
         it.network == network && it.address == address
     }
 
-    override suspend fun insert(entity: EthereumWalletEntity) {
+    override suspend fun insert(entity: EvmWalletEntity) {
         items.update { it + entity }
     }
 
-    override suspend fun insertIgnore(entity: EthereumWalletEntity) {
+    override suspend fun insertIgnore(entity: EvmWalletEntity) {
         items.update { rows ->
             if (rows.any { it.id == entity.id }) rows else rows + entity
         }

@@ -9,9 +9,9 @@ import androidx.room.RoomDatabase
         BitcoinWalletEntity::class,
         BitcoinTransactionEntity::class,
         BitcoinWalletTxCacheEntity::class,
-        EthereumWalletEntity::class,
-        EthereumTransactionEntity::class,
-        EthereumWalletTxCacheEntity::class,
+        EvmWalletEntity::class,
+        EvmTransactionEntity::class,
+        EvmWalletTxCacheEntity::class,
     ],
     version = 11,
     exportSchema = true,
@@ -20,6 +20,6 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun bitcoinNetworkStatusDao(): BitcoinNetworkStatusDao
     abstract fun bitcoinWalletDao(): BitcoinWalletDao
     abstract fun bitcoinTransactionDao(): BitcoinTransactionDao
-    abstract fun ethereumWalletDao(): EthereumWalletDao
-    abstract fun ethereumTransactionDao(): EthereumTransactionDao
+    abstract fun evmWalletDao(): EvmWalletDao
+    abstract fun evmTransactionDao(): EvmTransactionDao
 }

@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import network.bahn.androidcryptowallet.data.local.db.EthereumTransactionDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
-import network.bahn.androidcryptowallet.data.local.db.EthereumWalletTxCacheEntity
+import network.bahn.androidcryptowallet.data.local.db.EvmTransactionDao
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
+import network.bahn.androidcryptowallet.data.local.db.EvmWalletTxCacheEntity
 import network.bahn.androidcryptowallet.data.local.db.nextCursor
 import network.bahn.androidcryptowallet.data.local.db.toDomain
 import network.bahn.androidcryptowallet.data.local.db.toEntity
@@ -39,8 +39,8 @@ import javax.inject.Singleton
 class EthereumWalletRepositoryImpl @Inject constructor(
     private val keyEngine: EthereumKeyEngine,
     private val mnemonicStore: EthereumMnemonicStore,
-    private val walletDao: EthereumWalletDao,
-    private val transactionDao: EthereumTransactionDao,
+    private val walletDao: EvmWalletDao,
+    private val transactionDao: EvmTransactionDao,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
     private val remote: EthereumRemoteDataSource,
     private val transactionRemote: EthereumTransactionRemoteDataSource,
@@ -205,7 +205,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         val entities = page.transactions.mapIndexed { index, tx ->
             tx.toEntity(walletId = walletId, sortIndex = startIndex + index)
         }
-        val cache = EthereumWalletTxCacheEntity(
+        val cache = EvmWalletTxCacheEntity(
             walletId = walletId,
             nextCursorJson = page.nextCursor?.toJson(json),
             hasMore = page.hasMore,
