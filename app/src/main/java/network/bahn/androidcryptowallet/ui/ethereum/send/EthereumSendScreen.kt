@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.util.StringUtils
@@ -129,7 +130,7 @@ private fun EthereumSendContent(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text(stringResource(R.string.send_eth_action))
+                    Text(stringResource(R.string.send_native_action, uiState.nativeSymbol))
                 }
             }
         },
@@ -182,7 +183,7 @@ private fun EthereumSendContent(
                 ),
                 suffix = {
                     Text(
-                        text = stringResource(R.string.send_eth_unit),
+                        text = uiState.nativeSymbol,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 },
@@ -334,9 +335,9 @@ private fun EthereumSendTotalSummary(
                 value = if (feeWei == null) {
                     placeholder
                 } else {
-                    stringResource(
-                        R.string.ethereum_amount,
+                    evmNativeAmountLabel(
                         StringUtils.formatEthereumAmount(feeWei),
+                        uiState.nativeSymbol,
                     )
                 },
             )
@@ -345,11 +346,11 @@ private fun EthereumSendTotalSummary(
                 value = if (amountWei == null || feeWei == null) {
                     placeholder
                 } else {
-                    stringResource(
-                        R.string.ethereum_amount,
+                    evmNativeAmountLabel(
                         StringUtils.formatEthereumAmount(
                             amountWei.add(java.math.BigInteger(feeWei)).toString(),
                         ),
+                        uiState.nativeSymbol,
                     )
                 },
                 emphasize = true,
@@ -383,9 +384,9 @@ private fun EthereumSendRemainingBalance(
                 value = if (remainingWei == null) {
                     placeholder
                 } else {
-                    stringResource(
-                        R.string.ethereum_amount,
+                    evmNativeAmountLabel(
                         StringUtils.formatEthereumAmount(remainingWei),
+                        uiState.nativeSymbol,
                     )
                 },
                 emphasize = true,

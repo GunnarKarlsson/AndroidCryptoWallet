@@ -59,6 +59,7 @@ import network.bahn.androidcryptowallet.ui.chain.chainIconRes
 import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
 import network.bahn.androidcryptowallet.ui.chain.walletsTitleRes
 import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
+import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
@@ -263,9 +264,9 @@ private fun EthereumWalletListItem(
                 text = if (wallet.balanceWei == null) {
                     stringResource(R.string.receive_address_placeholder)
                 } else {
-                    stringResource(
-                        R.string.ethereum_amount,
+                    evmNativeAmountLabel(
                         StringUtils.formatEthereumAmount(wallet.balanceWei),
+                        wallet.network.nativeSymbol,
                     )
                 },
                 style = MaterialTheme.typography.titleMedium,

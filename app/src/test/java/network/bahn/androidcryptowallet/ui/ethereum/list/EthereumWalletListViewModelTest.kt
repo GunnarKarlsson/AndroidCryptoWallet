@@ -1,6 +1,8 @@
 package network.bahn.androidcryptowallet.ui.ethereum.list
 
-import androidx.lifecycle.SavedStateHandle
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import network.bahn.androidcryptowallet.ui.navigation.savedStateHandleForEvmWalletList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
 class EthereumWalletListViewModelTest {
     @Before
     fun setUp() {
@@ -93,7 +96,7 @@ class EthereumWalletListViewModelTest {
         wallets: MutableStateFlow<List<EthereumWallet>> = MutableStateFlow(emptyList()),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(false),
     ) = EthereumWalletListViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("family" to family.name)),
+        savedStateHandle = savedStateHandleForEvmWalletList(family),
         walletRepository = FakeEthListWalletRepository(wallets),
         selectedEvmNetworkStore = FakeEthListNetworkStore(network),
         catalogReadiness = FakeEthCatalogReadiness(ready),

@@ -67,6 +67,7 @@ import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
@@ -126,6 +127,7 @@ private fun EthereumWalletDetailsContent(
     val copiedMessage = stringResource(R.string.address_copied)
     val address = uiState.address
     val balanceWei = uiState.balanceWei ?: "0"
+    val nativeSymbol = uiState.network?.nativeSymbol.orEmpty()
     val listState = rememberLazyListState()
 
     LaunchedEffect(listState, uiState.hasMoreTransactions) {
@@ -236,9 +238,9 @@ private fun EthereumWalletDetailsContent(
             item {
                 DetailCard(
                     title = stringResource(R.string.wallet_balance),
-                    value = stringResource(
-                        R.string.ethereum_amount,
+                    value = evmNativeAmountLabel(
                         StringUtils.formatEthereumAmount(balanceWei),
+                        nativeSymbol,
                     ),
                     valueStyle = MaterialTheme.typography.headlineMedium,
                     valueFontFamily = FontFamily.Monospace,
@@ -352,7 +354,10 @@ private fun EthereumWalletDetailsContent(
                 }
                 else -> {
                     items(uiState.transactions.size, key = { uiState.transactions[it].hash }) { index ->
-                        EthereumTransactionRow(tx = uiState.transactions[index])
+                        EthereumTransactionRow(
+                            tx = uiState.transactions[index],
+                            nativeSymbol = nativeSymbol,
+                        )
                     }
                 }
             }
@@ -390,7 +395,10 @@ private fun EthereumWalletDetailsContent(
 }
 
 @Composable
-private fun EthereumTransactionRow(tx: EthereumTransactionSummary) {
+private fun EthereumTransactionRow(
+    tx: EthereumTransactionSummary,
+    nativeSymbol: String,
+) {
     val netWei = tx.netWei.toBigIntegerOrNull() ?: java.math.BigInteger.ZERO
     val amount = StringUtils.formatEthereumAmount(tx.netWei)
     val signedAmount = if (netWei > java.math.BigInteger.ZERO) "+$amount" else amount
@@ -411,7 +419,7 @@ private fun EthereumTransactionRow(tx: EthereumTransactionSummary) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(R.string.ethereum_amount, signedAmount),
+                    text = evmNativeAmountLabel(signedAmount, nativeSymbol),
                     style = MaterialTheme.typography.titleMedium,
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurface,

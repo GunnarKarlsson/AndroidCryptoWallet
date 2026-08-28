@@ -1,6 +1,8 @@
 package network.bahn.androidcryptowallet.ui.ethereum.setup
 
-import androidx.lifecycle.SavedStateHandle
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import network.bahn.androidcryptowallet.ui.navigation.savedStateHandleForEvmCreateGraph
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
 class EthereumSetupViewModelTest {
     @Before
     fun setUp() {
@@ -149,7 +152,7 @@ class EthereumSetupViewModelTest {
         networkStore: FakeEthSetupNetworkStore = FakeEthSetupNetworkStore(),
         family: EvmFamily = EvmFamily.ETHEREUM,
     ) = EthereumSetupViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("family" to family.name)),
+        savedStateHandle = savedStateHandleForEvmCreateGraph(family),
         walletRepository = walletRepo,
         selectedEvmNetworkStore = networkStore,
     )

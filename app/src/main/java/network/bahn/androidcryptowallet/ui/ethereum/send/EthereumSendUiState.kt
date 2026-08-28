@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.ui.ethereum.send
 
 import androidx.annotation.StringRes
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
 import network.bahn.androidcryptowallet.domain.model.EthereumGasQuotes
@@ -10,6 +11,7 @@ import java.math.BigInteger
 import java.math.RoundingMode
 
 data class EthereumSendUiState(
+    val nativeSymbol: String = EvmNetwork.SEPOLIA.nativeSymbol,
     val recipient: String = "",
     val amount: String = "",
     val gasPreset: EthereumGasPreset = EthereumGasPreset.Normal,

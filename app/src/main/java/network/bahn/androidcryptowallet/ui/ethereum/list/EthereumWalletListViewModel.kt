@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,9 +25,7 @@ class EthereumWalletListViewModel @Inject constructor(
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
     catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {
-    private val family: EvmFamily =
-        savedStateHandle.get<String>("family")?.let(EvmFamily::valueOf)
-            ?: savedStateHandle.toRoute<EvmWalletListRoute>().family
+    private val family: EvmFamily = savedStateHandle.toRoute<EvmWalletListRoute>().family
     private val availableNetworks = EvmNetwork.networksFor(family)
 
     val uiState: StateFlow<EthereumWalletListUiState> = combine(

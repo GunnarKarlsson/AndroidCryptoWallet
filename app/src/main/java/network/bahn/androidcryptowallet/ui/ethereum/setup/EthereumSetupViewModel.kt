@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,9 +25,7 @@ class EthereumSetupViewModel @Inject constructor(
     private val walletRepository: EthereumWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
-    private val family: EvmFamily =
-        savedStateHandle.get<String>("family")?.let(EvmFamily::valueOf)
-            ?: savedStateHandle.toRoute<EvmCreateGraphRoute>().family
+    private val family: EvmFamily = savedStateHandle.toRoute<EvmCreateGraphRoute>().family
     private val availableNetworks = EvmNetwork.networksFor(family)
     private val session = EthereumSetupSession(selectedEvmNetworkStore, family, viewModelScope)
     private val createNetwork = session.network

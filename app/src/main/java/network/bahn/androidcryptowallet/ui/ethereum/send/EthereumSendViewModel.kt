@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -59,6 +60,8 @@ class EthereumSendViewModel @Inject constructor(
         feeState,
     ) { currentWallet, formState, fees ->
         EthereumSendUiState(
+            nativeSymbol = currentWallet?.network?.nativeSymbol
+                ?: EvmNetwork.SEPOLIA.nativeSymbol,
             recipient = formState.recipient,
             amount = formState.amount,
             gasPreset = formState.gasPreset,
