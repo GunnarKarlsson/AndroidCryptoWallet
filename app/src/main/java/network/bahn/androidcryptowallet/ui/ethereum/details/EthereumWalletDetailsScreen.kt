@@ -64,9 +64,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.ui.chain.receiveClipboardLabelRes
+import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
 import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
@@ -179,7 +182,10 @@ private fun EthereumWalletDetailsContent(
                     Text(
                         text = StringUtils.walletDisplayName(
                             name = uiState.wallet?.name,
-                            fallback = stringResource(R.string.ethereum_wallet_list_item_label),
+                            fallback = stringResource(
+                                uiState.family?.walletListItemLabelRes
+                                    ?: R.string.ethereum_wallet_list_item_label,
+                            ),
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -229,7 +235,7 @@ private fun EthereumWalletDetailsContent(
                     networkLabel = uiState.network?.label,
                     onCopy = {
                         if (address == null) return@WalletAddressHeader
-                        copyAddress(context, address)
+                        copyAddress(context, address, uiState.family)
                         scope.launch { snackbarHostState.showSnackbar(copiedMessage) }
                     },
                 )
@@ -586,9 +592,11 @@ private fun DetailCard(
     }
 }
 
-private fun copyAddress(context: Context, address: String) {
+private fun copyAddress(context: Context, address: String, family: EvmFamily?) {
     val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
-    clipboard.setPrimaryClip(ClipData.newPlainText("ethereum address", address))
+    val label = family?.receiveClipboardLabelRes?.let(context::getString)
+        ?: context.getString(R.string.receive_clipboard_label_eth)
+    clipboard.setPrimaryClip(ClipData.newPlainText(label, address))
 }
 
 private fun previewWallet() = EthereumWallet(

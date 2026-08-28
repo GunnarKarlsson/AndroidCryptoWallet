@@ -89,6 +89,7 @@
     <string name="send_placeholder">Send is not available yet.</string>
     <string name="receive_placeholder">Receive is not available yet.</string>
     <string name="receive_clipboard_label_eth">ethereum address</string>
+    <string name="receive_clipboard_label_bsc">BSC address</string>
     <string name="send_recipient_label">Recipient</string>
     <string name="send_recipient_placeholder">Bitcoin address</string>
     <string name="send_recipient_placeholder_eth">0x…</string>

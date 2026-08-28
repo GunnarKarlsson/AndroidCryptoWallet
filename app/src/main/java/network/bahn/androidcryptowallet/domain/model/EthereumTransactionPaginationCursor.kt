@@ -10,7 +10,9 @@ data class EthereumTransactionPaginationCursor(
     val insertedAt: String?,
     val value: String?,
     val fee: String?,
-    val itemsCount: Int?,
+    val itemsCount: Int? = null,
+    /** Etherscan-compatible explorers use 1-based page numbers. */
+    val page: Int? = null,
 ) {
     fun toQueryParams(): Map<String, String> = buildMap {
         blockNumber?.let { put("block_number", it.toString()) }

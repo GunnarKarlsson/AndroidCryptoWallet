@@ -32,6 +32,7 @@ class EthereumReceiveViewModel @Inject constructor(
                 EthereumReceiveUiState(
                     address = address,
                     networkLabel = wallet.network.label,
+                    family = wallet.network.family,
                     paymentUri = address?.let {
                         EthereumPaymentUri.fromAddress(it, wallet.network)
                     },

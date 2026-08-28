@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
 import network.bahn.androidcryptowallet.ui.navigation.EthereumEditWalletRoute
 import javax.inject.Inject
 
@@ -31,6 +32,7 @@ sealed interface EthereumEditWalletEvent {
 class EthereumEditWalletViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EthereumWalletRepository,
+    private val defaultNames: EvmFamilyDefaultNames,
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
@@ -46,6 +48,7 @@ class EthereumEditWalletViewModel @Inject constructor(
         form,
     ) { wallet, formState ->
         EthereumEditWalletUiState(
+            family = wallet?.network?.family,
             name = formState.name,
             isSubmitting = formState.isSubmitting,
             errorMessage = formState.errorMessage,
@@ -61,10 +64,11 @@ class EthereumEditWalletViewModel @Inject constructor(
         viewModelScope.launch {
             val wallet = walletRepository.observeWallet(walletId).filterNotNull().first()
             if (!form.value.userEdited) {
+                val defaultName = defaultNames.walletListName(wallet.network.family)
                 form.update {
                     it.copy(
                         name = wallet.name?.trim()?.takeIf { name -> name.isNotEmpty() }
-                            ?: DEFAULT_NAME,
+                            ?: defaultName,
                     )
                 }
             }
@@ -107,7 +111,6 @@ class EthereumEditWalletViewModel @Inject constructor(
 
     private companion object {
         const val TAG = "EthereumEditWallet"
-        const val DEFAULT_NAME = "Ethereum wallet"
         const val MAX_NAME_LENGTH = 40
         const val SAVE_FAILED = "Could not save wallet name"
     }

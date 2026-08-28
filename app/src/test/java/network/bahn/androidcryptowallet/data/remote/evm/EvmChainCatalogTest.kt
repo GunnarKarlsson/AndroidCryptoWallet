@@ -12,11 +12,23 @@ class EvmChainCatalogTest {
             EvmNetwork.BSC_TESTNET to "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
             EvmNetwork.BSC_MAINNET to "https://bsc-dataseed.bnbchain.org",
         ),
-        explorerBaseUrls = mapOf(
-            EvmNetwork.SEPOLIA to "https://eth-sepolia.blockscout.com/api/v2",
-            EvmNetwork.MAINNET to "https://eth.blockscout.com/api/v2",
-            EvmNetwork.BSC_TESTNET to "https://api-testnet.bscscan.com/api",
-            EvmNetwork.BSC_MAINNET to "https://api.bscscan.com/api",
+        explorerEndpoints = mapOf(
+            EvmNetwork.SEPOLIA to EvmExplorerEndpoint(
+                baseUrl = "https://eth-sepolia.blockscout.com/api/v2",
+                kind = EvmExplorerKind.BLOCKSCOUT,
+            ),
+            EvmNetwork.MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://eth.blockscout.com/api/v2",
+                kind = EvmExplorerKind.BLOCKSCOUT,
+            ),
+            EvmNetwork.BSC_TESTNET to EvmExplorerEndpoint(
+                baseUrl = "https://api-testnet.bscscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.BSC_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api.bscscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
         ),
     )
 
@@ -50,6 +62,18 @@ class EvmChainCatalogTest {
             "https://eth.blockscout.com/api/v2",
             catalog.explorerBaseUrl(EvmNetwork.MAINNET),
         )
+    }
+
+    @Test
+    fun explorerKind_returnsBlockscoutForEthereumNetworks() {
+        assertEquals(EvmExplorerKind.BLOCKSCOUT, catalog.explorerKind(EvmNetwork.SEPOLIA))
+        assertEquals(EvmExplorerKind.BLOCKSCOUT, catalog.explorerKind(EvmNetwork.MAINNET))
+    }
+
+    @Test
+    fun explorerKind_returnsEtherscanForBscNetworks() {
+        assertEquals(EvmExplorerKind.ETHERSCAN, catalog.explorerKind(EvmNetwork.BSC_TESTNET))
+        assertEquals(EvmExplorerKind.ETHERSCAN, catalog.explorerKind(EvmNetwork.BSC_MAINNET))
     }
 
     @Test

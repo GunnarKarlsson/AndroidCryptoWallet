@@ -21,6 +21,12 @@ val EvmFamily.walletListItemLabelRes: Int
         EvmFamily.BSC -> R.string.bsc_wallet_list_item_label
     }
 
+val EvmFamily.receiveClipboardLabelRes: Int
+    get() = when (this) {
+        EvmFamily.ETHEREUM -> R.string.receive_clipboard_label_eth
+        EvmFamily.BSC -> R.string.receive_clipboard_label_bsc
+    }
+
 fun SupportedChain.toEvmFamily(): EvmFamily? = when (this) {
     SupportedChain.ETHEREUM -> EvmFamily.ETHEREUM
     SupportedChain.BSC -> EvmFamily.BSC

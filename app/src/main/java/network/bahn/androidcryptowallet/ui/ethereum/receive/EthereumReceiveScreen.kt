@@ -55,6 +55,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.ui.chain.receiveClipboardLabelRes
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.util.QrCodeBitmap
@@ -81,7 +82,9 @@ private fun EthereumReceiveContent(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val copiedMessage = stringResource(R.string.address_copied)
-    val clipboardLabel = stringResource(R.string.receive_clipboard_label_eth)
+    val clipboardLabel = stringResource(
+        uiState.family?.receiveClipboardLabelRes ?: R.string.receive_clipboard_label_eth,
+    )
     val address = uiState.address
     val qrBitmap = remember(uiState.paymentUri) {
         uiState.paymentUri?.let(QrCodeBitmap::encode)

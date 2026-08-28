@@ -16,6 +16,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -140,6 +141,12 @@ class EthereumEditWalletViewModelTest {
     ) = EthereumEditWalletViewModel(
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
         walletRepository = repo,
+        defaultNames = EvmFamilyDefaultNames { family ->
+            when (family) {
+                EvmFamily.ETHEREUM -> "Ethereum wallet"
+                EvmFamily.BSC -> "BSC wallet"
+            }
+        },
     )
 }
 

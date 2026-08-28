@@ -1,5 +1,6 @@
 package network.bahn.androidcryptowallet.ui.ethereum.details
 
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -21,6 +22,7 @@ data class EthereumWalletDetailsUiState(
     val address: String? get() = wallet?.address
     val balanceWei: String? get() = wallet?.balanceWei
     val balanceUpdatedAtMillis: Long? get() = wallet?.balanceUpdatedAtMillis
+    val family: EvmFamily? get() = wallet?.network?.family
 }
 
 sealed interface EthereumWalletDetailsEvent {

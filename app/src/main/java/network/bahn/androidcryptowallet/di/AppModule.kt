@@ -24,6 +24,8 @@ import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_9_10
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_10_11
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
+import network.bahn.androidcryptowallet.data.remote.evm.EvmExplorerEndpoint
+import network.bahn.androidcryptowallet.data.remote.evm.EvmExplorerKind
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
@@ -93,12 +95,23 @@ object AppModule {
             EvmNetwork.BSC_TESTNET to "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
             EvmNetwork.BSC_MAINNET to "https://bsc-dataseed.bnbchain.org",
         ),
-        explorerBaseUrls = mapOf(
-            EvmNetwork.SEPOLIA to "https://eth-sepolia.blockscout.com/api/v2",
-            EvmNetwork.MAINNET to "https://eth.blockscout.com/api/v2",
-            // Placeholder until Step 7 BSC explorer adapter.
-            EvmNetwork.BSC_TESTNET to "https://api-testnet.bscscan.com/api",
-            EvmNetwork.BSC_MAINNET to "https://api.bscscan.com/api",
+        explorerEndpoints = mapOf(
+            EvmNetwork.SEPOLIA to EvmExplorerEndpoint(
+                baseUrl = "https://eth-sepolia.blockscout.com/api/v2",
+                kind = EvmExplorerKind.BLOCKSCOUT,
+            ),
+            EvmNetwork.MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://eth.blockscout.com/api/v2",
+                kind = EvmExplorerKind.BLOCKSCOUT,
+            ),
+            EvmNetwork.BSC_TESTNET to EvmExplorerEndpoint(
+                baseUrl = "https://api-testnet.bscscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.BSC_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api.bscscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
         ),
     )
 

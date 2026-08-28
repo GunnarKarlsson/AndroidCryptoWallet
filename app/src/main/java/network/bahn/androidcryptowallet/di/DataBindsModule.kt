@@ -14,7 +14,7 @@ import network.bahn.androidcryptowallet.data.local.secure.EncryptedEthereumMnemo
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
-import network.bahn.androidcryptowallet.data.remote.blockscout.BlockscoutEthereumTransactionRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.blockscout.RoutingEthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.eth.JsonRpcEthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.ms.MsApiFactory
@@ -32,6 +32,8 @@ import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRe
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
+import network.bahn.androidcryptowallet.ui.chain.ContextEvmFamilyDefaultNames
+import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
 import javax.inject.Singleton
 
 @Module
@@ -64,7 +66,7 @@ abstract class DataBindsModule {
     @Binds
     @Singleton
     abstract fun bindEthereumTransactionRemoteDataSource(
-        impl: BlockscoutEthereumTransactionRemoteDataSource,
+        impl: RoutingEthereumTransactionRemoteDataSource,
     ): EthereumTransactionRemoteDataSource
 
     @Binds
@@ -114,6 +116,12 @@ abstract class DataBindsModule {
     abstract fun bindEthereumWalletRepository(
         impl: EthereumWalletRepositoryImpl,
     ): EthereumWalletRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEvmFamilyDefaultNames(
+        impl: ContextEvmFamilyDefaultNames,
+    ): EvmFamilyDefaultNames
 
     @Binds
     @Singleton
