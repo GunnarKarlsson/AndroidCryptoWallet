@@ -94,6 +94,8 @@ object AppModule {
             EvmNetwork.MAINNET to "https://ethereum.publicnode.com",
             EvmNetwork.BSC_TESTNET to "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
             EvmNetwork.BSC_MAINNET to "https://bsc-dataseed.bnbchain.org",
+            EvmNetwork.POLYGON_AMOY to "https://polygon-amoy-bor-rpc.publicnode.com",
+            EvmNetwork.POLYGON_MAINNET to "https://polygon-bor-rpc.publicnode.com",
         ),
         explorerEndpoints = mapOf(
             EvmNetwork.SEPOLIA to EvmExplorerEndpoint(
@@ -110,6 +112,14 @@ object AppModule {
             ),
             EvmNetwork.BSC_MAINNET to EvmExplorerEndpoint(
                 baseUrl = "https://api.bscscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.POLYGON_AMOY to EvmExplorerEndpoint(
+                baseUrl = "https://api-amoy.polygonscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.POLYGON_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api.polygonscan.com/api",
                 kind = EvmExplorerKind.ETHERSCAN,
             ),
         ),

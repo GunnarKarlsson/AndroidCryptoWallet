@@ -68,6 +68,8 @@ fun WalletNavHost(
                             navController.navigate(EvmWalletListRoute(EvmFamily.ETHEREUM))
         SupportedChain.BSC ->
                             navController.navigate(EvmWalletListRoute(EvmFamily.BSC))
+                        SupportedChain.POLYGON ->
+                            navController.navigate(EvmWalletListRoute(EvmFamily.POLYGON))
                     }
                 },
             )

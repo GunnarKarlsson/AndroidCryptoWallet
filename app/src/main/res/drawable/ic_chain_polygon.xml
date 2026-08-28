@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Polygon logo mark (hexagon, black on transparent) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,1.5L3.5,6.25v11.5L12,22.5l8.5,-4.75V6.25L12,1.5zM12,4.5l6,3.46v6.92L12,18.34l-6,-3.46V7.96L12,4.5z" />
+</vector>

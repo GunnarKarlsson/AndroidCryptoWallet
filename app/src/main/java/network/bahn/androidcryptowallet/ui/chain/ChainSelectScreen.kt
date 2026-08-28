@@ -118,6 +118,7 @@ private val SupportedChain.labelRes: Int
         SupportedChain.BITCOIN -> R.string.chain_bitcoin
         SupportedChain.ETHEREUM -> R.string.chain_ethereum
         SupportedChain.BSC -> R.string.chain_bsc
+        SupportedChain.POLYGON -> R.string.chain_polygon
     }
 
 private val SupportedChain.iconRes: Int
@@ -125,6 +126,7 @@ private val SupportedChain.iconRes: Int
         SupportedChain.BITCOIN -> R.drawable.ic_chain_bitcoin
         SupportedChain.ETHEREUM -> R.drawable.ic_chain_ethereum
         SupportedChain.BSC -> R.drawable.ic_chain_bsc
+        SupportedChain.POLYGON -> R.drawable.ic_chain_polygon
     }
 
 @Preview(showBackground = true)

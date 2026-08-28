@@ -42,6 +42,7 @@ class SelectedEvmNetworkDataStore @Inject constructor(
     private fun defaultNetwork(family: EvmFamily): EvmNetwork = when (family) {
         EvmFamily.ETHEREUM -> EvmNetwork.SEPOLIA
         EvmFamily.BSC -> EvmNetwork.BSC_TESTNET
+        EvmFamily.POLYGON -> EvmNetwork.POLYGON_AMOY
     }
 
     private companion object {

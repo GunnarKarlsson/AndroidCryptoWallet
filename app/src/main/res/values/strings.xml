@@ -37,15 +37,18 @@
     <string name="chain_bitcoin">Bitcoin</string>
     <string name="chain_ethereum">Ethereum</string>
     <string name="chain_bsc">BSC (Binance Chain)</string>
+    <string name="chain_polygon">Polygon</string>
     <string name="wallets_title">Bitcoin wallets</string>
     <string name="ethereum_wallets_title">Ethereum wallets</string>
     <string name="bsc_wallets_title">BSC wallets</string>
+    <string name="polygon_wallets_title">Polygon wallets</string>
     <string name="wallets_empty">No wallets on this network yet.</string>
     <string name="wallets_loading">Loading wallets</string>
     <string name="add_wallet">Add wallet</string>
     <string name="wallet_list_item_label">Bitcoin wallet</string>
     <string name="ethereum_wallet_list_item_label">Ethereum wallet</string>
     <string name="bsc_wallet_list_item_label">BSC wallet</string>
+    <string name="polygon_wallet_list_item_label">Polygon wallet</string>
     <string name="wallet_watch_only">Watch-only</string>
     <string name="edit_wallet">Edit wallet</string>
     <string name="edit_wallet_title">Edit wallet</string>
@@ -90,6 +93,7 @@
     <string name="receive_placeholder">Receive is not available yet.</string>
     <string name="receive_clipboard_label_eth">ethereum address</string>
     <string name="receive_clipboard_label_bsc">BSC address</string>
+    <string name="receive_clipboard_label_polygon">Polygon address</string>
     <string name="send_recipient_label">Recipient</string>
     <string name="send_recipient_placeholder">Bitcoin address</string>
     <string name="send_recipient_placeholder_eth">0x…</string>

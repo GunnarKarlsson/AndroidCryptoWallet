@@ -7,7 +7,12 @@ class SupportedChainTest {
     @Test
     fun hardcodedListIsBitcoinThenEthereumThenBsc() {
         assertEquals(
-            listOf(SupportedChain.BITCOIN, SupportedChain.ETHEREUM, SupportedChain.BSC),
+            listOf(
+                SupportedChain.BITCOIN,
+                SupportedChain.ETHEREUM,
+                SupportedChain.BSC,
+                SupportedChain.POLYGON,
+            ),
             SupportedChains,
         )
     }

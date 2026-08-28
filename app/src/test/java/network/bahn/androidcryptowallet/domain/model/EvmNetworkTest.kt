@@ -27,6 +27,22 @@ class EvmNetworkTest {
     }
 
     @Test
+    fun networksForPolygon_returnsOnlyPolygonNetworks() {
+        val networks = EvmNetwork.networksFor(EvmFamily.POLYGON)
+        assertEquals(listOf(EvmNetwork.POLYGON_AMOY, EvmNetwork.POLYGON_MAINNET), networks)
+    }
+
+    @Test
+    fun polygonNetworksHaveExpectedChainIdsAndSymbols() {
+        assertEquals(80_002L, EvmNetwork.POLYGON_AMOY.chainId)
+        assertEquals(137L, EvmNetwork.POLYGON_MAINNET.chainId)
+        assertEquals("POL", EvmNetwork.POLYGON_AMOY.nativeSymbol)
+        assertEquals("POL", EvmNetwork.POLYGON_MAINNET.nativeSymbol)
+        assertEquals(EvmFamily.POLYGON, EvmNetwork.POLYGON_AMOY.family)
+        assertEquals(EvmFamily.POLYGON, EvmNetwork.POLYGON_MAINNET.family)
+    }
+
+    @Test
     fun sepoliaAndMainnetKeepStoredNamesAndEthSymbol() {
         assertEquals("SEPOLIA", EvmNetwork.SEPOLIA.name)
         assertEquals("MAINNET", EvmNetwork.MAINNET.name)

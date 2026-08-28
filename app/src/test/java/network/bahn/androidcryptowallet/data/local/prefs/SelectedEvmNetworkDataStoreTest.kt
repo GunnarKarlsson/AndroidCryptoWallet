@@ -34,6 +34,12 @@ class SelectedEvmNetworkDataStoreTest {
     }
 
     @Test
+    fun selectedNetwork_defaultsToPolygonAmoyForPolygon() = runTest {
+        val store = createStore()
+        assertEquals(EvmNetwork.POLYGON_AMOY, store.selectedNetwork(EvmFamily.POLYGON).first())
+    }
+
+    @Test
     fun setNetwork_persistsPerFamilyKey() = runTest {
         val store = createStore()
         store.setNetwork(EvmFamily.ETHEREUM, EvmNetwork.MAINNET)

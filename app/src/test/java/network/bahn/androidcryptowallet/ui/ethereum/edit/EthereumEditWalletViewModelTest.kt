@@ -145,6 +145,7 @@ class EthereumEditWalletViewModelTest {
             when (family) {
                 EvmFamily.ETHEREUM -> "Ethereum wallet"
                 EvmFamily.BSC -> "BSC wallet"
+                EvmFamily.POLYGON -> "Polygon wallet"
             }
         },
     )
