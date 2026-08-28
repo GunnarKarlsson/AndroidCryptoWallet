@@ -36,7 +36,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class EthereumWalletRepositoryImpl @Inject constructor(
+class EvmWalletRepositoryImpl @Inject constructor(
     private val keyEngine: EvmKeyEngine,
     private val mnemonicStore: EvmMnemonicStore,
     private val walletDao: EvmWalletDao,

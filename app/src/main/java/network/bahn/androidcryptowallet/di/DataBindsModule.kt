@@ -22,7 +22,7 @@ import network.bahn.androidcryptowallet.data.remote.ms.MsApiProvider
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
-import network.bahn.androidcryptowallet.data.repository.EthereumWalletRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.EvmWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
@@ -114,7 +114,7 @@ abstract class DataBindsModule {
     @Binds
     @Singleton
     abstract fun bindEthereumWalletRepository(
-        impl: EthereumWalletRepositoryImpl,
+        impl: EvmWalletRepositoryImpl,
     ): EvmWalletRepository
 
     @Binds

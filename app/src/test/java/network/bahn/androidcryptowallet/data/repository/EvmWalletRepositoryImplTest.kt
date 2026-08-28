@@ -35,7 +35,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.math.BigInteger
 
-class EthereumWalletRepositoryImplTest {
+class EvmWalletRepositoryImplTest {
     @Test
     fun createWritesWalletForChosenNetworkOnly() = runTest {
         val engine = FakeEvmKeyEngine()
@@ -436,7 +436,7 @@ class EthereumWalletRepositoryImplTest {
         transactionRemote: FakeEvmTransactionRemoteDataSource = FakeEvmTransactionRemoteDataSource(),
         timeProvider: FakeTimeProvider = FakeTimeProvider(),
         json: Json = Json { ignoreUnknownKeys = true },
-    ) = EthereumWalletRepositoryImpl(
+    ) = EvmWalletRepositoryImpl(
         keyEngine = engine,
         mnemonicStore = store,
         walletDao = walletDao,
