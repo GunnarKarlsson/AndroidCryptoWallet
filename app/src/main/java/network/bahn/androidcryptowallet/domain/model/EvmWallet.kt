@@ -1,11 +1,11 @@
 package network.bahn.androidcryptowallet.domain.model
 
 /**
- * Public Ethereum wallet row.
+ * Public EVM wallet row (any [EvmNetwork] family).
  * HD wallets keep a BIP-39 mnemonic in the encrypted store, keyed by [id];
- * [address] is BIP-44 `m/44'/60'/0'/0/{derivationIndex}` (same address on Sepolia and Mainnet).
+ * [address] is BIP-44 `m/44'/60'/0'/0/{derivationIndex}` (same address across networks in a family).
  */
-data class EthereumWallet(
+data class EvmWallet(
     val id: String,
     val network: EvmNetwork,
     val address: String,

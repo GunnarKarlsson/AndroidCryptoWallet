@@ -15,8 +15,8 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -229,7 +229,7 @@ class EthereumWalletDetailsViewModelTest {
     )
 }
 
-private val WALLET = EthereumWallet(
+private val WALLET = EvmWallet(
     id = "wallet-1",
     network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
@@ -246,7 +246,7 @@ private val TX = network.bahn.androidcryptowallet.domain.model.EvmTransactionSum
 )
 
 private class FakeEthDetailsWalletRepository(
-    private val wallet: MutableStateFlow<EthereumWallet?> = MutableStateFlow(WALLET),
+    private val wallet: MutableStateFlow<EvmWallet?> = MutableStateFlow(WALLET),
     private val deleteError: Exception? = null,
     private val cachedPage: EvmTransactionPage? = null,
     private val networkPage: EvmTransactionPage = EvmTransactionPage(
@@ -254,13 +254,13 @@ private class FakeEthDetailsWalletRepository(
         nextCursor = null,
         hasMore = false,
     ),
-) : EthereumWalletRepository {
+) : EvmWalletRepository {
     var refreshBalanceCalls = 0
     var getTransactionsCalls = 0
     val deleteWalletCalls = mutableListOf<String>()
 
-    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
-    override fun observeWallet(id: String): Flow<EthereumWallet?> = wallet
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EvmWallet?> = wallet
     override fun generateMnemonic() = error("unused")
 
     override suspend fun createWallet(

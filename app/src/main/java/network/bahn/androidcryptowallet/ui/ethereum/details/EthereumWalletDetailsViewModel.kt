@@ -21,14 +21,14 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumWalletDetailsRoute
 import javax.inject.Inject
 
 @HiltViewModel
 class EthereumWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val walletRepository: EthereumWalletRepository,
+    private val walletRepository: EvmWalletRepository,
 ) : ViewModel() {
     private val routeHandle = savedStateHandle
     private val walletId: String =

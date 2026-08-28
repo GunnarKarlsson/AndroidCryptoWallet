@@ -28,8 +28,8 @@ import network.bahn.androidcryptowallet.domain.model.EvmGasQuotes
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import java.math.BigInteger
 import java.util.UUID
 import javax.inject.Inject
@@ -46,14 +46,14 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     private val transactionRemote: EthereumTransactionRemoteDataSource,
     private val timeProvider: TimeProvider,
     private val json: Json,
-) : EthereumWalletRepository {
+) : EvmWalletRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> =
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> =
         selectedEvmNetworkStore.selectedNetwork(family).flatMapLatest { network ->
             walletDao.observeByNetwork(network.name).map { rows -> rows.map { it.toDomain() } }
         }
 
-    override fun observeWallet(id: String): Flow<EthereumWallet?> =
+    override fun observeWallet(id: String): Flow<EvmWallet?> =
         walletDao.observeById(id).map { it?.toDomain() }
 
     override fun generateMnemonic(): List<String> = keyEngine.generateMnemonic()
@@ -65,7 +65,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     ) {
         keyEngine.validateMnemonic(mnemonicWords)
         val derived = keyEngine.deriveReceiveAddress(mnemonicWords, passphrase)
-        val wallet = EthereumWallet(
+        val wallet = EvmWallet(
             id = UUID.randomUUID().toString(),
             network = network,
             address = derived.address,

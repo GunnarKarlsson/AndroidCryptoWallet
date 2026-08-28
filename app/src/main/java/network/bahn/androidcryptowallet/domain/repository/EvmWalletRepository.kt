@@ -7,14 +7,14 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import java.math.BigInteger
 
-interface EthereumWalletRepository {
+interface EvmWalletRepository {
     /** Wallets for the currently selected network within [family]. Public data only. */
-    fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>>
+    fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>>
 
-    fun observeWallet(id: String): Flow<EthereumWallet?>
+    fun observeWallet(id: String): Flow<EvmWallet?>
 
     /** BIP-39: generate a 12-word mnemonic. Does not persist. */
     fun generateMnemonic(): List<String>

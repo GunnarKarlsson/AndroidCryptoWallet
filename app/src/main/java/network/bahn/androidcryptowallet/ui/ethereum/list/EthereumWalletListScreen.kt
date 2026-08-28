@@ -53,7 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
 import network.bahn.androidcryptowallet.ui.chain.chainIconRes
 import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
@@ -234,7 +234,7 @@ private fun EthereumWalletListContent(
 
 @Composable
 private fun EthereumWalletListItem(
-    wallet: EthereumWallet,
+    wallet: EvmWallet,
     family: EvmFamily,
     onClick: () -> Unit,
 ) {
@@ -324,13 +324,13 @@ private fun EthereumWalletListPopulatedPreview() {
             uiState = EthereumWalletListUiState(
                 isLoading = false,
                 wallets = listOf(
-                    EthereumWallet(
+                    EvmWallet(
                         id = "1",
                         network = EvmNetwork.SEPOLIA,
                         address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                         name = "Savings",
                     ),
-                    EthereumWallet(
+                    EvmWallet(
                         id = "2",
                         network = EvmNetwork.SEPOLIA,
                         address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",

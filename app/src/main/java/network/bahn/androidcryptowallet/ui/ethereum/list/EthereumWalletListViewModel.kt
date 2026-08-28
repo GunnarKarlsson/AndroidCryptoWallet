@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import network.bahn.androidcryptowallet.ui.navigation.EvmWalletListRoute
 import javax.inject.Inject
@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EthereumWalletListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    walletRepository: EthereumWalletRepository,
+    walletRepository: EvmWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
     catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {

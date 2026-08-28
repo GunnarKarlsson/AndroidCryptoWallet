@@ -67,7 +67,7 @@ import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import network.bahn.androidcryptowallet.ui.chain.receiveClipboardLabelRes
 import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
 import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
@@ -599,7 +599,7 @@ private fun copyAddress(context: Context, address: String, family: EvmFamily?) {
     clipboard.setPrimaryClip(ClipData.newPlainText(label, address))
 }
 
-private fun previewWallet() = EthereumWallet(
+private fun previewWallet() = EvmWallet(
     id = "1",
     network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",

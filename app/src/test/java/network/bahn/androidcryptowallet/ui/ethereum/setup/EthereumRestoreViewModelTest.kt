@@ -17,9 +17,9 @@ import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import network.bahn.androidcryptowallet.domain.model.InvalidEvmMnemonicException
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -235,11 +235,11 @@ private data class EthRestoreCall(
 private class FakeEthRestoreWalletRepository(
     private val restoreError: Exception? = null,
     private val restoreGate: CompletableDeferred<Unit>? = null,
-) : EthereumWalletRepository {
+) : EvmWalletRepository {
     val restoreCalls = mutableListOf<EthRestoreCall>()
 
-    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
-    override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EvmWallet?> = emptyFlow()
     override fun generateMnemonic() = error("unused")
     override suspend fun createWallet(
         network: EvmNetwork,

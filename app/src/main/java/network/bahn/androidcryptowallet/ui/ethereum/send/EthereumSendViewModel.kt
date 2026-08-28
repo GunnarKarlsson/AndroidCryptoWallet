@@ -21,8 +21,8 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumSendRoute
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 import java.math.BigInteger
@@ -35,12 +35,12 @@ sealed interface EthereumSendEvent {
 @HiltViewModel
 class EthereumSendViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val walletRepository: EthereumWalletRepository,
+    private val walletRepository: EvmWalletRepository,
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
             ?: savedStateHandle.toRoute<EthereumSendRoute>().walletId
-    private val wallet: StateFlow<EthereumWallet?> = walletRepository.observeWallet(walletId)
+    private val wallet: StateFlow<EvmWallet?> = walletRepository.observeWallet(walletId)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

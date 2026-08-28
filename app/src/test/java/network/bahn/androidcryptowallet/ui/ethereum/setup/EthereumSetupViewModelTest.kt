@@ -17,8 +17,8 @@ import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -169,11 +169,11 @@ private data class EthCreateCall(
 private class FakeEthSetupWalletRepository(
     private val createError: Exception? = null,
     private val createGate: CompletableDeferred<Unit>? = null,
-) : EthereumWalletRepository {
+) : EvmWalletRepository {
     val createCalls = mutableListOf<EthCreateCall>()
 
-    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
-    override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EvmWallet?> = emptyFlow()
     override fun generateMnemonic() = VALID_WORDS
     override suspend fun createWallet(
         network: EvmNetwork,

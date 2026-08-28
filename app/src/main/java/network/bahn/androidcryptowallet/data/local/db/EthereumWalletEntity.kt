@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.data.local.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
 
 /** Public Ethereum wallet row. No BIP-39 secrets. */
 @Entity(tableName = "ethereum_wallet")
@@ -17,7 +17,7 @@ data class EthereumWalletEntity(
     val balanceUpdatedAtMillis: Long? = null,
 )
 
-fun EthereumWalletEntity.toDomain(): EthereumWallet = EthereumWallet(
+fun EthereumWalletEntity.toDomain(): EvmWallet = EvmWallet(
     id = id,
     network = EvmNetwork.valueOf(network),
     address = address,
@@ -27,7 +27,7 @@ fun EthereumWalletEntity.toDomain(): EthereumWallet = EthereumWallet(
     balanceUpdatedAtMillis = balanceUpdatedAtMillis,
 )
 
-fun EthereumWallet.toEntity(): EthereumWalletEntity = EthereumWalletEntity(
+fun EvmWallet.toEntity(): EthereumWalletEntity = EthereumWalletEntity(
     id = id,
     network = network.name,
     address = address,

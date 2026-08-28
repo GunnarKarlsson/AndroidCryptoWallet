@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
 import network.bahn.androidcryptowallet.ui.navigation.EthereumEditWalletRoute
 import javax.inject.Inject
@@ -31,7 +31,7 @@ sealed interface EthereumEditWalletEvent {
 @HiltViewModel
 class EthereumEditWalletViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val walletRepository: EthereumWalletRepository,
+    private val walletRepository: EvmWalletRepository,
     private val defaultNames: EvmFamilyDefaultNames,
 ) : ViewModel() {
     private val walletId: String =

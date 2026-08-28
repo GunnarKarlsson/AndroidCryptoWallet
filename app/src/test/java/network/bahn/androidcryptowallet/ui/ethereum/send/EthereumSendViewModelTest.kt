@@ -18,8 +18,8 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -179,7 +179,7 @@ class EthereumSendViewModelTest {
 
 private const val RECIPIENT = "0x2222222222222222222222222222222222222222"
 
-private val WALLET = EthereumWallet(
+private val WALLET = EvmWallet(
     id = "eth-wallet-1",
     network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
@@ -199,17 +199,17 @@ private data class EthSendCall(
 )
 
 private class FakeSendEthWalletRepository(
-    private val wallet: MutableStateFlow<EthereumWallet?> = MutableStateFlow(WALLET),
+    private val wallet: MutableStateFlow<EvmWallet?> = MutableStateFlow(WALLET),
     private val validAddress: Boolean = true,
     private val sendGate: CompletableDeferred<Unit>? = null,
     private val sendError: Throwable? = null,
     private val feeError: Throwable? = null,
     private val feeData: EvmFeeData = FEE_DATA,
-) : EthereumWalletRepository {
+) : EvmWalletRepository {
     val sendCalls = mutableListOf<EthSendCall>()
 
-    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
-    override fun observeWallet(id: String): Flow<EthereumWallet?> = wallet
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EvmWallet?> = wallet
     override fun generateMnemonic() = error("unused")
 
     override suspend fun createWallet(

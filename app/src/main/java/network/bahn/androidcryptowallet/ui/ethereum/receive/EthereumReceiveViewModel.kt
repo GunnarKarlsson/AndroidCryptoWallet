@@ -10,14 +10,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import network.bahn.androidcryptowallet.domain.model.EvmPaymentUri
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumReceiveRoute
 import javax.inject.Inject
 
 @HiltViewModel
 class EthereumReceiveViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    walletRepository: EthereumWalletRepository,
+    walletRepository: EvmWalletRepository,
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")

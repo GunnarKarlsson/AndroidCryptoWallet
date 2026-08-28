@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.data.wallet
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.toEntity
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +27,7 @@ class EthereumHdWalletRoomReconciler @Inject constructor(
                 passphrase = passphrase,
             )
             walletDao.insertIgnore(
-                EthereumWallet(
+                EvmWallet(
                     id = walletId,
                     network = network,
                     address = derived.address,

@@ -15,14 +15,14 @@ import kotlinx.coroutines.flow.stateIn
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
 import javax.inject.Inject
 
 @HiltViewModel
 class EthereumSetupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val walletRepository: EthereumWalletRepository,
+    private val walletRepository: EvmWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
     private val family: EvmFamily = savedStateHandle.toRoute<EvmCreateGraphRoute>().family

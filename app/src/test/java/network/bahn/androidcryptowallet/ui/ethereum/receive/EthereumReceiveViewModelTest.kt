@@ -17,8 +17,8 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -77,17 +77,17 @@ class EthereumReceiveViewModelTest {
     )
 }
 
-private val WALLET = EthereumWallet(
+private val WALLET = EvmWallet(
     id = "eth-wallet-1",
     network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
 )
 
 private class FakeReceiveEthWalletRepository(
-    private val wallet: MutableStateFlow<EthereumWallet?> = MutableStateFlow(WALLET),
-) : EthereumWalletRepository {
-    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
-    override fun observeWallet(id: String): Flow<EthereumWallet?> = wallet
+    private val wallet: MutableStateFlow<EvmWallet?> = MutableStateFlow(WALLET),
+) : EvmWalletRepository {
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EvmWallet?> = wallet
     override fun generateMnemonic() = error("unused")
 
     override suspend fun createWallet(
