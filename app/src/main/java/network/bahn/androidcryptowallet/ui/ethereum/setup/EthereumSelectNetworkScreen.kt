@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
@@ -32,6 +33,7 @@ import network.bahn.androidcryptowallet.ui.util.DebugNextButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EthereumSelectNetworkScreen(
+    networks: List<EvmNetwork>,
     selectedNetwork: EvmNetwork,
     onNetworkSelected: (EvmNetwork) -> Unit,
     onContinue: () -> Unit,
@@ -73,6 +75,7 @@ fun EthereumSelectNetworkScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             EthereumNetworkDropdown(
+                networks = networks,
                 selectedNetwork = selectedNetwork,
                 onNetworkSelected = onNetworkSelected,
                 modifier = Modifier.fillMaxWidth(),
@@ -93,6 +96,7 @@ fun EthereumSelectNetworkScreen(
 private fun EthereumSelectNetworkScreenPreview() {
     WalletTheme {
         EthereumSelectNetworkScreen(
+            networks = EvmNetwork.networksFor(EvmFamily.ETHEREUM),
             selectedNetwork = EvmNetwork.SEPOLIA,
             onNetworkSelected = {},
             onContinue = {},

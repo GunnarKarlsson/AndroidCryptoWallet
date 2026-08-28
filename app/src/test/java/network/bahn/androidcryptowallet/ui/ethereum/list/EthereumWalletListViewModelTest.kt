@@ -1,5 +1,6 @@
 package network.bahn.androidcryptowallet.ui.ethereum.list
 
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +42,8 @@ class EthereumWalletListViewModelTest {
         assertTrue(viewModel.uiState.value.isLoading)
         assertTrue(viewModel.uiState.value.wallets.isEmpty())
         assertEquals(EvmNetwork.SEPOLIA, viewModel.uiState.value.selectedNetwork)
+        assertEquals(EvmFamily.ETHEREUM, viewModel.uiState.value.family)
+        assertEquals(EvmNetwork.networksFor(EvmFamily.ETHEREUM), viewModel.uiState.value.availableNetworks)
     }
 
     @Test
@@ -85,10 +88,12 @@ class EthereumWalletListViewModelTest {
     }
 
     private fun createViewModel(
+        family: EvmFamily = EvmFamily.ETHEREUM,
         network: MutableStateFlow<EvmNetwork> = MutableStateFlow(EvmNetwork.SEPOLIA),
         wallets: MutableStateFlow<List<EthereumWallet>> = MutableStateFlow(emptyList()),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(false),
     ) = EthereumWalletListViewModel(
+        savedStateHandle = SavedStateHandle(mapOf("family" to family.name)),
         walletRepository = FakeEthListWalletRepository(wallets),
         selectedEvmNetworkStore = FakeEthListNetworkStore(network),
         catalogReadiness = FakeEthCatalogReadiness(ready),
@@ -104,7 +109,7 @@ private val WALLET = EthereumWallet(
 private class FakeEthListWalletRepository(
     private val wallets: MutableStateFlow<List<EthereumWallet>>,
 ) : EthereumWalletRepository {
-    override fun observeWallets(): Flow<List<EthereumWallet>> = wallets
+    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = wallets
     override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
     override fun generateMnemonic() = error("unused")
     override suspend fun createWallet(

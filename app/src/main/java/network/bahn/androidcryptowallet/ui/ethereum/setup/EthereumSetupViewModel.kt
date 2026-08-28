@@ -1,7 +1,10 @@
 package network.bahn.androidcryptowallet.ui.ethereum.setup
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,14 +17,20 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
 import javax.inject.Inject
 
 @HiltViewModel
 class EthereumSetupViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val walletRepository: EthereumWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
-    private val session = EthereumSetupSession(selectedEvmNetworkStore, viewModelScope)
+    private val family: EvmFamily =
+        savedStateHandle.get<String>("family")?.let(EvmFamily::valueOf)
+            ?: savedStateHandle.toRoute<EvmCreateGraphRoute>().family
+    private val availableNetworks = EvmNetwork.networksFor(family)
+    private val session = EthereumSetupSession(selectedEvmNetworkStore, family, viewModelScope)
     private val createNetwork = session.network
     private val mnemonicWords = MutableStateFlow<List<String>>(emptyList())
     private val passphrase = MutableStateFlow("")
@@ -39,6 +48,8 @@ class EthereumSetupViewModel @Inject constructor(
         errorMessage,
     ) { network, words, phrase, creating, error ->
         EthereumSetupUiState(
+            family = family,
+            availableNetworks = availableNetworks,
             createNetwork = network,
             mnemonicWords = words,
             passphrase = phrase,
@@ -48,10 +59,14 @@ class EthereumSetupViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumSetupUiState(),
+        initialValue = EthereumSetupUiState(
+            family = family,
+            availableNetworks = availableNetworks,
+        ),
     )
 
     fun onCreateNetworkSelected(network: EvmNetwork) {
+        if (network.family != family) return
         createNetwork.value = network
     }
 
@@ -81,7 +96,7 @@ class EthereumSetupViewModel @Inject constructor(
                 mnemonicWords = words,
                 passphrase = passphrase.value.takeIf { it.isNotBlank() },
             )
-            selectedEvmNetworkStore.setNetwork(EvmFamily.ETHEREUM, createNetwork.value)
+            selectedEvmNetworkStore.setNetwork(family, createNetwork.value)
             mnemonicWords.value = emptyList()
             passphrase.value = ""
             eventsChannel.send(EthereumSetupEvent.WalletCreated)

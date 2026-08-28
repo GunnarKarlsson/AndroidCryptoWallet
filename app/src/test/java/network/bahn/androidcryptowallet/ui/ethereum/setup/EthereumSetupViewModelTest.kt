@@ -1,5 +1,6 @@
 package network.bahn.androidcryptowallet.ui.ethereum.setup
 
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -146,7 +147,9 @@ class EthereumSetupViewModelTest {
     private fun createViewModel(
         walletRepo: FakeEthSetupWalletRepository,
         networkStore: FakeEthSetupNetworkStore = FakeEthSetupNetworkStore(),
+        family: EvmFamily = EvmFamily.ETHEREUM,
     ) = EthereumSetupViewModel(
+        savedStateHandle = SavedStateHandle(mapOf("family" to family.name)),
         walletRepository = walletRepo,
         selectedEvmNetworkStore = networkStore,
     )
@@ -166,7 +169,7 @@ private class FakeEthSetupWalletRepository(
 ) : EthereumWalletRepository {
     val createCalls = mutableListOf<EthCreateCall>()
 
-    override fun observeWallets(): Flow<List<EthereumWallet>> = emptyFlow()
+    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
     override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
     override fun generateMnemonic() = VALID_WORDS
     override suspend fun createWallet(

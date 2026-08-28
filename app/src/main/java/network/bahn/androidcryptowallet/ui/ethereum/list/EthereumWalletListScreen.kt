@@ -51,9 +51,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
+import network.bahn.androidcryptowallet.ui.chain.chainIconRes
+import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
+import network.bahn.androidcryptowallet.ui.chain.walletsTitleRes
 import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
@@ -97,7 +101,7 @@ private fun EthereumWalletListContent(
             Column {
                 TopAppBar(
                     colors = walletTopAppBarColors(),
-                    title = { Text(stringResource(R.string.ethereum_wallets_title)) },
+                    title = { Text(stringResource(uiState.family.walletsTitleRes)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
@@ -129,6 +133,7 @@ private fun EthereumWalletListContent(
                 .padding(horizontal = 20.dp),
         ) {
             EthereumNetworkDropdown(
+                networks = uiState.availableNetworks,
                 selectedNetwork = uiState.selectedNetwork,
                 onNetworkSelected = onNetworkSelected,
                 modifier = Modifier.fillMaxWidth(),
@@ -144,6 +149,7 @@ private fun EthereumWalletListContent(
                         items(uiState.wallets, key = { it.id }) { wallet ->
                             EthereumWalletListItem(
                                 wallet = wallet,
+                                family = uiState.family,
                                 onClick = { onWalletClick(wallet.id) },
                             )
                         }
@@ -228,6 +234,7 @@ private fun EthereumWalletListContent(
 @Composable
 private fun EthereumWalletListItem(
     wallet: EthereumWallet,
+    family: EvmFamily,
     onClick: () -> Unit,
 ) {
     Card(
@@ -247,9 +254,9 @@ private fun EthereumWalletListItem(
             WalletListItemTitle(
                 name = StringUtils.walletDisplayName(
                     name = wallet.name,
-                    fallback = stringResource(R.string.ethereum_wallet_list_item_label),
+                    fallback = stringResource(family.walletListItemLabelRes),
                 ),
-                chainIconRes = R.drawable.ic_chain_ethereum,
+                chainIconRes = family.chainIconRes,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(

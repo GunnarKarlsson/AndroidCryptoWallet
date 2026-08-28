@@ -1,5 +1,6 @@
 package network.bahn.androidcryptowallet.ui.navigation
 
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -9,7 +10,7 @@ data object ChainSelectRoute
 data object BitcoinWalletListRoute
 
 @Serializable
-data object EthereumWalletListRoute
+data class EvmWalletListRoute(val family: EvmFamily)
 
 @Serializable
 data object BitcoinCreateGraphRoute
@@ -48,7 +49,7 @@ data class BitcoinReceiveRoute(val walletId: String)
 data class BitcoinEditWalletRoute(val walletId: String)
 
 @Serializable
-data object EthereumCreateGraphRoute
+data class EvmCreateGraphRoute(val family: EvmFamily)
 
 @Serializable
 data object EthereumSelectNetworkRoute
@@ -60,7 +61,7 @@ data object EthereumCreateWalletRoute
 data object EthereumConfirmMnemonicRoute
 
 @Serializable
-data object EthereumRestoreGraphRoute
+data class EvmRestoreGraphRoute(val family: EvmFamily)
 
 @Serializable
 data object EthereumRestoreSelectNetworkRoute

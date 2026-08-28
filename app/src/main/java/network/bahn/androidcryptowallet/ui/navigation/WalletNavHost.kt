@@ -31,6 +31,10 @@ import network.bahn.androidcryptowallet.ui.bitcoin.setup.BitcoinSetupViewModel
 import network.bahn.androidcryptowallet.ui.bitcoin.status.BitcoinNetworkStatusScreen
 import network.bahn.androidcryptowallet.ui.chain.ChainSelectScreen
 import network.bahn.androidcryptowallet.ui.chain.SupportedChain
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
+import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
+import network.bahn.androidcryptowallet.ui.navigation.EvmRestoreGraphRoute
+import network.bahn.androidcryptowallet.ui.navigation.EvmWalletListRoute
 import network.bahn.androidcryptowallet.ui.ethereum.list.EthereumWalletListScreen
 import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsScreen
 import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsViewModel
@@ -60,7 +64,8 @@ fun WalletNavHost(
                 onChainSelected = { chain ->
                     when (chain) {
                         SupportedChain.BITCOIN -> navController.navigate(BitcoinWalletListRoute)
-                        SupportedChain.ETHEREUM -> navController.navigate(EthereumWalletListRoute)
+                        SupportedChain.ETHEREUM ->
+                            navController.navigate(EvmWalletListRoute(EvmFamily.ETHEREUM))
                         SupportedChain.BSC -> Unit // not wired yet
                     }
                 },
@@ -77,11 +82,12 @@ fun WalletNavHost(
                 },
             )
         }
-        composable<EthereumWalletListRoute> {
+        composable<EvmWalletListRoute> { entry ->
+            val family = entry.toRoute<EvmWalletListRoute>().family
             EthereumWalletListScreen(
                 onBack = { navController.popBackStack() },
-                onCreateWallet = { navController.navigate(EthereumCreateGraphRoute) },
-                onRestoreWallet = { navController.navigate(EthereumRestoreGraphRoute) },
+                onCreateWallet = { navController.navigate(EvmCreateGraphRoute(family)) },
+                onRestoreWallet = { navController.navigate(EvmRestoreGraphRoute(family)) },
                 onWalletClick = { walletId ->
                     navController.navigate(EthereumWalletDetailsRoute(walletId))
                 },
@@ -251,13 +257,14 @@ fun WalletNavHost(
                 )
             }
         }
-        navigation<EthereumCreateGraphRoute>(
+        navigation<EvmCreateGraphRoute>(
             startDestination = EthereumSelectNetworkRoute,
         ) {
             composable<EthereumSelectNetworkRoute> { entry ->
-                val setupViewModel = entry.ethereumCreateGraphViewModel(navController)
+                val setupViewModel = entry.evmCreateGraphViewModel(navController)
                 val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
                 EthereumSelectNetworkScreen(
+                    networks = uiState.availableNetworks,
                     selectedNetwork = uiState.createNetwork,
                     onNetworkSelected = setupViewModel::onCreateNetworkSelected,
                     onContinue = {
@@ -268,7 +275,7 @@ fun WalletNavHost(
                 )
             }
             composable<EthereumCreateWalletRoute> { entry ->
-                val setupViewModel = entry.ethereumCreateGraphViewModel(navController)
+                val setupViewModel = entry.evmCreateGraphViewModel(navController)
                 val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
                 LaunchedEffect(setupViewModel) {
                     setupViewModel.ensureMnemonicGenerated()
@@ -282,14 +289,14 @@ fun WalletNavHost(
                 )
             }
             composable<EthereumConfirmMnemonicRoute> { entry ->
-                val setupViewModel = entry.ethereumCreateGraphViewModel(navController)
+                val setupViewModel = entry.evmCreateGraphViewModel(navController)
                 val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
                 LaunchedEffect(setupViewModel) {
                     setupViewModel.events.collect { event ->
                         when (event) {
                             EthereumSetupEvent.WalletCreated -> {
                                 navController.popBackStack(
-                                    route = EthereumCreateGraphRoute,
+                                    route = EvmCreateGraphRoute(uiState.family),
                                     inclusive = true,
                                 )
                             }
@@ -305,13 +312,14 @@ fun WalletNavHost(
                 )
             }
         }
-        navigation<EthereumRestoreGraphRoute>(
+        navigation<EvmRestoreGraphRoute>(
             startDestination = EthereumRestoreSelectNetworkRoute,
         ) {
             composable<EthereumRestoreSelectNetworkRoute> { entry ->
-                val restoreViewModel = entry.ethereumRestoreGraphViewModel(navController)
+                val restoreViewModel = entry.evmRestoreGraphViewModel(navController)
                 val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
                 EthereumRestoreSelectNetworkScreen(
+                    networks = uiState.availableNetworks,
                     selectedNetwork = uiState.restoreNetwork,
                     onNetworkSelected = restoreViewModel::onRestoreNetworkSelected,
                     onContinue = { navController.navigate(EthereumRestoreWalletRoute) },
@@ -319,14 +327,14 @@ fun WalletNavHost(
                 )
             }
             composable<EthereumRestoreWalletRoute> { entry ->
-                val restoreViewModel = entry.ethereumRestoreGraphViewModel(navController)
+                val restoreViewModel = entry.evmRestoreGraphViewModel(navController)
                 val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
                 LaunchedEffect(restoreViewModel) {
                     restoreViewModel.events.collect { event ->
                         when (event) {
                             EthereumRestoreEvent.WalletRestored -> {
                                 navController.popBackStack(
-                                    route = EthereumRestoreGraphRoute,
+                                    route = EvmRestoreGraphRoute(uiState.family),
                                     inclusive = true,
                                 )
                             }
@@ -370,21 +378,21 @@ private fun NavBackStackEntry.restoreGraphViewModel(
 }
 
 @Composable
-private fun NavBackStackEntry.ethereumCreateGraphViewModel(
+private fun NavBackStackEntry.evmCreateGraphViewModel(
     navController: NavHostController,
 ): EthereumSetupViewModel {
     val parentEntry = remember(this) {
-        navController.getBackStackEntry<EthereumCreateGraphRoute>()
+        navController.getBackStackEntry<EvmCreateGraphRoute>()
     }
     return hiltViewModel(parentEntry)
 }
 
 @Composable
-private fun NavBackStackEntry.ethereumRestoreGraphViewModel(
+private fun NavBackStackEntry.evmRestoreGraphViewModel(
     navController: NavHostController,
 ): EthereumRestoreViewModel {
     val parentEntry = remember(this) {
-        navController.getBackStackEntry<EthereumRestoreGraphRoute>()
+        navController.getBackStackEntry<EvmRestoreGraphRoute>()
     }
     return hiltViewModel(parentEntry)
 }

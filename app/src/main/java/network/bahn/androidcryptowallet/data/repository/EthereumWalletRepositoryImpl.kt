@@ -48,8 +48,8 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     private val json: Json,
 ) : EthereumWalletRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun observeWallets(): Flow<List<EthereumWallet>> =
-        selectedEvmNetworkStore.selectedNetwork(EvmFamily.ETHEREUM).flatMapLatest { network ->
+    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> =
+        selectedEvmNetworkStore.selectedNetwork(family).flatMapLatest { network ->
             walletDao.observeByNetwork(network.name).map { rows -> rows.map { it.toDomain() } }
         }
 

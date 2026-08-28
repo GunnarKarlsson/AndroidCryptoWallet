@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
@@ -85,7 +86,7 @@ private val WALLET = EthereumWallet(
 private class FakeReceiveEthWalletRepository(
     private val wallet: MutableStateFlow<EthereumWallet?> = MutableStateFlow(WALLET),
 ) : EthereumWalletRepository {
-    override fun observeWallets(): Flow<List<EthereumWallet>> = emptyFlow()
+    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
     override fun observeWallet(id: String): Flow<EthereumWallet?> = wallet
     override fun generateMnemonic() = error("unused")
 

@@ -3,6 +3,7 @@ package network.bahn.androidcryptowallet.domain.repository
 import kotlinx.coroutines.flow.Flow
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
@@ -10,8 +11,8 @@ import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import java.math.BigInteger
 
 interface EthereumWalletRepository {
-    /** Wallets for the currently selected network. Public data only. */
-    fun observeWallets(): Flow<List<EthereumWallet>>
+    /** Wallets for the currently selected network within [family]. Public data only. */
+    fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>>
 
     fun observeWallet(id: String): Flow<EthereumWallet?>
 

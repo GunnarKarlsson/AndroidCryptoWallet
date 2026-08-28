@@ -11,13 +11,14 @@ import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 internal class EthereumSetupSession(
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
+    private val family: EvmFamily,
     private val scope: CoroutineScope,
 ) {
-    val network = MutableStateFlow(EvmNetwork.SEPOLIA)
+    val network = MutableStateFlow(defaultNetwork())
 
     init {
         scope.launch {
-            network.value = selectedEvmNetworkStore.selectedNetwork(EvmFamily.ETHEREUM).first()
+            network.value = selectedEvmNetworkStore.selectedNetwork(family).first()
         }
     }
 
@@ -43,4 +44,7 @@ internal class EthereumSetupSession(
             }
         }
     }
+
+    private fun defaultNetwork(): EvmNetwork =
+        EvmNetwork.networksFor(family).firstOrNull() ?: EvmNetwork.SEPOLIA
 }

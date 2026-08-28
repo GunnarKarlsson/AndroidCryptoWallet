@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
@@ -160,7 +161,7 @@ private class FakeEthEditWalletRepository(
 ) : EthereumWalletRepository {
     val renameCalls = mutableListOf<RenameCall>()
 
-    override fun observeWallets(): Flow<List<EthereumWallet>> = emptyFlow()
+    override fun observeWallets(family: EvmFamily): Flow<List<EthereumWallet>> = emptyFlow()
     override fun observeWallet(id: String): Flow<EthereumWallet?> = wallet
     override fun generateMnemonic() = error("unused")
 

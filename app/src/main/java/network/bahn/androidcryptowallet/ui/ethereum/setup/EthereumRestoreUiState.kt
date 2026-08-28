@@ -1,8 +1,11 @@
 package network.bahn.androidcryptowallet.ui.ethereum.setup
 
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 data class EthereumRestoreUiState(
+    val family: EvmFamily = EvmFamily.ETHEREUM,
+    val availableNetworks: List<EvmNetwork> = EvmNetwork.networksFor(EvmFamily.ETHEREUM),
     val restoreNetwork: EvmNetwork = EvmNetwork.SEPOLIA,
     val mnemonicWords: List<String> = List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" },
     val passphrase: String = "",

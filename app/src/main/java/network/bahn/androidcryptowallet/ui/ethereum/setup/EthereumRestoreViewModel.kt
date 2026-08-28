@@ -1,7 +1,10 @@
 package network.bahn.androidcryptowallet.ui.ethereum.setup
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,14 +17,20 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
+import network.bahn.androidcryptowallet.ui.navigation.EvmRestoreGraphRoute
 import javax.inject.Inject
 
 @HiltViewModel
 class EthereumRestoreViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val walletRepository: EthereumWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
-    private val session = EthereumSetupSession(selectedEvmNetworkStore, viewModelScope)
+    private val family: EvmFamily =
+        savedStateHandle.get<String>("family")?.let(EvmFamily::valueOf)
+            ?: savedStateHandle.toRoute<EvmRestoreGraphRoute>().family
+    private val availableNetworks = EvmNetwork.networksFor(family)
+    private val session = EthereumSetupSession(selectedEvmNetworkStore, family, viewModelScope)
     private val restoreNetwork = session.network
     private val mnemonicWords = MutableStateFlow(List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" })
     private val passphrase = MutableStateFlow("")
@@ -39,6 +48,8 @@ class EthereumRestoreViewModel @Inject constructor(
         errorMessage,
     ) { network, words, phrase, restoring, error ->
         EthereumRestoreUiState(
+            family = family,
+            availableNetworks = availableNetworks,
             restoreNetwork = network,
             mnemonicWords = words,
             passphrase = phrase,
@@ -48,10 +59,14 @@ class EthereumRestoreViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumRestoreUiState(),
+        initialValue = EthereumRestoreUiState(
+            family = family,
+            availableNetworks = availableNetworks,
+        ),
     )
 
     fun onRestoreNetworkSelected(network: EvmNetwork) {
+        if (network.family != family) return
         restoreNetwork.value = network
     }
 
@@ -90,7 +105,7 @@ class EthereumRestoreViewModel @Inject constructor(
                 mnemonicWords = words,
                 passphrase = passphrase.value.takeIf { it.isNotBlank() },
             )
-            selectedEvmNetworkStore.setNetwork(EvmFamily.ETHEREUM, restoreNetwork.value)
+            selectedEvmNetworkStore.setNetwork(family, restoreNetwork.value)
             mnemonicWords.value = List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" }
             passphrase.value = ""
             eventsChannel.send(EthereumRestoreEvent.WalletRestored)
