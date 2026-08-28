@@ -7,7 +7,7 @@ import java.math.BigInteger
  * Ethereum key operations. Implementation uses BDK for BIP-39 generate and web3j for
  * BIP-44 derivation and EIP-1559 signing; domain/UI must not import those libraries.
  */
-interface EthereumKeyEngine {
+interface EvmKeyEngine {
     /** BIP-39: new 12-word English mnemonic. */
     fun generateMnemonic(): List<String>
 

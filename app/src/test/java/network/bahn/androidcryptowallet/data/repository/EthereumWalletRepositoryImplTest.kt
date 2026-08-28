@@ -18,7 +18,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
-import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EvmAddressBalance
 import network.bahn.androidcryptowallet.domain.model.EvmFeeData
@@ -38,7 +38,7 @@ import java.math.BigInteger
 class EthereumWalletRepositoryImplTest {
     @Test
     fun createWritesWalletForChosenNetworkOnly() = runTest {
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val store = FakeEvmMnemonicStore()
         val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
@@ -61,7 +61,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun createRejectsInvalidMnemonic() = runTest {
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val store = FakeEvmMnemonicStore()
         val repo = createRepository(engine = engine, store = store)
 
@@ -89,7 +89,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun restoreWritesWalletForChosenNetwork() = runTest {
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val store = FakeEvmMnemonicStore()
         val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
@@ -108,7 +108,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun restoreExistingSeedDoesNotInsertAgain() = runTest {
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val store = FakeEvmMnemonicStore()
         val remote = FakeEthereumRemoteDataSource(balanceWei = "12345")
         val repo = createRepository(engine = engine, store = store, remote = remote)
@@ -133,7 +133,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun restoreDifferentPassphraseCreatesAnotherWallet() = runTest {
-        val engine = FakeEthereumKeyEngine(
+        val engine = FakeEvmKeyEngine(
             passphraseAddresses = mapOf("other-pass" to "0x2222222222222222222222222222222222222222"),
         )
         val store = FakeEvmMnemonicStore()
@@ -186,7 +186,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun restoreRejectsInvalidMnemonic() = runTest {
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val store = FakeEvmMnemonicStore()
         val repo = createRepository(engine = engine, store = store)
 
@@ -253,7 +253,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun renameWalletPersistsTrimmedNameWithoutTouchingRemote() = runTest {
         val remote = FakeEthereumRemoteDataSource()
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val repo = createRepository(engine = engine, remote = remote)
 
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
@@ -279,7 +279,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun renameWalletMissingThrowsWithoutRemote() = runTest {
         val remote = FakeEthereumRemoteDataSource()
-        val engine = FakeEthereumKeyEngine()
+        val engine = FakeEvmKeyEngine()
         val repo = createRepository(engine = engine, remote = remote)
         try {
             repo.renameWallet("missing", "Savings")
@@ -427,7 +427,7 @@ class EthereumWalletRepositoryImplTest {
     }
 
     private fun createRepository(
-        engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
+        engine: FakeEvmKeyEngine = FakeEvmKeyEngine(),
         store: FakeEvmMnemonicStore = FakeEvmMnemonicStore(),
         walletDao: FakeEvmWalletDao = FakeEvmWalletDao(),
         transactionDao: FakeEvmTransactionDao = FakeEvmTransactionDao(),
@@ -462,9 +462,9 @@ private val TX_SUMMARY = EvmTransactionSummary(
 
 private val TX_SUMMARY_2 = TX_SUMMARY.copy(hash = "0xdef")
 
-private class FakeEthereumKeyEngine(
+private class FakeEvmKeyEngine(
     private val passphraseAddresses: Map<String, String> = emptyMap(),
-) : EthereumKeyEngine {
+) : EvmKeyEngine {
     var validateCalls = 0
     var deriveCalls = 0
 

@@ -20,7 +20,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
-import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
@@ -37,7 +37,7 @@ import javax.inject.Singleton
 
 @Singleton
 class EthereumWalletRepositoryImpl @Inject constructor(
-    private val keyEngine: EthereumKeyEngine,
+    private val keyEngine: EvmKeyEngine,
     private val mnemonicStore: EvmMnemonicStore,
     private val walletDao: EvmWalletDao,
     private val transactionDao: EvmTransactionDao,

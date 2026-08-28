@@ -12,8 +12,8 @@ import javax.inject.Singleton
  * mnemonic if Room was dropped. Does not delete existing rows.
  */
 @Singleton
-class EthereumHdWalletRoomReconciler @Inject constructor(
-    private val keyEngine: EthereumKeyEngine,
+class EvmHdWalletRoomReconciler @Inject constructor(
+    private val keyEngine: EvmKeyEngine,
     private val mnemonicStore: EvmMnemonicStore,
     private val walletDao: EvmWalletDao,
 ) {

@@ -12,7 +12,7 @@ import javax.inject.Singleton
 class WalletCatalogInitializer @Inject constructor(
     private val hdWalletRoomReconciler: HdWalletRoomReconciler,
     private val watchOnlyBitcoinWalletSeeder: WatchOnlyBitcoinWalletSeeder,
-    private val ethereumHdWalletRoomReconciler: EthereumHdWalletRoomReconciler,
+    private val evmHdWalletRoomReconciler: EvmHdWalletRoomReconciler,
 ) : WalletCatalogReadiness {
     private val ready = MutableStateFlow(false)
 
@@ -31,7 +31,7 @@ class WalletCatalogInitializer @Inject constructor(
                 Log.e(TAG, "Failed to seed watch-only wallets", e)
             }
             try {
-                ethereumHdWalletRoomReconciler.reconcile()
+                evmHdWalletRoomReconciler.reconcile()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to reconcile Ethereum HD wallets", e)
             }

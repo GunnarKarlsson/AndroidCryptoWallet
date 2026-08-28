@@ -15,13 +15,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class EthereumHdWalletRoomReconcilerTest {
+class EvmHdWalletRoomReconcilerTest {
     @Test
     fun emptyStoreLeavesDaoUnchanged() = runTest {
         val dao = FakeEvmReconcileDao()
         val store = FakeEthReconcileMnemonicStore()
         val engine = FakeEthReconcileKeyEngine()
-        EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
+        EvmHdWalletRoomReconciler(engine, store, dao).reconcile()
         assertTrue(dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first().isEmpty())
         assertTrue(engine.deriveCalls.isEmpty())
     }
@@ -39,7 +39,7 @@ class EthereumHdWalletRoomReconcilerTest {
         }
         val engine = FakeEthReconcileKeyEngine()
 
-        EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
+        EvmHdWalletRoomReconciler(engine, store, dao).reconcile()
 
         val row = dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first().single()
         assertEquals(WALLET_ID, row.id)
@@ -59,7 +59,7 @@ class EthereumHdWalletRoomReconcilerTest {
         store.put(id = "no-network", mnemonic = MNEMONIC, network = null)
         val engine = FakeEthReconcileKeyEngine()
 
-        EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
+        EvmHdWalletRoomReconciler(engine, store, dao).reconcile()
 
         assertTrue(dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first().isEmpty())
         assertTrue(engine.deriveCalls.isEmpty())
@@ -86,7 +86,7 @@ class EthereumHdWalletRoomReconcilerTest {
         }
         val engine = FakeEthReconcileKeyEngine()
 
-        EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
+        EvmHdWalletRoomReconciler(engine, store, dao).reconcile()
 
         val rows = dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first()
         assertEquals(1, rows.size)
@@ -105,7 +105,7 @@ private data class EthDeriveCall(
     val passphrase: String?,
 )
 
-private class FakeEthReconcileKeyEngine : EthereumKeyEngine {
+private class FakeEthReconcileKeyEngine : EvmKeyEngine {
     val deriveCalls = mutableListOf<EthDeriveCall>()
 
     override fun generateMnemonic(): List<String> = error("unused")

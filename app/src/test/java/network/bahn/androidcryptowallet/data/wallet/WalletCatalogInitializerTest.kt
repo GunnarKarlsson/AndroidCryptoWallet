@@ -32,7 +32,7 @@ class WalletCatalogInitializerTest {
                 config = MockBitcoinWalletConfig.fromRaw("", ""),
                 walletDao = dao,
             ),
-            ethereumHdWalletRoomReconciler = unusedEthereumReconciler(),
+            evmHdWalletRoomReconciler = unusedEvmReconciler(),
         )
 
         assertFalse(initializer.observeReady().first())
@@ -53,7 +53,7 @@ class WalletCatalogInitializerTest {
                 config = MockBitcoinWalletConfig.fromRaw("", ""),
                 walletDao = dao,
             ),
-            ethereumHdWalletRoomReconciler = unusedEthereumReconciler(),
+            evmHdWalletRoomReconciler = unusedEvmReconciler(),
         )
 
         initializer.initialize()
@@ -73,7 +73,7 @@ class WalletCatalogInitializerTest {
                 config = MockBitcoinWalletConfig.fromRaw("tb1qmock", ""),
                 walletDao = dao,
             ),
-            ethereumHdWalletRoomReconciler = unusedEthereumReconciler(),
+            evmHdWalletRoomReconciler = unusedEvmReconciler(),
         )
 
         initializer.initialize()
@@ -200,13 +200,13 @@ private class ThrowingMockIdsWalletDao : FakeCatalogWalletDao() {
     override suspend fun mockWalletIds(): List<String> = error("dao unavailable")
 }
 
-private fun unusedEthereumReconciler() = EthereumHdWalletRoomReconciler(
-    keyEngine = UnusedEthereumCatalogKeyEngine(),
+private fun unusedEvmReconciler() = EvmHdWalletRoomReconciler(
+    keyEngine = UnusedEvmCatalogKeyEngine(),
     mnemonicStore = EmptyEvmCatalogMnemonicStore(),
     walletDao = EmptyEvmCatalogWalletDao(),
 )
 
-private class UnusedEthereumCatalogKeyEngine : EthereumKeyEngine {
+private class UnusedEvmCatalogKeyEngine : EvmKeyEngine {
     override fun generateMnemonic(): List<String> = error("unused")
 
     override fun validateMnemonic(words: List<String>) = error("unused")

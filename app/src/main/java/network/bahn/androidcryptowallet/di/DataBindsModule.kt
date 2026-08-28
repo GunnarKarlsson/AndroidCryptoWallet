@@ -25,9 +25,9 @@ import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryI
 import network.bahn.androidcryptowallet.data.repository.EthereumWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
-import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.WalletCatalogInitializer
-import network.bahn.androidcryptowallet.data.wallet.Web3jEthereumKeyEngine
+import network.bahn.androidcryptowallet.data.wallet.Web3jEvmKeyEngine
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
@@ -101,9 +101,9 @@ abstract class DataBindsModule {
 
     @Binds
     @Singleton
-    abstract fun bindEthereumKeyEngine(
-        impl: Web3jEthereumKeyEngine,
-    ): EthereumKeyEngine
+    abstract fun bindEvmKeyEngine(
+        impl: Web3jEvmKeyEngine,
+    ): EvmKeyEngine
 
     @Binds
     @Singleton

@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class Web3jEthereumKeyEngine @Inject constructor() : EthereumKeyEngine {
+class Web3jEvmKeyEngine @Inject constructor() : EvmKeyEngine {
     override fun generateMnemonic(): List<String> {
         // BIP-39: 128 bits of entropy → 12 English words (checksum included).
         val mnemonic = Mnemonic(WordCount.WORDS12)

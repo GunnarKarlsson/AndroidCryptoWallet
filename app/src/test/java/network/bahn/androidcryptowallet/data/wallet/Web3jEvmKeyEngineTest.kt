@@ -7,8 +7,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigInteger
 
-class Web3jEthereumKeyEngineTest {
-    private val engine = Web3jEthereumKeyEngine()
+class Web3jEvmKeyEngineTest {
+    private val engine = Web3jEvmKeyEngine()
 
     @Test
     fun abandonMnemonicDerivesPublishedFirstAccount() {
