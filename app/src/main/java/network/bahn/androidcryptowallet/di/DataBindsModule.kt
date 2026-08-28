@@ -10,8 +10,8 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkDataS
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedBitcoinMnemonicStore
-import network.bahn.androidcryptowallet.data.local.secure.EncryptedEthereumMnemonicStore
-import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EncryptedEvmMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.RoutingEthereumTransactionRemoteDataSource
@@ -107,9 +107,9 @@ abstract class DataBindsModule {
 
     @Binds
     @Singleton
-    abstract fun bindEthereumMnemonicStore(
-        impl: EncryptedEthereumMnemonicStore,
-    ): EthereumMnemonicStore
+    abstract fun bindEvmMnemonicStore(
+        impl: EncryptedEvmMnemonicStore,
+    ): EvmMnemonicStore
 
     @Binds
     @Singleton

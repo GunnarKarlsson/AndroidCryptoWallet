@@ -2,7 +2,7 @@ package network.bahn.androidcryptowallet.data.wallet
 
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
 import network.bahn.androidcryptowallet.data.local.db.toEntity
-import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,7 +14,7 @@ import javax.inject.Singleton
 @Singleton
 class EthereumHdWalletRoomReconciler @Inject constructor(
     private val keyEngine: EthereumKeyEngine,
-    private val mnemonicStore: EthereumMnemonicStore,
+    private val mnemonicStore: EvmMnemonicStore,
     private val walletDao: EvmWalletDao,
 ) {
     suspend fun reconcile() {

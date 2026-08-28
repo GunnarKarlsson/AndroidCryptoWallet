@@ -2,7 +2,7 @@ package network.bahn.androidcryptowallet.data.local.secure
 
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
-interface EthereumMnemonicStore {
+interface EvmMnemonicStore {
     /**
      * Persist BIP-39 mnemonic + optional passphrase and [network] for [walletId].
      * Never log mnemonic or passphrase values.

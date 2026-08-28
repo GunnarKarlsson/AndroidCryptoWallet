@@ -15,9 +15,9 @@ import javax.inject.Singleton
  * Prefs file is [PREFS_FILE], separate from Bitcoin secrets.
  */
 @Singleton
-class EncryptedEthereumMnemonicStore @Inject constructor(
+class EncryptedEvmMnemonicStore @Inject constructor(
     @ApplicationContext context: Context,
-) : EthereumMnemonicStore {
+) : EvmMnemonicStore {
     private val prefs: SharedPreferences
 
     init {

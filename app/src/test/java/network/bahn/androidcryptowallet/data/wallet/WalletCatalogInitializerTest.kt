@@ -10,7 +10,7 @@ import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
-import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.BitcoinSignedTransaction
@@ -202,7 +202,7 @@ private class ThrowingMockIdsWalletDao : FakeCatalogWalletDao() {
 
 private fun unusedEthereumReconciler() = EthereumHdWalletRoomReconciler(
     keyEngine = UnusedEthereumCatalogKeyEngine(),
-    mnemonicStore = EmptyEthereumCatalogMnemonicStore(),
+    mnemonicStore = EmptyEvmCatalogMnemonicStore(),
     walletDao = EmptyEvmCatalogWalletDao(),
 )
 
@@ -231,7 +231,7 @@ private class UnusedEthereumCatalogKeyEngine : EthereumKeyEngine {
     ): String = error("unused")
 }
 
-private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
+private class EmptyEvmCatalogMnemonicStore : EvmMnemonicStore {
     override fun save(
         walletId: String,
         mnemonic: String,

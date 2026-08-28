@@ -17,7 +17,7 @@ import network.bahn.androidcryptowallet.data.local.db.toEntity
 import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
-import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
@@ -38,7 +38,7 @@ import javax.inject.Singleton
 @Singleton
 class EthereumWalletRepositoryImpl @Inject constructor(
     private val keyEngine: EthereumKeyEngine,
-    private val mnemonicStore: EthereumMnemonicStore,
+    private val mnemonicStore: EvmMnemonicStore,
     private val walletDao: EvmWalletDao,
     private val transactionDao: EvmTransactionDao,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,

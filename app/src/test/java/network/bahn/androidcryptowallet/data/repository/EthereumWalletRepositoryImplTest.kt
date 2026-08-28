@@ -15,7 +15,7 @@ import network.bahn.androidcryptowallet.data.local.db.EvmWalletTxCacheEntity
 import network.bahn.androidcryptowallet.data.local.db.toJson
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
-import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
@@ -39,7 +39,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun createWritesWalletForChosenNetworkOnly() = runTest {
         val engine = FakeEthereumKeyEngine()
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
 
@@ -62,7 +62,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun createRejectsInvalidMnemonic() = runTest {
         val engine = FakeEthereumKeyEngine()
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(engine = engine, store = store)
 
         try {
@@ -78,7 +78,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun createPersistsPassphrase() = runTest {
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(store = store)
 
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = "secret")
@@ -90,7 +90,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun restoreWritesWalletForChosenNetwork() = runTest {
         val engine = FakeEthereumKeyEngine()
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
 
@@ -109,7 +109,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun restoreExistingSeedDoesNotInsertAgain() = runTest {
         val engine = FakeEthereumKeyEngine()
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val remote = FakeEthereumRemoteDataSource(balanceWei = "12345")
         val repo = createRepository(engine = engine, store = store, remote = remote)
 
@@ -136,7 +136,7 @@ class EthereumWalletRepositoryImplTest {
         val engine = FakeEthereumKeyEngine(
             passphraseAddresses = mapOf("other-pass" to "0x2222222222222222222222222222222222222222"),
         )
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(engine = engine, store = store)
 
         repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
@@ -153,7 +153,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun restoreDifferentNetworkCreatesAnotherWallet() = runTest {
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(store = store, networkStore = networkStore)
 
@@ -187,7 +187,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun restoreRejectsInvalidMnemonic() = runTest {
         val engine = FakeEthereumKeyEngine()
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(engine = engine, store = store)
 
         try {
@@ -224,7 +224,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun deleteRemovesMnemonicAndRoomRow() = runTest {
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(store = store)
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = "secret")
         val walletId = repo.observeWallets(EvmFamily.ETHEREUM).first().single().id
@@ -238,7 +238,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun deleteUnknownIdIsNoOp() = runTest {
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(store = store)
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val existingId = repo.observeWallets(EvmFamily.ETHEREUM).first().single().id
@@ -386,7 +386,7 @@ class EthereumWalletRepositoryImplTest {
         val remote = FakeEthereumRemoteDataSource(
             balanceWei = "1000000000000000000",
         )
-        val store = FakeEthereumMnemonicStore()
+        val store = FakeEvmMnemonicStore()
         val repo = createRepository(store = store, remote = remote)
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets(EvmFamily.ETHEREUM).first().single().id
@@ -428,7 +428,7 @@ class EthereumWalletRepositoryImplTest {
 
     private fun createRepository(
         engine: FakeEthereumKeyEngine = FakeEthereumKeyEngine(),
-        store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
+        store: FakeEvmMnemonicStore = FakeEvmMnemonicStore(),
         walletDao: FakeEvmWalletDao = FakeEvmWalletDao(),
         transactionDao: FakeEvmTransactionDao = FakeEvmTransactionDao(),
         networkStore: FakeSelectedEvmNetworkStore = FakeSelectedEvmNetworkStore(),
@@ -500,7 +500,7 @@ private class FakeEthereumKeyEngine(
     ): String = "0xsignedraw"
 }
 
-private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
+private class FakeEvmMnemonicStore : EvmMnemonicStore {
     data class Saved(
         val mnemonic: String,
         val passphrase: String?,

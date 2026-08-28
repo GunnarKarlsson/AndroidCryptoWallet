@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity
-import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
+import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmReceiveAddress
 import org.junit.Assert.assertEquals
@@ -135,7 +135,7 @@ private class FakeEthReconcileKeyEngine : EthereumKeyEngine {
     ): String = error("unused")
 }
 
-private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {
+private class FakeEthReconcileMnemonicStore : EvmMnemonicStore {
     private val mnemonics = mutableMapOf<String, String?>()
     private val passphrases = mutableMapOf<String, String?>()
     private val networks = mutableMapOf<String, EvmNetwork?>()
