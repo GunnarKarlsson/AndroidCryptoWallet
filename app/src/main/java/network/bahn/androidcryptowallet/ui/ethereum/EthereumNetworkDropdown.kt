@@ -18,13 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import network.bahn.androidcryptowallet.R
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EthereumNetworkDropdown(
-    selectedNetwork: EthereumNetwork,
-    onNetworkSelected: (EthereumNetwork) -> Unit,
+    selectedNetwork: EvmNetwork,
+    onNetworkSelected: (EvmNetwork) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -50,7 +51,7 @@ fun EthereumNetworkDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            EthereumNetwork.entries.forEach { network ->
+            EvmNetwork.networksFor(EvmFamily.ETHEREUM).forEach { network ->
                 DropdownMenuItem(
                     text = { Text(network.label) },
                     onClick = {

@@ -10,7 +10,7 @@ class EthereumPaymentUriTest {
             "ethereum:0x9858EfFD232B4033E47d90003D41EC34EcaEda94@11155111",
             EthereumPaymentUri.fromAddress(
                 "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
-                EthereumNetwork.SEPOLIA,
+                EvmNetwork.SEPOLIA,
             ),
         )
     }
@@ -21,7 +21,7 @@ class EthereumPaymentUriTest {
             "ethereum:0x9858EfFD232B4033E47d90003D41EC34EcaEda94@1",
             EthereumPaymentUri.fromAddress(
                 "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
-                EthereumNetwork.MAINNET,
+                EvmNetwork.MAINNET,
             ),
         )
     }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import javax.inject.Inject
 
@@ -50,7 +50,7 @@ class EthereumRestoreViewModel @Inject constructor(
         initialValue = EthereumRestoreUiState(),
     )
 
-    fun onRestoreNetworkSelected(network: EthereumNetwork) {
+    fun onRestoreNetworkSelected(network: EvmNetwork) {
         restoreNetwork.value = network
     }
 

@@ -1,13 +1,13 @@
 package network.bahn.androidcryptowallet.data.remote.eth
 
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 data class EthereumRpcConfig(
     val sepoliaRpcUrl: String,
     val mainnetRpcUrl: String,
 ) {
-    fun rpcUrl(network: EthereumNetwork): String = when (network) {
-        EthereumNetwork.SEPOLIA -> sepoliaRpcUrl
-        EthereumNetwork.MAINNET -> mainnetRpcUrl
+    fun rpcUrl(network: EvmNetwork): String = when (network) {
+        EvmNetwork.SEPOLIA -> sepoliaRpcUrl
+        EvmNetwork.MAINNET -> mainnetRpcUrl
     }
 }

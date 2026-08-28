@@ -64,7 +64,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
@@ -585,7 +585,7 @@ private fun copyAddress(context: Context, address: String) {
 
 private fun previewWallet() = EthereumWallet(
     id = "1",
-    network = EthereumNetwork.SEPOLIA,
+    network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
     name = "Savings",
     balanceWei = "1000000000000000000",

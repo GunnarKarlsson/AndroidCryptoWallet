@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,13 +14,13 @@ import javax.inject.Singleton
 class SelectedEthereumNetworkDataStore @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : SelectedEthereumNetworkStore {
-    override val selectedNetwork: Flow<EthereumNetwork> = dataStore.data.map { prefs ->
+    override val selectedNetwork: Flow<EvmNetwork> = dataStore.data.map { prefs ->
         prefs[KEY_SELECTED_ETHEREUM_NETWORK]
-            ?.let { runCatching { EthereumNetwork.valueOf(it) }.getOrNull() }
-            ?: EthereumNetwork.SEPOLIA
+            ?.let { runCatching { EvmNetwork.valueOf(it) }.getOrNull() }
+            ?: EvmNetwork.SEPOLIA
     }
 
-    override suspend fun setNetwork(network: EthereumNetwork) {
+    override suspend fun setNetwork(network: EvmNetwork) {
         dataStore.edit { prefs ->
             prefs[KEY_SELECTED_ETHEREUM_NETWORK] = network.name
         }

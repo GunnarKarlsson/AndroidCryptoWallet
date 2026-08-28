@@ -14,7 +14,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -180,7 +180,7 @@ private const val RECIPIENT = "0x2222222222222222222222222222222222222222"
 
 private val WALLET = EthereumWallet(
     id = "eth-wallet-1",
-    network = EthereumNetwork.SEPOLIA,
+    network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
     balanceWei = "5000000000000000000",
 )
@@ -212,13 +212,13 @@ private class FakeSendEthWalletRepository(
     override fun generateMnemonic() = error("unused")
 
     override suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
 
     override suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")

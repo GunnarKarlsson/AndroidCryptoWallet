@@ -1,6 +1,6 @@
 package network.bahn.androidcryptowallet.ui.ethereum.details
 
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 
@@ -17,7 +17,7 @@ data class EthereumWalletDetailsUiState(
     val hasMoreTransactions: Boolean = false,
     val transactionsErrorMessage: String? = null,
 ) {
-    val network: EthereumNetwork? get() = wallet?.network
+    val network: EvmNetwork? get() = wallet?.network
     val address: String? get() = wallet?.address
     val balanceWei: String? get() = wallet?.balanceWei
     val balanceUpdatedAtMillis: Long? get() = wallet?.balanceUpdatedAtMillis

@@ -236,7 +236,7 @@ private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
         walletId: String,
         mnemonic: String,
         passphrase: String?,
-        network: network.bahn.androidcryptowallet.domain.model.EthereumNetwork,
+        network: network.bahn.androidcryptowallet.domain.model.EvmNetwork,
     ) = Unit
 
     override fun listHdWalletIds(): List<String> = emptyList()
@@ -245,7 +245,7 @@ private class EmptyEthereumCatalogMnemonicStore : EthereumMnemonicStore {
 
     override fun loadNetwork(
         walletId: String,
-    ): network.bahn.androidcryptowallet.domain.model.EthereumNetwork? = null
+    ): network.bahn.androidcryptowallet.domain.model.EvmNetwork? = null
 
     override fun loadMnemonic(walletId: String): String? = null
 

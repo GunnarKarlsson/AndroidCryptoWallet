@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
@@ -52,10 +52,10 @@ class EthereumRestoreViewModelTest {
         viewModel.restore()
 
         assertEquals(
-            listOf(EthRestoreCall(EthereumNetwork.SEPOLIA, VALID_WORDS, null)),
+            listOf(EthRestoreCall(EvmNetwork.SEPOLIA, VALID_WORDS, null)),
             walletRepo.restoreCalls,
         )
-        assertEquals(listOf(EthereumNetwork.SEPOLIA), networkStore.setCalls)
+        assertEquals(listOf(EvmNetwork.SEPOLIA), networkStore.setCalls)
         assertEquals(listOf(EthereumRestoreEvent.WalletRestored), events)
         job.cancel()
         eventsJob.cancel()
@@ -181,7 +181,7 @@ class EthereumRestoreViewModelTest {
     fun restoreUsesSelectedNetworkAndPassphrase() = runTest {
         val walletRepo = FakeEthRestoreWalletRepository()
         val networkStore = FakeEthRestoreNetworkStore(
-            network = MutableStateFlow(EthereumNetwork.MAINNET),
+            network = MutableStateFlow(EvmNetwork.MAINNET),
         )
         val viewModel = createViewModel(walletRepo, networkStore)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -189,21 +189,21 @@ class EthereumRestoreViewModelTest {
         }
         viewModel.onMnemonicWordChange(0, MNEMONIC)
         viewModel.onPassphraseChange("secret")
-        viewModel.onRestoreNetworkSelected(EthereumNetwork.MAINNET)
+        viewModel.onRestoreNetworkSelected(EvmNetwork.MAINNET)
 
         viewModel.restore()
 
         assertEquals(
             listOf(
                 EthRestoreCall(
-                    network = EthereumNetwork.MAINNET,
+                    network = EvmNetwork.MAINNET,
                     mnemonicWords = VALID_WORDS,
                     passphrase = "secret",
                 ),
             ),
             walletRepo.restoreCalls,
         )
-        assertEquals(listOf(EthereumNetwork.MAINNET), networkStore.setCalls)
+        assertEquals(listOf(EvmNetwork.MAINNET), networkStore.setCalls)
         job.cancel()
     }
 
@@ -220,7 +220,7 @@ private val VALID_WORDS = List(12) { "abandon" }.dropLast(1) + "about"
 private val MNEMONIC = VALID_WORDS.joinToString(" ")
 
 private data class EthRestoreCall(
-    val network: EthereumNetwork,
+    val network: EvmNetwork,
     val mnemonicWords: List<String>,
     val passphrase: String?,
 )
@@ -235,13 +235,13 @@ private class FakeEthRestoreWalletRepository(
     override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
     override fun generateMnemonic() = error("unused")
     override suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
 
     override suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) {
@@ -274,12 +274,12 @@ private class FakeEthRestoreWalletRepository(
 }
 
 private class FakeEthRestoreNetworkStore(
-    private val network: MutableStateFlow<EthereumNetwork> = MutableStateFlow(EthereumNetwork.SEPOLIA),
+    private val network: MutableStateFlow<EvmNetwork> = MutableStateFlow(EvmNetwork.SEPOLIA),
 ) : SelectedEthereumNetworkStore {
-    val setCalls = mutableListOf<EthereumNetwork>()
+    val setCalls = mutableListOf<EvmNetwork>()
 
-    override val selectedNetwork: Flow<EthereumNetwork> = network
-    override suspend fun setNetwork(network: EthereumNetwork) {
+    override val selectedNetwork: Flow<EvmNetwork> = network
+    override suspend fun setNetwork(network: EvmNetwork) {
         setCalls += network
         this.network.value = network
     }

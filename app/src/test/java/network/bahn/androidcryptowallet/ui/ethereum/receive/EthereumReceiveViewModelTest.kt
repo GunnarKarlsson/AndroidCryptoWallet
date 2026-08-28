@@ -13,7 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -45,7 +45,7 @@ class EthereumReceiveViewModelTest {
         }
 
         assertEquals(WALLET.address, viewModel.uiState.value.address)
-        assertEquals(EthereumNetwork.SEPOLIA.label, viewModel.uiState.value.networkLabel)
+        assertEquals(EvmNetwork.SEPOLIA.label, viewModel.uiState.value.networkLabel)
         assertEquals(
             "ethereum:${WALLET.address}@11155111",
             viewModel.uiState.value.paymentUri,
@@ -78,7 +78,7 @@ class EthereumReceiveViewModelTest {
 
 private val WALLET = EthereumWallet(
     id = "eth-wallet-1",
-    network = EthereumNetwork.SEPOLIA,
+    network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
 )
 
@@ -90,13 +90,13 @@ private class FakeReceiveEthWalletRepository(
     override fun generateMnemonic() = error("unused")
 
     override suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
 
     override suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")

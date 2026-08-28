@@ -22,7 +22,7 @@ import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
@@ -42,19 +42,19 @@ class EthereumWalletRepositoryImplTest {
         val networkStore = FakeSelectedEthereumNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
 
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
 
         val wallets = repo.observeWallets().first()
         assertEquals(1, wallets.size)
-        assertEquals(EthereumNetwork.SEPOLIA, wallets.single().network)
+        assertEquals(EvmNetwork.SEPOLIA, wallets.single().network)
         assertEquals(DEFAULT_ADDRESS, wallets.single().address)
         assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
         assertEquals(null, store.saved[wallets.single().id]?.passphrase)
-        assertEquals(EthereumNetwork.SEPOLIA, store.saved[wallets.single().id]?.network)
+        assertEquals(EvmNetwork.SEPOLIA, store.saved[wallets.single().id]?.network)
         assertEquals(1, engine.validateCalls)
         assertEquals(1, engine.deriveCalls)
 
-        networkStore.setNetwork(EthereumNetwork.MAINNET)
+        networkStore.setNetwork(EvmNetwork.MAINNET)
         assertTrue(repo.observeWallets().first().isEmpty())
     }
 
@@ -65,7 +65,7 @@ class EthereumWalletRepositoryImplTest {
         val repo = createRepository(engine = engine, store = store)
 
         try {
-            repo.createWallet(EthereumNetwork.SEPOLIA, listOf("not", "valid"), null)
+            repo.createWallet(EvmNetwork.SEPOLIA, listOf("not", "valid"), null)
             error("expected InvalidEthereumMnemonicException")
         } catch (_: InvalidEthereumMnemonicException) {
         }
@@ -80,7 +80,7 @@ class EthereumWalletRepositoryImplTest {
         val store = FakeEthereumMnemonicStore()
         val repo = createRepository(store = store)
 
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = "secret")
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = "secret")
 
         val id = repo.observeWallets().first().single().id
         assertEquals("secret", store.saved[id]?.passphrase)
@@ -93,11 +93,11 @@ class EthereumWalletRepositoryImplTest {
         val networkStore = FakeSelectedEthereumNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
 
-        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
 
         val wallets = repo.observeWallets().first()
         assertEquals(1, wallets.size)
-        assertEquals(EthereumNetwork.SEPOLIA, wallets.single().network)
+        assertEquals(EvmNetwork.SEPOLIA, wallets.single().network)
         assertEquals(DEFAULT_ADDRESS, wallets.single().address)
         assertEquals(VALID_WORDS.joinToString(" "), store.saved[wallets.single().id]?.mnemonic)
         assertEquals(null, store.saved[wallets.single().id]?.passphrase)
@@ -112,14 +112,14 @@ class EthereumWalletRepositoryImplTest {
         val remote = FakeEthereumRemoteDataSource(balanceWei = "12345")
         val repo = createRepository(engine = engine, store = store, remote = remote)
 
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val id = repo.observeWallets().first().single().id
         repo.refreshBalance(id)
         val validateAfterCreate = engine.validateCalls
         val deriveAfterCreate = engine.deriveCalls
         val savedAfterCreate = store.saved.size
 
-        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
 
         val wallets = repo.observeWallets().first()
         assertEquals(1, wallets.size)
@@ -138,8 +138,8 @@ class EthereumWalletRepositoryImplTest {
         val store = FakeEthereumMnemonicStore()
         val repo = createRepository(engine = engine, store = store)
 
-        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
-        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = "other-pass")
+        repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = "other-pass")
 
         val wallets = repo.observeWallets().first()
         assertEquals(2, wallets.size)
@@ -156,13 +156,13 @@ class EthereumWalletRepositoryImplTest {
         val networkStore = FakeSelectedEthereumNetworkStore()
         val repo = createRepository(store = store, networkStore = networkStore)
 
-        repo.restoreWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
-        repo.restoreWallet(EthereumNetwork.MAINNET, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.restoreWallet(EvmNetwork.MAINNET, VALID_WORDS, passphrase = null)
 
         assertEquals(2, store.saved.size)
-        networkStore.setNetwork(EthereumNetwork.SEPOLIA)
+        networkStore.setNetwork(EvmNetwork.SEPOLIA)
         assertEquals(1, repo.observeWallets().first().size)
-        networkStore.setNetwork(EthereumNetwork.MAINNET)
+        networkStore.setNetwork(EvmNetwork.MAINNET)
         assertEquals(1, repo.observeWallets().first().size)
     }
 
@@ -173,7 +173,7 @@ class EthereumWalletRepositoryImplTest {
         val repo = createRepository(engine = engine, store = store)
 
         try {
-            repo.restoreWallet(EthereumNetwork.SEPOLIA, listOf("not", "valid"), null)
+            repo.restoreWallet(EvmNetwork.SEPOLIA, listOf("not", "valid"), null)
             error("expected InvalidEthereumMnemonicException")
         } catch (_: InvalidEthereumMnemonicException) {
         }
@@ -193,7 +193,7 @@ class EthereumWalletRepositoryImplTest {
             remote = remote,
             timeProvider = timeProvider,
         )
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets().first().single().id
 
         repo.refreshBalance(walletId)
@@ -208,7 +208,7 @@ class EthereumWalletRepositoryImplTest {
     fun deleteRemovesMnemonicAndRoomRow() = runTest {
         val store = FakeEthereumMnemonicStore()
         val repo = createRepository(store = store)
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = "secret")
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = "secret")
         val walletId = repo.observeWallets().first().single().id
 
         repo.deleteWallet(walletId)
@@ -222,7 +222,7 @@ class EthereumWalletRepositoryImplTest {
     fun deleteUnknownIdIsNoOp() = runTest {
         val store = FakeEthereumMnemonicStore()
         val repo = createRepository(store = store)
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val existingId = repo.observeWallets().first().single().id
 
         repo.deleteWallet("missing-id")
@@ -238,7 +238,7 @@ class EthereumWalletRepositoryImplTest {
         val engine = FakeEthereumKeyEngine()
         val repo = createRepository(engine = engine, remote = remote)
 
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val id = repo.observeWallets().first().single().id
         repo.renameWallet(id, "  Savings  ")
 
@@ -250,7 +250,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun renameWalletBlankBecomesNull() = runTest {
         val repo = createRepository()
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val id = repo.observeWallets().first().single().id
         repo.renameWallet(id, "Savings")
         repo.renameWallet(id, "   ")
@@ -276,7 +276,7 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun getCachedTransactionsReturnsNullWhenNeverFetched() = runTest {
         val repo = createRepository()
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets().first().single().id
 
         assertEquals(null, repo.getCachedTransactions(walletId))
@@ -308,7 +308,7 @@ class EthereumWalletRepositoryImplTest {
             timeProvider = timeProvider,
             json = json,
         )
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets().first().single().id
 
         val page = repo.getTransactions(walletId)
@@ -352,7 +352,7 @@ class EthereumWalletRepositoryImplTest {
             transactionDao = transactionDao,
             transactionRemote = txRemote,
         )
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets().first().single().id
         repo.getTransactions(walletId)
 
@@ -370,7 +370,7 @@ class EthereumWalletRepositoryImplTest {
         )
         val store = FakeEthereumMnemonicStore()
         val repo = createRepository(store = store, remote = remote)
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets().first().single().id
         // Balance is set via remote on refresh so send can check funds.
         repo.refreshBalance(walletId)
@@ -390,7 +390,7 @@ class EthereumWalletRepositoryImplTest {
     fun sendRejectsInsufficientFunds() = runTest {
         val remote = FakeEthereumRemoteDataSource(balanceWei = "1000")
         val repo = createRepository(remote = remote)
-        repo.createWallet(EthereumNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         val walletId = repo.observeWallets().first().single().id
         repo.refreshBalance(walletId)
 
@@ -486,7 +486,7 @@ private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
     data class Saved(
         val mnemonic: String,
         val passphrase: String?,
-        val network: EthereumNetwork,
+        val network: EvmNetwork,
     )
 
     val saved = mutableMapOf<String, Saved>()
@@ -495,7 +495,7 @@ private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
         walletId: String,
         mnemonic: String,
         passphrase: String?,
-        network: EthereumNetwork,
+        network: EvmNetwork,
     ) {
         saved[walletId] = Saved(mnemonic, passphrase, network)
     }
@@ -506,7 +506,7 @@ private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
         saved.remove(walletId)
     }
 
-    override fun loadNetwork(walletId: String): EthereumNetwork? = saved[walletId]?.network
+    override fun loadNetwork(walletId: String): EvmNetwork? = saved[walletId]?.network
 
     override fun loadMnemonic(walletId: String): String? = saved[walletId]?.mnemonic
 
@@ -514,11 +514,11 @@ private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
 }
 
 private class FakeSelectedEthereumNetworkStore(
-    initial: EthereumNetwork = EthereumNetwork.SEPOLIA,
+    initial: EvmNetwork = EvmNetwork.SEPOLIA,
 ) : SelectedEthereumNetworkStore {
     private val network = MutableStateFlow(initial)
-    override val selectedNetwork: Flow<EthereumNetwork> = network
-    override suspend fun setNetwork(network: EthereumNetwork) {
+    override val selectedNetwork: Flow<EvmNetwork> = network
+    override suspend fun setNetwork(network: EvmNetwork) {
         this.network.value = network
     }
 }
@@ -595,7 +595,7 @@ private class FakeEthereumRemoteDataSource(
     var sendRawCalls = 0
 
     override suspend fun getAddressBalance(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         address: String,
     ): EthereumAddressBalance {
         balanceCalls += 1
@@ -603,21 +603,21 @@ private class FakeEthereumRemoteDataSource(
     }
 
     override suspend fun getTransactionCount(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         address: String,
     ): Long = nonce
 
     override suspend fun estimateGas(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         from: String,
         to: String,
         valueWei: java.math.BigInteger,
     ): Long = estimatedGas
 
-    override suspend fun getFeeData(network: EthereumNetwork): EthereumFeeData = feeData
+    override suspend fun getFeeData(network: EvmNetwork): EthereumFeeData = feeData
 
     override suspend fun sendRawTransaction(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         signedRawHex: String,
     ): String {
         sendRawCalls += 1
@@ -687,7 +687,7 @@ private class FakeEthereumTransactionRemoteDataSource(
     private val nextPage: EthereumTransactionPage = firstPage,
 ) : EthereumTransactionRemoteDataSource {
     data class TxCall(
-        val network: EthereumNetwork,
+        val network: EvmNetwork,
         val address: String,
         val afterCursor: EthereumTransactionPaginationCursor?,
     )
@@ -695,7 +695,7 @@ private class FakeEthereumTransactionRemoteDataSource(
     val txCalls = mutableListOf<TxCall>()
 
     override suspend fun getAddressTransactions(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         address: String,
         afterCursor: EthereumTransactionPaginationCursor?,
     ): EthereumTransactionPage {

@@ -7,7 +7,7 @@ package network.bahn.androidcryptowallet.domain.model
  */
 data class EthereumWallet(
     val id: String,
-    val network: EthereumNetwork,
+    val network: EvmNetwork,
     val address: String,
     val derivationIndex: Int = 0,
     val name: String? = null,

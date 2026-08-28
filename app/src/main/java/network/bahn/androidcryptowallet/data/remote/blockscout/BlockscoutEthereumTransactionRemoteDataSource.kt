@@ -4,7 +4,7 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -20,7 +20,7 @@ class BlockscoutEthereumTransactionRemoteDataSource @Inject constructor(
     private val json: Json,
 ) : EthereumTransactionRemoteDataSource {
     override suspend fun getAddressTransactions(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         address: String,
         afterCursor: EthereumTransactionPaginationCursor?,
     ): EthereumTransactionPage = withContext(Dispatchers.IO) {

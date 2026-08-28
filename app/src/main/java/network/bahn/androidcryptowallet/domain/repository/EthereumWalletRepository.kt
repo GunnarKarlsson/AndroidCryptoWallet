@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.domain.repository
 import kotlinx.coroutines.flow.Flow
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -23,7 +23,7 @@ interface EthereumWalletRepository {
      * BIP-44 receive address for [network] only.
      */
     suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     )
@@ -34,7 +34,7 @@ interface EthereumWalletRepository {
      * Otherwise this calls [createWallet].
      */
     suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     )

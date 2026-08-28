@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import javax.inject.Inject
@@ -36,7 +36,7 @@ class EthereumWalletListViewModel @Inject constructor(
         initialValue = EthereumWalletListUiState(),
     )
 
-    fun onNetworkSelected(network: EthereumNetwork) {
+    fun onNetworkSelected(network: EvmNetwork) {
         viewModelScope.launch {
             selectedEthereumNetworkStore.setNetwork(network)
         }

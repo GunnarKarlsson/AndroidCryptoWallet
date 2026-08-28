@@ -5,6 +5,6 @@ package network.bahn.androidcryptowallet.domain.model
  * Amount and function data are omitted.
  */
 object EthereumPaymentUri {
-    fun fromAddress(address: String, network: EthereumNetwork): String =
+    fun fromAddress(address: String, network: EvmNetwork): String =
         "ethereum:$address@${network.chainId}"
 }

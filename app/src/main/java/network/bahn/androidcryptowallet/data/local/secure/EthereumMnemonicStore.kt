@@ -1,6 +1,6 @@
 package network.bahn.androidcryptowallet.data.local.secure
 
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 interface EthereumMnemonicStore {
     /**
@@ -11,7 +11,7 @@ interface EthereumMnemonicStore {
         walletId: String,
         mnemonic: String,
         passphrase: String?,
-        network: EthereumNetwork,
+        network: EvmNetwork,
     )
 
     fun listHdWalletIds(): List<String>
@@ -19,7 +19,7 @@ interface EthereumMnemonicStore {
     /** Remove mnemonic, passphrase, and network prefs for [walletId]. Idempotent. */
     fun delete(walletId: String)
 
-    fun loadNetwork(walletId: String): EthereumNetwork?
+    fun loadNetwork(walletId: String): EvmNetwork?
 
     fun loadMnemonic(walletId: String): String?
 

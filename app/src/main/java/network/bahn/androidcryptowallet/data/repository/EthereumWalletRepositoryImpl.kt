@@ -24,7 +24,7 @@ import network.bahn.androidcryptowallet.domain.TimeProvider
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
 import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
 import network.bahn.androidcryptowallet.domain.model.EthereumGasQuotes
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -58,7 +58,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     override fun generateMnemonic(): List<String> = keyEngine.generateMnemonic()
 
     override suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) {
@@ -80,7 +80,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     }
 
     override suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) {
@@ -95,7 +95,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")
         val balance = remote.getAddressBalance(
-            network = EthereumNetwork.valueOf(wallet.network),
+            network = EvmNetwork.valueOf(wallet.network),
             address = wallet.address,
         )
         walletDao.updateBalance(
@@ -134,7 +134,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")
         val page = transactionRemote.getAddressTransactions(
-            network = EthereumNetwork.valueOf(wallet.network),
+            network = EvmNetwork.valueOf(wallet.network),
             address = wallet.address,
             afterCursor = afterCursor,
         )
@@ -148,7 +148,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     override suspend fun getFeeData(walletId: String): EthereumFeeData {
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")
-        return remote.getFeeData(EthereumNetwork.valueOf(wallet.network))
+        return remote.getFeeData(EvmNetwork.valueOf(wallet.network))
     }
 
     override suspend fun send(
@@ -163,7 +163,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         val mnemonic = mnemonicStore.loadMnemonic(walletId)
             ?: error("Wallet keys not found")
         val passphrase = mnemonicStore.loadPassphrase(walletId)
-        val network = EthereumNetwork.valueOf(wallet.network)
+        val network = EvmNetwork.valueOf(wallet.network)
         val nonce = remote.getTransactionCount(network, wallet.address)
         val feeData = remote.getFeeData(network)
         val estimatedGas = runCatching {

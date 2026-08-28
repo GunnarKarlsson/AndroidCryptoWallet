@@ -9,7 +9,7 @@ import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -22,7 +22,7 @@ class EthereumHdWalletRoomReconcilerTest {
         val store = FakeEthReconcileMnemonicStore()
         val engine = FakeEthReconcileKeyEngine()
         EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
-        assertTrue(dao.observeByNetwork(EthereumNetwork.SEPOLIA.name).first().isEmpty())
+        assertTrue(dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first().isEmpty())
         assertTrue(engine.deriveCalls.isEmpty())
     }
 
@@ -34,14 +34,14 @@ class EthereumHdWalletRoomReconcilerTest {
                 walletId = WALLET_ID,
                 mnemonic = MNEMONIC,
                 passphrase = "secret-pass",
-                network = EthereumNetwork.SEPOLIA,
+                network = EvmNetwork.SEPOLIA,
             )
         }
         val engine = FakeEthReconcileKeyEngine()
 
         EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
 
-        val row = dao.observeByNetwork(EthereumNetwork.SEPOLIA.name).first().single()
+        val row = dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first().single()
         assertEquals(WALLET_ID, row.id)
         assertEquals(DERIVED_ADDRESS, row.address)
         assertEquals(0, row.derivationIndex)
@@ -55,13 +55,13 @@ class EthereumHdWalletRoomReconcilerTest {
     fun skipsWhenMnemonicOrNetworkMissing() = runTest {
         val dao = FakeEthReconcileDao()
         val store = FakeEthReconcileMnemonicStore()
-        store.put(id = "no-mnemonic", mnemonic = null, network = EthereumNetwork.SEPOLIA)
+        store.put(id = "no-mnemonic", mnemonic = null, network = EvmNetwork.SEPOLIA)
         store.put(id = "no-network", mnemonic = MNEMONIC, network = null)
         val engine = FakeEthReconcileKeyEngine()
 
         EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
 
-        assertTrue(dao.observeByNetwork(EthereumNetwork.SEPOLIA.name).first().isEmpty())
+        assertTrue(dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first().isEmpty())
         assertTrue(engine.deriveCalls.isEmpty())
     }
 
@@ -71,7 +71,7 @@ class EthereumHdWalletRoomReconcilerTest {
         dao.insertIgnore(
             EthereumWalletEntity(
                 id = WALLET_ID,
-                network = EthereumNetwork.SEPOLIA.name,
+                network = EvmNetwork.SEPOLIA.name,
                 address = "0xexisting",
                 derivationIndex = 0,
             ),
@@ -81,14 +81,14 @@ class EthereumHdWalletRoomReconcilerTest {
                 walletId = WALLET_ID,
                 mnemonic = MNEMONIC,
                 passphrase = null,
-                network = EthereumNetwork.SEPOLIA,
+                network = EvmNetwork.SEPOLIA,
             )
         }
         val engine = FakeEthReconcileKeyEngine()
 
         EthereumHdWalletRoomReconciler(engine, store, dao).reconcile()
 
-        val rows = dao.observeByNetwork(EthereumNetwork.SEPOLIA.name).first()
+        val rows = dao.observeByNetwork(EvmNetwork.SEPOLIA.name).first()
         assertEquals(1, rows.size)
         assertEquals("0xexisting", rows.single().address)
     }
@@ -138,9 +138,9 @@ private class FakeEthReconcileKeyEngine : EthereumKeyEngine {
 private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {
     private val mnemonics = mutableMapOf<String, String?>()
     private val passphrases = mutableMapOf<String, String?>()
-    private val networks = mutableMapOf<String, EthereumNetwork?>()
+    private val networks = mutableMapOf<String, EvmNetwork?>()
 
-    fun put(id: String, mnemonic: String?, network: EthereumNetwork?) {
+    fun put(id: String, mnemonic: String?, network: EvmNetwork?) {
         mnemonics[id] = mnemonic
         networks[id] = network
     }
@@ -149,7 +149,7 @@ private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {
         walletId: String,
         mnemonic: String,
         passphrase: String?,
-        network: EthereumNetwork,
+        network: EvmNetwork,
     ) {
         mnemonics[walletId] = mnemonic
         passphrases[walletId] = passphrase
@@ -165,7 +165,7 @@ private class FakeEthReconcileMnemonicStore : EthereumMnemonicStore {
         networks.remove(walletId)
     }
 
-    override fun loadNetwork(walletId: String): EthereumNetwork? = networks[walletId]
+    override fun loadNetwork(walletId: String): EvmNetwork? = networks[walletId]
 
     override fun loadMnemonic(walletId: String): String? = mnemonics[walletId]
 

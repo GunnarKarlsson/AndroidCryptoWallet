@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
 import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
@@ -83,7 +83,7 @@ fun EthereumWalletListScreen(
 private fun EthereumWalletListContent(
     uiState: EthereumWalletListUiState,
     onBack: () -> Unit,
-    onNetworkSelected: (EthereumNetwork) -> Unit,
+    onNetworkSelected: (EvmNetwork) -> Unit,
     onCreateWallet: () -> Unit,
     onRestoreWallet: () -> Unit,
     onWalletClick: (walletId: String) -> Unit,
@@ -318,13 +318,13 @@ private fun EthereumWalletListPopulatedPreview() {
                 wallets = listOf(
                     EthereumWallet(
                         id = "1",
-                        network = EthereumNetwork.SEPOLIA,
+                        network = EvmNetwork.SEPOLIA,
                         address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                         name = "Savings",
                     ),
                     EthereumWallet(
                         id = "2",
-                        network = EthereumNetwork.SEPOLIA,
+                        network = EvmNetwork.SEPOLIA,
                         address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                     ),
                 ),

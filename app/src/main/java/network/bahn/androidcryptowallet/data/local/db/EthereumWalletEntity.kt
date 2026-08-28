@@ -2,7 +2,7 @@ package network.bahn.androidcryptowallet.data.local.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 
 /** Public Ethereum wallet row. No BIP-39 secrets. */
@@ -19,7 +19,7 @@ data class EthereumWalletEntity(
 
 fun EthereumWalletEntity.toDomain(): EthereumWallet = EthereumWallet(
     id = id,
-    network = EthereumNetwork.valueOf(network),
+    network = EvmNetwork.valueOf(network),
     address = address,
     derivationIndex = derivationIndex,
     name = name,

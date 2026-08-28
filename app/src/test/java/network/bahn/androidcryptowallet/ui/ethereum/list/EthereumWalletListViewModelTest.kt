@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
@@ -39,7 +39,7 @@ class EthereumWalletListViewModelTest {
         val viewModel = createViewModel()
         assertTrue(viewModel.uiState.value.isLoading)
         assertTrue(viewModel.uiState.value.wallets.isEmpty())
-        assertEquals(EthereumNetwork.SEPOLIA, viewModel.uiState.value.selectedNetwork)
+        assertEquals(EvmNetwork.SEPOLIA, viewModel.uiState.value.selectedNetwork)
     }
 
     @Test
@@ -77,14 +77,14 @@ class EthereumWalletListViewModelTest {
 
     @Test
     fun selectingMainnetUpdatesStore() = runTest {
-        val network = MutableStateFlow(EthereumNetwork.SEPOLIA)
+        val network = MutableStateFlow(EvmNetwork.SEPOLIA)
         val viewModel = createViewModel(network = network)
-        viewModel.onNetworkSelected(EthereumNetwork.MAINNET)
-        assertEquals(EthereumNetwork.MAINNET, network.value)
+        viewModel.onNetworkSelected(EvmNetwork.MAINNET)
+        assertEquals(EvmNetwork.MAINNET, network.value)
     }
 
     private fun createViewModel(
-        network: MutableStateFlow<EthereumNetwork> = MutableStateFlow(EthereumNetwork.SEPOLIA),
+        network: MutableStateFlow<EvmNetwork> = MutableStateFlow(EvmNetwork.SEPOLIA),
         wallets: MutableStateFlow<List<EthereumWallet>> = MutableStateFlow(emptyList()),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(false),
     ) = EthereumWalletListViewModel(
@@ -96,7 +96,7 @@ class EthereumWalletListViewModelTest {
 
 private val WALLET = EthereumWallet(
     id = "eth-1",
-    network = EthereumNetwork.SEPOLIA,
+    network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
 )
 
@@ -107,13 +107,13 @@ private class FakeEthListWalletRepository(
     override fun observeWallet(id: String): Flow<EthereumWallet?> = emptyFlow()
     override fun generateMnemonic() = error("unused")
     override suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
 
     override suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
@@ -142,10 +142,10 @@ private class FakeEthListWalletRepository(
 }
 
 private class FakeEthListNetworkStore(
-    private val network: MutableStateFlow<EthereumNetwork>,
+    private val network: MutableStateFlow<EvmNetwork>,
 ) : SelectedEthereumNetworkStore {
-    override val selectedNetwork: Flow<EthereumNetwork> = network
-    override suspend fun setNetwork(network: EthereumNetwork) {
+    override val selectedNetwork: Flow<EvmNetwork> = network
+    override suspend fun setNetwork(network: EvmNetwork) {
         this.network.value = network
     }
 }

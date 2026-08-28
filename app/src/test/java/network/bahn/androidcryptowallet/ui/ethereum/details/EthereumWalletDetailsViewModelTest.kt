@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
@@ -230,7 +230,7 @@ class EthereumWalletDetailsViewModelTest {
 
 private val WALLET = EthereumWallet(
     id = "wallet-1",
-    network = EthereumNetwork.SEPOLIA,
+    network = EvmNetwork.SEPOLIA,
     address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
     balanceWei = "1000000000000000000",
     balanceUpdatedAtMillis = 1_700_000_000_000L,
@@ -263,13 +263,13 @@ private class FakeEthDetailsWalletRepository(
     override fun generateMnemonic() = error("unused")
 
     override suspend fun createWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")
 
     override suspend fun restoreWallet(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         mnemonicWords: List<String>,
         passphrase: String?,
     ) = error("unused")

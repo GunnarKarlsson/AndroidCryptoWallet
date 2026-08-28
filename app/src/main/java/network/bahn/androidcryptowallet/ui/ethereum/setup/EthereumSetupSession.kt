@@ -6,13 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 internal class EthereumSetupSession(
     private val selectedEthereumNetworkStore: SelectedEthereumNetworkStore,
     private val scope: CoroutineScope,
 ) {
-    val network = MutableStateFlow(EthereumNetwork.SEPOLIA)
+    val network = MutableStateFlow(EvmNetwork.SEPOLIA)
 
     init {
         scope.launch {

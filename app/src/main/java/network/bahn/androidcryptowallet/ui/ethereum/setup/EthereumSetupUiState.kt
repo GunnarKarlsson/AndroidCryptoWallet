@@ -1,9 +1,9 @@
 package network.bahn.androidcryptowallet.ui.ethereum.setup
 
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 data class EthereumSetupUiState(
-    val createNetwork: EthereumNetwork = EthereumNetwork.SEPOLIA,
+    val createNetwork: EvmNetwork = EvmNetwork.SEPOLIA,
     val mnemonicWords: List<String> = emptyList(),
     val passphrase: String = "",
     val isCreating: Boolean = false,

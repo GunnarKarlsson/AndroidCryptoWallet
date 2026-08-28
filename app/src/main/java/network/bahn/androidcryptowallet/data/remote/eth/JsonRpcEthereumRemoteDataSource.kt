@@ -19,7 +19,7 @@ import kotlinx.serialization.json.put
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
 import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -35,7 +35,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
     private val json: Json,
 ) : EthereumRemoteDataSource {
     override suspend fun getAddressBalance(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         address: String,
     ): EthereumAddressBalance = withContext(Dispatchers.IO) {
         Log.d(TAG, "Requesting eth_getBalance for $network")
@@ -53,7 +53,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
     }
 
     override suspend fun getTransactionCount(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         address: String,
     ): Long = withContext(Dispatchers.IO) {
         Log.d(TAG, "Requesting eth_getTransactionCount for $network")
@@ -69,7 +69,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
     }
 
     override suspend fun estimateGas(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         from: String,
         to: String,
         valueWei: BigInteger,
@@ -88,7 +88,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
         parseHexQuantity(hex).toLong()
     }
 
-    override suspend fun getFeeData(network: EthereumNetwork): EthereumFeeData =
+    override suspend fun getFeeData(network: EvmNetwork): EthereumFeeData =
         withContext(Dispatchers.IO) {
             Log.d(TAG, "Requesting fee data for $network")
             val block = callJsonResult(
@@ -113,7 +113,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
         }
 
     override suspend fun sendRawTransaction(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         signedRawHex: String,
     ): String = withContext(Dispatchers.IO) {
         Log.d(TAG, "Requesting eth_sendRawTransaction for $network")
@@ -126,7 +126,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
     }
 
     private fun callHexResult(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         method: String,
         params: JsonArray,
     ): String {
@@ -135,7 +135,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
     }
 
     private fun callJsonResult(
-        network: EthereumNetwork,
+        network: EvmNetwork,
         method: String,
         params: JsonArray,
     ): JsonElement {

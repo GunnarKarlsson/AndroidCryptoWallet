@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
-import network.bahn.androidcryptowallet.domain.model.EthereumNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,7 +37,7 @@ class EncryptedEthereumMnemonicStore @Inject constructor(
         walletId: String,
         mnemonic: String,
         passphrase: String?,
-        network: EthereumNetwork,
+        network: EvmNetwork,
     ) {
         prefs.edit()
             .putString(HdWalletPrefsCodec.MNEMONIC_PREFIX + walletId, mnemonic)
@@ -57,10 +57,10 @@ class EncryptedEthereumMnemonicStore @Inject constructor(
             .apply()
     }
 
-    override fun loadNetwork(walletId: String): EthereumNetwork? {
+    override fun loadNetwork(walletId: String): EvmNetwork? {
         val networkName = prefs.getString(HdWalletPrefsCodec.NETWORK_PREFIX + walletId, null)
             ?: return null
-        return runCatching { EthereumNetwork.valueOf(networkName) }.getOrNull()
+        return runCatching { EvmNetwork.valueOf(networkName) }.getOrNull()
     }
 
     override fun loadMnemonic(walletId: String): String? =
