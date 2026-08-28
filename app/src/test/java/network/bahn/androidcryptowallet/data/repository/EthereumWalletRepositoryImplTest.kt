@@ -168,6 +168,23 @@ class EthereumWalletRepositoryImplTest {
     }
 
     @Test
+    fun observeWallets_filtersByFamilyAndSelectedNetwork() = runTest {
+        val networkStore = FakeSelectedEvmNetworkStore()
+        val repo = createRepository(networkStore = networkStore)
+
+        repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
+        repo.createWallet(EvmNetwork.BSC_TESTNET, VALID_WORDS, passphrase = null)
+
+        networkStore.setNetwork(EvmFamily.ETHEREUM, EvmNetwork.SEPOLIA)
+        networkStore.setNetwork(EvmFamily.BSC, EvmNetwork.BSC_TESTNET)
+
+        assertEquals(1, repo.observeWallets(EvmFamily.ETHEREUM).first().size)
+        assertEquals(EvmNetwork.SEPOLIA, repo.observeWallets(EvmFamily.ETHEREUM).first().single().network)
+        assertEquals(1, repo.observeWallets(EvmFamily.BSC).first().size)
+        assertEquals(EvmNetwork.BSC_TESTNET, repo.observeWallets(EvmFamily.BSC).first().single().network)
+    }
+
+    @Test
     fun restoreRejectsInvalidMnemonic() = runTest {
         val engine = FakeEthereumKeyEngine()
         val store = FakeEthereumMnemonicStore()
@@ -515,13 +532,23 @@ private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
 }
 
 private class FakeSelectedEvmNetworkStore(
-    initial: EvmNetwork = EvmNetwork.SEPOLIA,
+    initialByFamily: Map<EvmFamily, EvmNetwork> = mapOf(
+        EvmFamily.ETHEREUM to EvmNetwork.SEPOLIA,
+        EvmFamily.BSC to EvmNetwork.BSC_TESTNET,
+    ),
 ) : SelectedEvmNetworkStore {
-    private val network = MutableStateFlow(initial)
-    override fun selectedNetwork(family: EvmFamily): Flow<EvmNetwork> = network
+    private val networks = EvmFamily.entries.associateWith { family ->
+        MutableStateFlow(
+            initialByFamily[family] ?: EvmNetwork.networksFor(family).first(),
+        )
+    }
+
+    override fun selectedNetwork(family: EvmFamily): Flow<EvmNetwork> =
+        networks.getValue(family)
+
     override suspend fun setNetwork(family: EvmFamily, network: EvmNetwork) {
         require(network.family == family)
-        this.network.value = network
+        networks.getValue(family).value = network
     }
 }
 

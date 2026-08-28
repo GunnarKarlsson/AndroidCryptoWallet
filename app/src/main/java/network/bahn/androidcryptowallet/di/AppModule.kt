@@ -90,10 +90,15 @@ object AppModule {
         rpcUrls = mapOf(
             EvmNetwork.SEPOLIA to "https://ethereum-sepolia-rpc.publicnode.com",
             EvmNetwork.MAINNET to "https://ethereum.publicnode.com",
+            EvmNetwork.BSC_TESTNET to "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
+            EvmNetwork.BSC_MAINNET to "https://bsc-dataseed.bnbchain.org",
         ),
         explorerBaseUrls = mapOf(
             EvmNetwork.SEPOLIA to "https://eth-sepolia.blockscout.com/api/v2",
             EvmNetwork.MAINNET to "https://eth.blockscout.com/api/v2",
+            // Placeholder until Step 7 BSC explorer adapter.
+            EvmNetwork.BSC_TESTNET to "https://api-testnet.bscscan.com/api",
+            EvmNetwork.BSC_MAINNET to "https://api.bscscan.com/api",
         ),
     )
 

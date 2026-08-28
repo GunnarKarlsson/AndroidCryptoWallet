@@ -1,7 +1,6 @@
 package network.bahn.androidcryptowallet.domain.model
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EvmNetworkTest {
@@ -12,8 +11,19 @@ class EvmNetworkTest {
     }
 
     @Test
-    fun networksForBsc_isEmptyUntilBscNetworksAreAdded() {
-        assertTrue(EvmNetwork.networksFor(EvmFamily.BSC).isEmpty())
+    fun networksForBsc_returnsOnlyBscNetworks() {
+        val networks = EvmNetwork.networksFor(EvmFamily.BSC)
+        assertEquals(listOf(EvmNetwork.BSC_TESTNET, EvmNetwork.BSC_MAINNET), networks)
+    }
+
+    @Test
+    fun bscNetworksHaveExpectedChainIdsAndSymbols() {
+        assertEquals(97L, EvmNetwork.BSC_TESTNET.chainId)
+        assertEquals(56L, EvmNetwork.BSC_MAINNET.chainId)
+        assertEquals("tBNB", EvmNetwork.BSC_TESTNET.nativeSymbol)
+        assertEquals("BNB", EvmNetwork.BSC_MAINNET.nativeSymbol)
+        assertEquals(EvmFamily.BSC, EvmNetwork.BSC_TESTNET.family)
+        assertEquals(EvmFamily.BSC, EvmNetwork.BSC_MAINNET.family)
     }
 
     @Test

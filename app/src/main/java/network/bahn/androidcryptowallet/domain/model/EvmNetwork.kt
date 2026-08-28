@@ -8,6 +8,8 @@ enum class EvmNetwork(
 ) {
     SEPOLIA(EvmFamily.ETHEREUM, "Sepolia", chainId = 11_155_111L, nativeSymbol = "ETH"),
     MAINNET(EvmFamily.ETHEREUM, "Mainnet", chainId = 1L, nativeSymbol = "ETH"),
+    BSC_TESTNET(EvmFamily.BSC, "BSC Testnet", chainId = 97L, nativeSymbol = "tBNB"),
+    BSC_MAINNET(EvmFamily.BSC, "BSC Mainnet", chainId = 56L, nativeSymbol = "BNB"),
     ;
 
     companion object {

@@ -28,6 +28,12 @@ class SelectedEvmNetworkDataStoreTest {
     }
 
     @Test
+    fun selectedNetwork_defaultsToBscTestnetForBsc() = runTest {
+        val store = createStore()
+        assertEquals(EvmNetwork.BSC_TESTNET, store.selectedNetwork(EvmFamily.BSC).first())
+    }
+
+    @Test
     fun setNetwork_persistsPerFamilyKey() = runTest {
         val store = createStore()
         store.setNetwork(EvmFamily.ETHEREUM, EvmNetwork.MAINNET)

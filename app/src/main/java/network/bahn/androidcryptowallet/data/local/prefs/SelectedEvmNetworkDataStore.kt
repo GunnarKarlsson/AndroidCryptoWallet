@@ -41,7 +41,7 @@ class SelectedEvmNetworkDataStore @Inject constructor(
 
     private fun defaultNetwork(family: EvmFamily): EvmNetwork = when (family) {
         EvmFamily.ETHEREUM -> EvmNetwork.SEPOLIA
-        EvmFamily.BSC -> EvmNetwork.networksFor(EvmFamily.BSC).first()
+        EvmFamily.BSC -> EvmNetwork.BSC_TESTNET
     }
 
     private companion object {

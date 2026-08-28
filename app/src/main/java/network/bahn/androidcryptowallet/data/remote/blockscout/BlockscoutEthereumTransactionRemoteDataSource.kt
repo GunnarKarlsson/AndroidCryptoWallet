@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
@@ -25,6 +26,14 @@ class BlockscoutEthereumTransactionRemoteDataSource @Inject constructor(
         address: String,
         afterCursor: EthereumTransactionPaginationCursor?,
     ): EthereumTransactionPage = withContext(Dispatchers.IO) {
+        if (network.family != EvmFamily.ETHEREUM) {
+            Log.i(TAG, "Transaction history not supported for $network yet; returning empty page")
+            return@withContext EthereumTransactionPage(
+                transactions = emptyList(),
+                nextCursor = null,
+                hasMore = false,
+            )
+        }
         Log.d(TAG, "Requesting address transactions for $network afterCursor=${afterCursor != null}")
         val urlBuilder = "${catalog.explorerBaseUrl(network)}/addresses/$address/transactions"
             .toHttpUrl()
