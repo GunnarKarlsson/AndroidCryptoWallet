@@ -51,8 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
@@ -89,7 +89,7 @@ private fun EthereumSendContent(
     uiState: EthereumSendUiState,
     onRecipientChange: (String) -> Unit,
     onAmountChange: (String) -> Unit,
-    onGasPresetSelected: (EthereumGasPreset) -> Unit,
+    onGasPresetSelected: (EvmGasPreset) -> Unit,
     onRetryFees: () -> Unit,
     onSend: () -> Unit,
     onBack: () -> Unit,
@@ -226,8 +226,8 @@ private fun EthereumSendContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        EthereumGasPreset.entries.forEach { preset ->
-                            EthereumGasPresetCard(
+                        EvmGasPreset.entries.forEach { preset ->
+                            EvmGasPresetCard(
                                 preset = preset,
                                 gweiLabel = uiState.priorityFeeGweiLabel(preset),
                                 selected = uiState.gasPreset == preset,
@@ -255,8 +255,8 @@ private fun EthereumSendContent(
 }
 
 @Composable
-private fun EthereumGasPresetCard(
-    preset: EthereumGasPreset,
+private fun EvmGasPresetCard(
+    preset: EvmGasPreset,
     gweiLabel: String?,
     selected: Boolean,
     onClick: () -> Unit,
@@ -446,7 +446,7 @@ private fun pastedClipboardText(context: Context): String? {
     return clip.getItemAt(0).coerceToText(context).toString().trim().takeIf { it.isNotEmpty() }
 }
 
-private val PreviewFeeData = EthereumFeeData(
+private val PreviewFeeData = EvmFeeData(
     baseFeePerGasWei = "1_000_000_000".replace("_", ""),
     suggestedPriorityFeePerGasWei = "1_500_000_000".replace("_", ""),
 )
@@ -478,7 +478,7 @@ private fun EthereumSendScreenFilledPreview() {
             uiState = EthereumSendUiState(
                 recipient = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 amount = "0.010000000000000000",
-                gasPreset = EthereumGasPreset.Fast,
+                gasPreset = EvmGasPreset.Fast,
                 availableBalanceWei = "5000000000000000000",
                 feeData = PreviewFeeData,
             ),
@@ -522,7 +522,7 @@ private fun EthereumSendScreenOverspendPreview() {
             uiState = EthereumSendUiState(
                 recipient = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 amount = "4.900000000000000000",
-                gasPreset = EthereumGasPreset.Fast,
+                gasPreset = EvmGasPreset.Fast,
                 availableBalanceWei = "5000000000000000000",
                 feeData = PreviewFeeData,
             ),

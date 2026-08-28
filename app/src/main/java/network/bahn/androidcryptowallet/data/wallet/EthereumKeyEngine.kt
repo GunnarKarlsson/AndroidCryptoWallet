@@ -1,6 +1,6 @@
 package network.bahn.androidcryptowallet.data.wallet
 
-import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.EvmReceiveAddress
 import java.math.BigInteger
 
 /**
@@ -11,7 +11,7 @@ interface EthereumKeyEngine {
     /** BIP-39: new 12-word English mnemonic. */
     fun generateMnemonic(): List<String>
 
-    /** BIP-39: wordlist + checksum. Throws [network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException]. */
+    /** BIP-39: wordlist + checksum. Throws [network.bahn.androidcryptowallet.domain.model.InvalidEvmMnemonicException]. */
     fun validateMnemonic(words: List<String>)
 
     /**
@@ -20,7 +20,7 @@ interface EthereumKeyEngine {
     fun deriveReceiveAddress(
         mnemonicWords: List<String>,
         passphrase: String?,
-    ): EthereumReceiveAddress
+    ): EvmReceiveAddress
 
     fun isValidAddress(address: String): Boolean
 

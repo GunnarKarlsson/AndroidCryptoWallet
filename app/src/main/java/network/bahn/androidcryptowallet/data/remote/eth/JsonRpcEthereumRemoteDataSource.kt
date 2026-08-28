@@ -18,8 +18,8 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
-import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmAddressBalance
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -38,7 +38,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
     override suspend fun getAddressBalance(
         network: EvmNetwork,
         address: String,
-    ): EthereumAddressBalance = withContext(Dispatchers.IO) {
+    ): EvmAddressBalance = withContext(Dispatchers.IO) {
         Log.d(TAG, "Requesting eth_getBalance for $network")
         val hexWei = callHexResult(
             network = network,
@@ -50,7 +50,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
         )
         val balanceWei = parseHexQuantity(hexWei)
         Log.i(TAG, "eth_getBalance succeeded for $network wei=$balanceWei")
-        EthereumAddressBalance(balanceWei = balanceWei)
+        EvmAddressBalance(balanceWei = balanceWei)
     }
 
     override suspend fun getTransactionCount(
@@ -89,7 +89,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
         parseHexQuantity(hex).toLong()
     }
 
-    override suspend fun getFeeData(network: EvmNetwork): EthereumFeeData =
+    override suspend fun getFeeData(network: EvmNetwork): EvmFeeData =
         withContext(Dispatchers.IO) {
             Log.d(TAG, "Requesting fee data for $network")
             val block = callJsonResult(
@@ -107,7 +107,7 @@ class JsonRpcEthereumRemoteDataSource @Inject constructor(
                 method = "eth_maxPriorityFeePerGas",
                 params = buildJsonArray { },
             )
-            EthereumFeeData(
+            EvmFeeData(
                 baseFeePerGasWei = parseHexQuantity(baseFeeHex),
                 suggestedPriorityFeePerGasWei = parseHexQuantity(priorityHex),
             )

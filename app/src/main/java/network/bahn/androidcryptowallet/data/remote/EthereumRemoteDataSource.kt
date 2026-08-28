@@ -1,7 +1,7 @@
 package network.bahn.androidcryptowallet.data.remote
 
-import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmAddressBalance
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import java.math.BigInteger
 
@@ -9,7 +9,7 @@ interface EthereumRemoteDataSource {
     suspend fun getAddressBalance(
         network: EvmNetwork,
         address: String,
-    ): EthereumAddressBalance
+    ): EvmAddressBalance
 
     suspend fun getTransactionCount(
         network: EvmNetwork,
@@ -23,7 +23,7 @@ interface EthereumRemoteDataSource {
         valueWei: BigInteger,
     ): Long
 
-    suspend fun getFeeData(network: EvmNetwork): EthereumFeeData
+    suspend fun getFeeData(network: EvmNetwork): EvmFeeData
 
     /** Broadcast a signed raw transaction; returns the transaction hash. */
     suspend fun sendRawTransaction(

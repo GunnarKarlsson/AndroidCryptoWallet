@@ -22,12 +22,12 @@ import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumGasQuotes
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmGasQuotes
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import java.math.BigInteger
@@ -118,10 +118,10 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         walletDao.updateName(walletId, trimmed)
     }
 
-    override suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage? {
+    override suspend fun getCachedTransactions(walletId: String): EvmTransactionPage? {
         val cache = transactionDao.cacheForWallet(walletId) ?: return null
         val transactions = transactionDao.listByWalletId(walletId).map { it.toDomain() }
-        return EthereumTransactionPage(
+        return EvmTransactionPage(
             transactions = transactions,
             nextCursor = cache.nextCursor(json),
             hasMore = cache.hasMore,
@@ -130,8 +130,8 @@ class EthereumWalletRepositoryImpl @Inject constructor(
 
     override suspend fun getTransactions(
         walletId: String,
-        afterCursor: EthereumTransactionPaginationCursor?,
-    ): EthereumTransactionPage {
+        afterCursor: EvmTransactionPaginationCursor?,
+    ): EvmTransactionPage {
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")
         val page = transactionRemote.getAddressTransactions(
@@ -146,7 +146,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     override fun isValidAddress(address: String): Boolean =
         keyEngine.isValidAddress(address)
 
-    override suspend fun getFeeData(walletId: String): EthereumFeeData {
+    override suspend fun getFeeData(walletId: String): EvmFeeData {
         val wallet = walletDao.observeById(walletId).first()
             ?: error("Wallet not found")
         return remote.getFeeData(EvmNetwork.valueOf(wallet.network))
@@ -156,7 +156,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
         walletId: String,
         recipientAddress: String,
         amountWei: BigInteger,
-        gasPreset: EthereumGasPreset,
+        gasPreset: EvmGasPreset,
     ): String {
         if (amountWei <= BigInteger.ZERO) error("Enter an amount greater than zero")
         val wallet = walletDao.observeById(walletId).first()
@@ -174,9 +174,9 @@ class EthereumWalletRepositoryImpl @Inject constructor(
                 to = recipientAddress,
                 valueWei = amountWei,
             )
-        }.getOrDefault(EthereumGasQuotes.SIMPLE_TRANSFER_GAS_LIMIT)
-        val gasLimit = maxOf(estimatedGas, EthereumGasQuotes.SIMPLE_TRANSFER_GAS_LIMIT)
-        val quote = EthereumGasQuotes.quote(feeData, gasPreset, gasLimit)
+        }.getOrDefault(EvmGasQuotes.SIMPLE_TRANSFER_GAS_LIMIT)
+        val gasLimit = maxOf(estimatedGas, EvmGasQuotes.SIMPLE_TRANSFER_GAS_LIMIT)
+        val quote = EvmGasQuotes.quote(feeData, gasPreset, gasLimit)
         val balanceWei = wallet.balanceWei?.let { BigInteger(it) } ?: BigInteger.ZERO
         val totalNeeded = amountWei.add(BigInteger(quote.estimatedFeeWei))
         if (balanceWei < totalNeeded) error("Insufficient funds")
@@ -198,7 +198,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
 
     private suspend fun persistTransactions(
         walletId: String,
-        page: EthereumTransactionPage,
+        page: EvmTransactionPage,
         replace: Boolean,
     ) {
         val startIndex = if (replace) 0 else transactionDao.maxSortIndex(walletId) + 1

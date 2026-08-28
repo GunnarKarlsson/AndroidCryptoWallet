@@ -11,12 +11,12 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import org.junit.After
@@ -105,21 +105,21 @@ private class FakeReceiveEthWalletRepository(
     override suspend fun refreshBalance(walletId: String) = error("unused")
     override suspend fun deleteWallet(walletId: String) = error("unused")
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
-    override suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage? =
+    override suspend fun getCachedTransactions(walletId: String): EvmTransactionPage? =
         error("unused")
 
     override suspend fun getTransactions(
         walletId: String,
-        afterCursor: EthereumTransactionPaginationCursor?,
-    ): EthereumTransactionPage = error("unused")
+        afterCursor: EvmTransactionPaginationCursor?,
+    ): EvmTransactionPage = error("unused")
 
     override fun isValidAddress(address: String): Boolean = error("unused")
-    override suspend fun getFeeData(walletId: String): EthereumFeeData = error("unused")
+    override suspend fun getFeeData(walletId: String): EvmFeeData = error("unused")
 
     override suspend fun send(
         walletId: String,
         recipientAddress: String,
         amountWei: BigInteger,
-        gasPreset: EthereumGasPreset,
+        gasPreset: EvmGasPreset,
     ): String = error("unused")
 }

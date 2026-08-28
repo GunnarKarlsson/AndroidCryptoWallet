@@ -4,15 +4,15 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
 
-object EthereumGasQuotes {
+object EvmGasQuotes {
     /** Typical gas used by a simple native ETH transfer. */
     const val SIMPLE_TRANSFER_GAS_LIMIT = 21_000L
 
     fun quote(
-        feeData: EthereumFeeData,
-        preset: EthereumGasPreset,
+        feeData: EvmFeeData,
+        preset: EvmGasPreset,
         gasLimit: Long = SIMPLE_TRANSFER_GAS_LIMIT,
-    ): EthereumGasQuote {
+    ): EvmGasQuote {
         val suggested = BigInteger(feeData.suggestedPriorityFeePerGasWei)
         val priority = suggested.toBigDecimal()
             .multiply(BigDecimal.valueOf(preset.priorityMultiplier))
@@ -22,7 +22,7 @@ object EthereumGasQuotes {
         val base = BigInteger(feeData.baseFeePerGasWei)
         val maxFee = base.multiply(BigInteger.TWO).add(priority)
         val estimated = BigInteger.valueOf(gasLimit).multiply(maxFee)
-        return EthereumGasQuote(
+        return EvmGasQuote(
             gasLimit = gasLimit,
             maxPriorityFeePerGasWei = priority.toString(),
             maxFeePerGasWei = maxFee.toString(),

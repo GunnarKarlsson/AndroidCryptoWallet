@@ -3,15 +3,15 @@ package network.bahn.androidcryptowallet.domain.model
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class EthereumGasQuotesTest {
+class EvmGasQuotesTest {
     @Test
     fun quoteAppliesPriorityMultiplierAndBaseFeeHeadroom() {
-        val feeData = EthereumFeeData(
+        val feeData = EvmFeeData(
             baseFeePerGasWei = "1000000000",
             suggestedPriorityFeePerGasWei = "2000000000",
         )
 
-        val quote = EthereumGasQuotes.quote(feeData, EthereumGasPreset.Fast)
+        val quote = EvmGasQuotes.quote(feeData, EvmGasPreset.Fast)
 
         // priority = 2e9 * 1.5 = 3e9; maxFee = 2*1e9 + 3e9 = 5e9
         assertEquals(21_000L, quote.gasLimit)
@@ -22,12 +22,12 @@ class EthereumGasQuotesTest {
 
     @Test
     fun quoteFloorsPriorityAtOneWei() {
-        val feeData = EthereumFeeData(
+        val feeData = EvmFeeData(
             baseFeePerGasWei = "0",
             suggestedPriorityFeePerGasWei = "0",
         )
 
-        val quote = EthereumGasQuotes.quote(feeData, EthereumGasPreset.Slow)
+        val quote = EvmGasQuotes.quote(feeData, EvmGasPreset.Slow)
 
         assertEquals("1", quote.maxPriorityFeePerGasWei)
         assertEquals("1", quote.maxFeePerGasWei)

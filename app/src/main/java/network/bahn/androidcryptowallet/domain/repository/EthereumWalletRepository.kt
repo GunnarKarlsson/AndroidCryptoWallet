@@ -1,12 +1,12 @@
 package network.bahn.androidcryptowallet.domain.repository
 
 import kotlinx.coroutines.flow.Flow
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import java.math.BigInteger
 
@@ -58,7 +58,7 @@ interface EthereumWalletRepository {
      * Previously fetched transactions for this wallet, or null if they have never been fetched.
      * An empty list means a fetch ran and the address had no transactions.
      */
-    suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage?
+    suspend fun getCachedTransactions(walletId: String): EvmTransactionPage?
 
     /**
      * Fetch a live transaction page for the wallet address and persist it.
@@ -66,13 +66,13 @@ interface EthereumWalletRepository {
      */
     suspend fun getTransactions(
         walletId: String,
-        afterCursor: EthereumTransactionPaginationCursor? = null,
-    ): EthereumTransactionPage
+        afterCursor: EvmTransactionPaginationCursor? = null,
+    ): EvmTransactionPage
 
     fun isValidAddress(address: String): Boolean
 
     /** Live EIP-1559 fee oracle for the wallet's network. */
-    suspend fun getFeeData(walletId: String): EthereumFeeData
+    suspend fun getFeeData(walletId: String): EvmFeeData
 
     /**
      * Build, sign, and broadcast a native ETH transfer from an HD wallet.
@@ -82,6 +82,6 @@ interface EthereumWalletRepository {
         walletId: String,
         recipientAddress: String,
         amountWei: BigInteger,
-        gasPreset: EthereumGasPreset,
+        gasPreset: EvmGasPreset,
     ): String
 }

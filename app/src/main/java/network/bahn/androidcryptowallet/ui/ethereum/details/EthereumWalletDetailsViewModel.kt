@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumWalletDetailsRoute
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     private val errorMessage = MutableStateFlow<String?>(null)
     private val txLoadState = MutableStateFlow(TxLoadState())
     private val eventsChannel = Channel<EthereumWalletDetailsEvent>(Channel.BUFFERED)
-    private var nextCursor: EthereumTransactionPaginationCursor? = null
+    private var nextCursor: EvmTransactionPaginationCursor? = null
     private var firstPageJob: Job? = null
     private var loadMoreJob: Job? = null
     private var deleteJob: Job? = null
@@ -250,7 +250,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun applyFirstPage(page: EthereumTransactionPage) {
+    private fun applyFirstPage(page: EvmTransactionPage) {
         nextCursor = page.nextCursor
         txLoadState.value = TxLoadState(
             transactions = page.transactions,
@@ -261,7 +261,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     }
 
     private data class TxLoadState(
-        val transactions: List<EthereumTransactionSummary> = emptyList(),
+        val transactions: List<EvmTransactionSummary> = emptyList(),
         val isLoading: Boolean = true,
         val isRefreshing: Boolean = false,
         val isLoadingMore: Boolean = false,

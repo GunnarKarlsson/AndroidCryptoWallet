@@ -1,7 +1,7 @@
 package network.bahn.androidcryptowallet.data.wallet
 
-import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
-import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
+import network.bahn.androidcryptowallet.domain.model.EvmReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.InvalidEvmMnemonicException
 import org.bitcoindevkit.Mnemonic
 import org.bitcoindevkit.WordCount
 import org.web3j.crypto.Bip32ECKeyPair
@@ -26,13 +26,13 @@ class Web3jEthereumKeyEngine @Inject constructor() : EthereumKeyEngine {
     override fun validateMnemonic(words: List<String>) {
         val normalized = normalize(words)
         if (normalized.size != 12 && normalized.size != 24) {
-            throw InvalidEthereumMnemonicException(
+            throw InvalidEvmMnemonicException(
                 "BIP-39 mnemonic must be 12 or 24 words, found ${normalized.size}",
             )
         }
         val phrase = normalized.joinToString(" ")
         if (!MnemonicUtils.validateMnemonic(phrase)) {
-            throw InvalidEthereumMnemonicException("Invalid BIP-39 mnemonic")
+            throw InvalidEvmMnemonicException("Invalid BIP-39 mnemonic")
         }
     }
 
@@ -52,12 +52,12 @@ class Web3jEthereumKeyEngine @Inject constructor() : EthereumKeyEngine {
     override fun deriveReceiveAddress(
         mnemonicWords: List<String>,
         passphrase: String?,
-    ): EthereumReceiveAddress {
+    ): EvmReceiveAddress {
         val derived = deriveKeyPair(mnemonicWords, passphrase)
         // EIP-55 mixed-case checksum over the 0x address.
         val checksummed = Keys.toChecksumAddress(Keys.getAddress(derived))
         val address = if (checksummed.startsWith("0x")) checksummed else "0x$checksummed"
-        return EthereumReceiveAddress(address = address, index = RECEIVE_INDEX)
+        return EvmReceiveAddress(address = address, index = RECEIVE_INDEX)
     }
 
     override fun isValidAddress(address: String): Boolean {

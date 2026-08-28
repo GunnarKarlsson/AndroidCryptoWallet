@@ -3,9 +3,9 @@ package network.bahn.androidcryptowallet.ui.ethereum.send
 import androidx.annotation.StringRes
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
-import network.bahn.androidcryptowallet.domain.model.EthereumGasQuotes
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmGasQuotes
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -14,11 +14,11 @@ data class EthereumSendUiState(
     val nativeSymbol: String = EvmNetwork.SEPOLIA.nativeSymbol,
     val recipient: String = "",
     val amount: String = "",
-    val gasPreset: EthereumGasPreset = EthereumGasPreset.Normal,
+    val gasPreset: EvmGasPreset = EvmGasPreset.Normal,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null,
     val availableBalanceWei: String? = null,
-    val feeData: EthereumFeeData? = null,
+    val feeData: EvmFeeData? = null,
     val isLoadingFees: Boolean = false,
     val feeLoadError: String? = null,
 ) {
@@ -32,7 +32,7 @@ data class EthereumSendUiState(
     val estimatedFeeWei: String?
         get() {
             val data = feeData ?: return null
-            return EthereumGasQuotes.quote(data, gasPreset).estimatedFeeWei
+            return EvmGasQuotes.quote(data, gasPreset).estimatedFeeWei
         }
 
     /** Balance minus send amount (if any) and the selected fee. */
@@ -50,10 +50,10 @@ data class EthereumSendUiState(
             return remaining < BigInteger.ZERO
         }
 
-    fun priorityFeeGweiLabel(preset: EthereumGasPreset): String? {
+    fun priorityFeeGweiLabel(preset: EvmGasPreset): String? {
         val data = feeData ?: return null
         val priorityWei = BigInteger(
-            EthereumGasQuotes.quote(data, preset).maxPriorityFeePerGasWei,
+            EvmGasQuotes.quote(data, preset).maxPriorityFeePerGasWei,
         )
         val gwei = priorityWei.toBigDecimal()
             .movePointLeft(9)
@@ -65,15 +65,15 @@ data class EthereumSendUiState(
 }
 
 @StringRes
-fun EthereumGasPreset.labelRes(): Int = when (this) {
-    EthereumGasPreset.Slow -> R.string.send_fee_slow
-    EthereumGasPreset.Normal -> R.string.send_fee_normal
-    EthereumGasPreset.Fast -> R.string.send_fee_fast
+fun EvmGasPreset.labelRes(): Int = when (this) {
+    EvmGasPreset.Slow -> R.string.send_fee_slow
+    EvmGasPreset.Normal -> R.string.send_fee_normal
+    EvmGasPreset.Fast -> R.string.send_fee_fast
 }
 
 @StringRes
-fun EthereumGasPreset.etaRes(): Int = when (this) {
-    EthereumGasPreset.Slow -> R.string.eth_send_fee_slow_eta
-    EthereumGasPreset.Normal -> R.string.eth_send_fee_normal_eta
-    EthereumGasPreset.Fast -> R.string.eth_send_fee_fast_eta
+fun EvmGasPreset.etaRes(): Int = when (this) {
+    EvmGasPreset.Slow -> R.string.eth_send_fee_slow_eta
+    EvmGasPreset.Normal -> R.string.eth_send_fee_normal_eta
+    EvmGasPreset.Fast -> R.string.eth_send_fee_fast_eta
 }

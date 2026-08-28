@@ -13,8 +13,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import org.junit.After
@@ -45,7 +45,7 @@ class EthereumWalletDetailsViewModelTest {
 
     @Test
     fun onEnterLoadsCachedTransactionsWithoutNetworkFetch() = runTest {
-        val cached = EthereumTransactionPage(
+        val cached = EvmTransactionPage(
             transactions = listOf(TX),
             nextCursor = null,
             hasMore = true,
@@ -68,7 +68,7 @@ class EthereumWalletDetailsViewModelTest {
     @Test
     fun onEnterFetchesWhenNoCache() = runTest {
         val repo = FakeEthDetailsWalletRepository(
-            networkPage = EthereumTransactionPage(
+            networkPage = EvmTransactionPage(
                 transactions = listOf(TX),
                 nextCursor = null,
                 hasMore = false,
@@ -237,7 +237,7 @@ private val WALLET = EthereumWallet(
     balanceUpdatedAtMillis = 1_700_000_000_000L,
 )
 
-private val TX = network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary(
+private val TX = network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary(
     hash = "0xabc",
     confirmed = true,
     blockTimeSeconds = 1_700_000_000L,
@@ -248,8 +248,8 @@ private val TX = network.bahn.androidcryptowallet.domain.model.EthereumTransacti
 private class FakeEthDetailsWalletRepository(
     private val wallet: MutableStateFlow<EthereumWallet?> = MutableStateFlow(WALLET),
     private val deleteError: Exception? = null,
-    private val cachedPage: EthereumTransactionPage? = null,
-    private val networkPage: EthereumTransactionPage = EthereumTransactionPage(
+    private val cachedPage: EvmTransactionPage? = null,
+    private val networkPage: EvmTransactionPage = EvmTransactionPage(
         transactions = emptyList(),
         nextCursor = null,
         hasMore = false,
@@ -287,12 +287,12 @@ private class FakeEthDetailsWalletRepository(
 
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
 
-    override suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage? = cachedPage
+    override suspend fun getCachedTransactions(walletId: String): EvmTransactionPage? = cachedPage
 
     override suspend fun getTransactions(
         walletId: String,
-        afterCursor: EthereumTransactionPaginationCursor?,
-    ): EthereumTransactionPage {
+        afterCursor: EvmTransactionPaginationCursor?,
+    ): EvmTransactionPage {
         getTransactionsCalls++
         return networkPage
     }
@@ -305,6 +305,6 @@ private class FakeEthDetailsWalletRepository(
         walletId: String,
         recipientAddress: String,
         amountWei: java.math.BigInteger,
-        gasPreset: network.bahn.androidcryptowallet.domain.model.EthereumGasPreset,
+        gasPreset: network.bahn.androidcryptowallet.domain.model.EvmGasPreset,
     ) = error("unused")
 }

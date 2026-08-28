@@ -1,13 +1,13 @@
 package network.bahn.androidcryptowallet.data.remote.blockscout
 
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 
 interface EthereumTransactionRemoteDataSource {
     suspend fun getAddressTransactions(
         network: EvmNetwork,
         address: String,
-        afterCursor: EthereumTransactionPaginationCursor? = null,
-    ): EthereumTransactionPage
+        afterCursor: EvmTransactionPaginationCursor? = null,
+    ): EvmTransactionPage
 }

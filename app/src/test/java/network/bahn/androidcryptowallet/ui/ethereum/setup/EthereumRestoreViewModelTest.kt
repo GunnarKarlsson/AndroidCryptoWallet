@@ -18,7 +18,7 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
-import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
+import network.bahn.androidcryptowallet.domain.model.InvalidEvmMnemonicException
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -84,7 +84,7 @@ class EthereumRestoreViewModelTest {
     @Test
     fun invalidMnemonicStaysOnScreen() = runTest {
         val walletRepo = FakeEthRestoreWalletRepository(
-            restoreError = InvalidEthereumMnemonicException("invalid"),
+            restoreError = InvalidEvmMnemonicException("invalid"),
         )
         val networkStore = FakeEthRestoreNetworkStore()
         val viewModel = createViewModel(walletRepo, networkStore)
@@ -265,7 +265,7 @@ private class FakeEthRestoreWalletRepository(
     override suspend fun getCachedTransactions(walletId: String) = error("unused")
     override suspend fun getTransactions(
         walletId: String,
-        afterCursor: network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor?,
+        afterCursor: network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor?,
     ) = error("unused")
 
     override fun isValidAddress(address: String) = error("unused")
@@ -276,7 +276,7 @@ private class FakeEthRestoreWalletRepository(
         walletId: String,
         recipientAddress: String,
         amountWei: java.math.BigInteger,
-        gasPreset: network.bahn.androidcryptowallet.domain.model.EthereumGasPreset,
+        gasPreset: network.bahn.androidcryptowallet.domain.model.EvmGasPreset,
     ) = error("unused")
 }
 

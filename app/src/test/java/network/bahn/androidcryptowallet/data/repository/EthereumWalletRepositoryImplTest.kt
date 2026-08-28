@@ -20,15 +20,15 @@ import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.wallet.EthereumKeyEngine
 import network.bahn.androidcryptowallet.domain.TimeProvider
-import network.bahn.androidcryptowallet.domain.model.EthereumAddressBalance
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmAddressBalance
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
-import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
+import network.bahn.androidcryptowallet.domain.model.EvmReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.InvalidEvmMnemonicException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -67,8 +67,8 @@ class EthereumWalletRepositoryImplTest {
 
         try {
             repo.createWallet(EvmNetwork.SEPOLIA, listOf("not", "valid"), null)
-            error("expected InvalidEthereumMnemonicException")
-        } catch (_: InvalidEthereumMnemonicException) {
+            error("expected InvalidEvmMnemonicException")
+        } catch (_: InvalidEvmMnemonicException) {
         }
 
         assertTrue(repo.observeWallets(EvmFamily.ETHEREUM).first().isEmpty())
@@ -192,8 +192,8 @@ class EthereumWalletRepositoryImplTest {
 
         try {
             repo.restoreWallet(EvmNetwork.SEPOLIA, listOf("not", "valid"), null)
-            error("expected InvalidEthereumMnemonicException")
-        } catch (_: InvalidEthereumMnemonicException) {
+            error("expected InvalidEvmMnemonicException")
+        } catch (_: InvalidEvmMnemonicException) {
         }
 
         assertTrue(repo.observeWallets(EvmFamily.ETHEREUM).first().isEmpty())
@@ -303,9 +303,9 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun getTransactionsPersistsFirstPageAndReturnsCache() = runTest {
         val txRemote = FakeEthereumTransactionRemoteDataSource(
-            firstPage = EthereumTransactionPage(
+            firstPage = EvmTransactionPage(
                 transactions = listOf(TX_SUMMARY),
-                nextCursor = EthereumTransactionPaginationCursor(
+                nextCursor = EvmTransactionPaginationCursor(
                     blockNumber = 1L,
                     index = 2,
                     hash = "0xabc",
@@ -344,7 +344,7 @@ class EthereumWalletRepositoryImplTest {
 
     @Test
     fun getTransactionsAppendUsesCursor() = runTest {
-        val cursor = EthereumTransactionPaginationCursor(
+        val cursor = EvmTransactionPaginationCursor(
             blockNumber = 1L,
             index = 2,
             hash = "0xabc",
@@ -354,12 +354,12 @@ class EthereumWalletRepositoryImplTest {
             itemsCount = 50,
         )
         val txRemote = FakeEthereumTransactionRemoteDataSource(
-            firstPage = EthereumTransactionPage(
+            firstPage = EvmTransactionPage(
                 transactions = listOf(TX_SUMMARY),
                 nextCursor = cursor,
                 hasMore = true,
             ),
-            nextPage = EthereumTransactionPage(
+            nextPage = EvmTransactionPage(
                 transactions = listOf(TX_SUMMARY_2),
                 nextCursor = null,
                 hasMore = false,
@@ -397,7 +397,7 @@ class EthereumWalletRepositoryImplTest {
             walletId = walletId,
             recipientAddress = "0x2222222222222222222222222222222222222222",
             amountWei = BigInteger("100000000000000000"),
-            gasPreset = EthereumGasPreset.Normal,
+            gasPreset = EvmGasPreset.Normal,
         )
 
         assertEquals("0xbroadcast", txHash)
@@ -417,7 +417,7 @@ class EthereumWalletRepositoryImplTest {
                 walletId = walletId,
                 recipientAddress = "0x2222222222222222222222222222222222222222",
                 amountWei = BigInteger("100000000000000000"),
-                gasPreset = EthereumGasPreset.Normal,
+                gasPreset = EvmGasPreset.Normal,
             )
             fail("expected insufficient funds")
         } catch (e: IllegalStateException) {
@@ -452,7 +452,7 @@ class EthereumWalletRepositoryImplTest {
 private val VALID_WORDS = List(11) { "abandon" } + "about"
 private const val DEFAULT_ADDRESS = "0x1111111111111111111111111111111111111111"
 
-private val TX_SUMMARY = EthereumTransactionSummary(
+private val TX_SUMMARY = EvmTransactionSummary(
     hash = "0xabc",
     confirmed = true,
     blockTimeSeconds = 1_700_000_000L,
@@ -472,16 +472,16 @@ private class FakeEthereumKeyEngine(
 
     override fun validateMnemonic(words: List<String>) {
         validateCalls += 1
-        if (words != VALID_WORDS) throw InvalidEthereumMnemonicException("invalid")
+        if (words != VALID_WORDS) throw InvalidEvmMnemonicException("invalid")
     }
 
     override fun deriveReceiveAddress(
         mnemonicWords: List<String>,
         passphrase: String?,
-    ): EthereumReceiveAddress {
+    ): EvmReceiveAddress {
         deriveCalls += 1
         val address = passphrase?.let { passphraseAddresses[it] } ?: DEFAULT_ADDRESS
-        return EthereumReceiveAddress(address = address, index = 0)
+        return EvmReceiveAddress(address = address, index = 0)
     }
 
     override fun isValidAddress(address: String): Boolean =
@@ -612,7 +612,7 @@ private class FakeEthereumWalletDao : EthereumWalletDao {
 
 private class FakeEthereumRemoteDataSource(
     private val balanceWei: String = "0",
-    private val feeData: EthereumFeeData = EthereumFeeData(
+    private val feeData: EvmFeeData = EvmFeeData(
         baseFeePerGasWei = "1000000000",
         suggestedPriorityFeePerGasWei = "1500000000",
     ),
@@ -626,9 +626,9 @@ private class FakeEthereumRemoteDataSource(
     override suspend fun getAddressBalance(
         network: EvmNetwork,
         address: String,
-    ): EthereumAddressBalance {
+    ): EvmAddressBalance {
         balanceCalls += 1
-        return EthereumAddressBalance(balanceWei = balanceWei)
+        return EvmAddressBalance(balanceWei = balanceWei)
     }
 
     override suspend fun getTransactionCount(
@@ -643,7 +643,7 @@ private class FakeEthereumRemoteDataSource(
         valueWei: java.math.BigInteger,
     ): Long = estimatedGas
 
-    override suspend fun getFeeData(network: EvmNetwork): EthereumFeeData = feeData
+    override suspend fun getFeeData(network: EvmNetwork): EvmFeeData = feeData
 
     override suspend fun sendRawTransaction(
         network: EvmNetwork,
@@ -708,17 +708,17 @@ private class FakeEthereumTransactionDao : EthereumTransactionDao {
 }
 
 private class FakeEthereumTransactionRemoteDataSource(
-    private val firstPage: EthereumTransactionPage = EthereumTransactionPage(
+    private val firstPage: EvmTransactionPage = EvmTransactionPage(
         transactions = emptyList(),
         nextCursor = null,
         hasMore = false,
     ),
-    private val nextPage: EthereumTransactionPage = firstPage,
+    private val nextPage: EvmTransactionPage = firstPage,
 ) : EthereumTransactionRemoteDataSource {
     data class TxCall(
         val network: EvmNetwork,
         val address: String,
-        val afterCursor: EthereumTransactionPaginationCursor?,
+        val afterCursor: EvmTransactionPaginationCursor?,
     )
 
     val txCalls = mutableListOf<TxCall>()
@@ -726,8 +726,8 @@ private class FakeEthereumTransactionRemoteDataSource(
     override suspend fun getAddressTransactions(
         network: EvmNetwork,
         address: String,
-        afterCursor: EthereumTransactionPaginationCursor?,
-    ): EthereumTransactionPage {
+        afterCursor: EvmTransactionPaginationCursor?,
+    ): EvmTransactionPage {
         txCalls += TxCall(network, address, afterCursor)
         return if (afterCursor == null) firstPage else nextPage
     }

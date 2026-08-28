@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import network.bahn.androidcryptowallet.domain.model.EthereumPaymentUri
+import network.bahn.androidcryptowallet.domain.model.EvmPaymentUri
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumReceiveRoute
 import javax.inject.Inject
@@ -34,7 +34,7 @@ class EthereumReceiveViewModel @Inject constructor(
                     networkLabel = wallet.network.label,
                     family = wallet.network.family,
                     paymentUri = address?.let {
-                        EthereumPaymentUri.fromAddress(it, wallet.network)
+                        EvmPaymentUri.fromAddress(it, wallet.network)
                     },
                 )
             }

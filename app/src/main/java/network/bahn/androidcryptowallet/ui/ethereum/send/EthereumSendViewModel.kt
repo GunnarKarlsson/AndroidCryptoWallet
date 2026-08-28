@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EthereumSendRoute
@@ -92,7 +92,7 @@ class EthereumSendViewModel @Inject constructor(
         }
     }
 
-    fun onGasPresetSelected(preset: EthereumGasPreset) {
+    fun onGasPresetSelected(preset: EvmGasPreset) {
         form.update { it.copy(gasPreset = preset) }
     }
 
@@ -181,13 +181,13 @@ class EthereumSendViewModel @Inject constructor(
 private data class FormState(
     val recipient: String = "",
     val amount: String = "",
-    val gasPreset: EthereumGasPreset = EthereumGasPreset.Normal,
+    val gasPreset: EvmGasPreset = EvmGasPreset.Normal,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null,
 )
 
 private data class FeeState(
-    val feeData: EthereumFeeData? = null,
+    val feeData: EvmFeeData? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
 )

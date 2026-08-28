@@ -203,7 +203,7 @@ private class FakeEthEditWalletRepository(
 
     override suspend fun getTransactions(
         walletId: String,
-        afterCursor: network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor?,
+        afterCursor: network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor?,
     ) = error("unused")
 
     override fun isValidAddress(address: String) = error("unused")
@@ -214,6 +214,6 @@ private class FakeEthEditWalletRepository(
         walletId: String,
         recipientAddress: String,
         amountWei: java.math.BigInteger,
-        gasPreset: network.bahn.androidcryptowallet.domain.model.EthereumGasPreset,
+        gasPreset: network.bahn.androidcryptowallet.domain.model.EvmGasPreset,
     ) = error("unused")
 }

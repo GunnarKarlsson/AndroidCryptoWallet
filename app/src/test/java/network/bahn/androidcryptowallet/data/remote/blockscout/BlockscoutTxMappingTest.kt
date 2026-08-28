@@ -1,6 +1,6 @@
 package network.bahn.androidcryptowallet.data.remote.blockscout
 
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -81,7 +81,7 @@ class BlockscoutTxMappingTest {
 
         assertTrue(page.hasMore)
         assertEquals(
-            EthereumTransactionPaginationCursor(
+            EvmTransactionPaginationCursor(
                 blockNumber = 99L,
                 index = 1,
                 hash = "0xlast",
@@ -114,7 +114,7 @@ class BlockscoutTxMappingTest {
 
     @Test
     fun cursorRoundTripsQueryParams() {
-        val cursor = EthereumTransactionPaginationCursor(
+        val cursor = EvmTransactionPaginationCursor(
             blockNumber = 11560237L,
             index = 175,
             hash = "0xabc",

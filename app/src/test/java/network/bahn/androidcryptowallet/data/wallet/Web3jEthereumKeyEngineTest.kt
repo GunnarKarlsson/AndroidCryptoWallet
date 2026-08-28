@@ -1,6 +1,6 @@
 package network.bahn.androidcryptowallet.data.wallet
 
-import network.bahn.androidcryptowallet.domain.model.InvalidEthereumMnemonicException
+import network.bahn.androidcryptowallet.domain.model.InvalidEvmMnemonicException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,8 +21,8 @@ class Web3jEthereumKeyEngineTest {
     fun invalidMnemonicThrows() {
         try {
             engine.validateMnemonic(listOf("not", "a", "valid", "mnemonic"))
-            error("expected InvalidEthereumMnemonicException")
-        } catch (e: InvalidEthereumMnemonicException) {
+            error("expected InvalidEvmMnemonicException")
+        } catch (e: InvalidEvmMnemonicException) {
             assertTrue(e.message!!.isNotBlank())
         }
     }

@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 
 /** Marks that transactions for this wallet have been fetched, even if the list is empty. */
 @Entity(
@@ -25,8 +25,8 @@ data class EthereumWalletTxCacheEntity(
     val fetchedAtMillis: Long,
 )
 
-fun EthereumWalletTxCacheEntity.nextCursor(json: Json): EthereumTransactionPaginationCursor? =
+fun EthereumWalletTxCacheEntity.nextCursor(json: Json): EvmTransactionPaginationCursor? =
     nextCursorJson?.let { json.decodeFromString(it) }
 
-fun EthereumTransactionPaginationCursor.toJson(json: Json): String =
+fun EvmTransactionPaginationCursor.toJson(json: Json): String =
     json.encodeToString(this)

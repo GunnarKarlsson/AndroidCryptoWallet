@@ -6,8 +6,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,8 +23,8 @@ class BlockscoutEthereumTransactionRemoteDataSource @Inject constructor(
     suspend fun getAddressTransactions(
         network: EvmNetwork,
         address: String,
-        afterCursor: EthereumTransactionPaginationCursor?,
-    ): EthereumTransactionPage = withContext(Dispatchers.IO) {
+        afterCursor: EvmTransactionPaginationCursor?,
+    ): EvmTransactionPage = withContext(Dispatchers.IO) {
         Log.d(TAG, "Requesting Blockscout transactions for $network afterCursor=${afterCursor != null}")
         val urlBuilder = "${catalog.explorerBaseUrl(network)}/addresses/$address/transactions"
             .toHttpUrl()
@@ -39,7 +39,7 @@ class BlockscoutEthereumTransactionRemoteDataSource @Inject constructor(
         val responseBody = client.newCall(request).execute().use { response ->
             if (response.code == 404) {
                 Log.i(TAG, "address not found on $network; treating as empty transactions")
-                return@withContext EthereumTransactionPage(
+                return@withContext EvmTransactionPage(
                     transactions = emptyList(),
                     nextCursor = null,
                     hasMore = false,

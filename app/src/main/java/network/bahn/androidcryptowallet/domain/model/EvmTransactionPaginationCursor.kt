@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EthereumTransactionPaginationCursor(
+data class EvmTransactionPaginationCursor(
     val blockNumber: Long?,
     val index: Int?,
     val hash: String?,

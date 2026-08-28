@@ -12,12 +12,12 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import network.bahn.androidcryptowallet.domain.model.EthereumFeeData
-import network.bahn.androidcryptowallet.domain.model.EthereumGasPreset
+import network.bahn.androidcryptowallet.domain.model.EvmFeeData
+import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import org.junit.After
@@ -114,7 +114,7 @@ class EthereumSendViewModelTest {
         }
         viewModel.onRecipientChange(RECIPIENT)
         viewModel.onAmountChange("0.010000000000000000")
-        viewModel.onGasPresetSelected(EthereumGasPreset.Fast)
+        viewModel.onGasPresetSelected(EvmGasPreset.Fast)
 
         viewModel.onSend()
 
@@ -124,7 +124,7 @@ class EthereumSendViewModelTest {
                     walletId = WALLET.id,
                     recipientAddress = RECIPIENT,
                     amountWei = BigInteger("10000000000000000"),
-                    gasPreset = EthereumGasPreset.Fast,
+                    gasPreset = EvmGasPreset.Fast,
                 ),
             ),
             repo.sendCalls,
@@ -186,7 +186,7 @@ private val WALLET = EthereumWallet(
     balanceWei = "5000000000000000000",
 )
 
-private val FEE_DATA = EthereumFeeData(
+private val FEE_DATA = EvmFeeData(
     baseFeePerGasWei = "1000000000",
     suggestedPriorityFeePerGasWei = "1500000000",
 )
@@ -195,7 +195,7 @@ private data class EthSendCall(
     val walletId: String,
     val recipientAddress: String,
     val amountWei: BigInteger,
-    val gasPreset: EthereumGasPreset,
+    val gasPreset: EvmGasPreset,
 )
 
 private class FakeSendEthWalletRepository(
@@ -204,7 +204,7 @@ private class FakeSendEthWalletRepository(
     private val sendGate: CompletableDeferred<Unit>? = null,
     private val sendError: Throwable? = null,
     private val feeError: Throwable? = null,
-    private val feeData: EthereumFeeData = FEE_DATA,
+    private val feeData: EvmFeeData = FEE_DATA,
 ) : EthereumWalletRepository {
     val sendCalls = mutableListOf<EthSendCall>()
 
@@ -227,17 +227,17 @@ private class FakeSendEthWalletRepository(
     override suspend fun refreshBalance(walletId: String) = error("unused")
     override suspend fun deleteWallet(walletId: String) = error("unused")
     override suspend fun renameWallet(walletId: String, name: String?) = error("unused")
-    override suspend fun getCachedTransactions(walletId: String): EthereumTransactionPage? =
+    override suspend fun getCachedTransactions(walletId: String): EvmTransactionPage? =
         error("unused")
 
     override suspend fun getTransactions(
         walletId: String,
-        afterCursor: EthereumTransactionPaginationCursor?,
-    ): EthereumTransactionPage = error("unused")
+        afterCursor: EvmTransactionPaginationCursor?,
+    ): EvmTransactionPage = error("unused")
 
     override fun isValidAddress(address: String): Boolean = validAddress
 
-    override suspend fun getFeeData(walletId: String): EthereumFeeData {
+    override suspend fun getFeeData(walletId: String): EvmFeeData {
         feeError?.let { throw it }
         return feeData
     }
@@ -246,7 +246,7 @@ private class FakeSendEthWalletRepository(
         walletId: String,
         recipientAddress: String,
         amountWei: BigInteger,
-        gasPreset: EthereumGasPreset,
+        gasPreset: EvmGasPreset,
     ): String {
         sendGate?.await()
         sendError?.let { throw it }

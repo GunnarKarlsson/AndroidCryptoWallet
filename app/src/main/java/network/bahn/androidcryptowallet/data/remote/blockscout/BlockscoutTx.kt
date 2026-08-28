@@ -2,9 +2,9 @@ package network.bahn.androidcryptowallet.data.remote.blockscout
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import java.math.BigInteger
 import java.time.Instant
 
@@ -49,19 +49,19 @@ data class BlockscoutFee(
     val value: String? = null,
 )
 
-fun BlockscoutTxPageResponse.toTransactionPage(address: String): EthereumTransactionPage {
+fun BlockscoutTxPageResponse.toTransactionPage(address: String): EvmTransactionPage {
     val normalizedAddress = address.lowercase()
     val transactions = items.map { it.toSummary(normalizedAddress) }
     val nextCursor = nextPageParams?.toCursor()
-    return EthereumTransactionPage(
+    return EvmTransactionPage(
         transactions = transactions,
         nextCursor = nextCursor,
         hasMore = items.size == BLOCKSCOUT_TX_PAGE_SIZE && nextCursor != null,
     )
 }
 
-fun BlockscoutNextPageParams.toCursor(): EthereumTransactionPaginationCursor =
-    EthereumTransactionPaginationCursor(
+fun BlockscoutNextPageParams.toCursor(): EvmTransactionPaginationCursor =
+    EvmTransactionPaginationCursor(
         blockNumber = blockNumber,
         index = index,
         hash = hash,
@@ -71,7 +71,7 @@ fun BlockscoutNextPageParams.toCursor(): EthereumTransactionPaginationCursor =
         itemsCount = itemsCount,
     )
 
-fun BlockscoutTxResponse.toSummary(normalizedAddress: String): EthereumTransactionSummary {
+fun BlockscoutTxResponse.toSummary(normalizedAddress: String): EvmTransactionSummary {
     val fromAddress = from?.hash?.lowercase()
     val toAddress = to?.hash?.lowercase()
     val valueWei = value.toBigIntegerOrZero()
@@ -81,7 +81,7 @@ fun BlockscoutTxResponse.toSummary(normalizedAddress: String): EthereumTransacti
         fromAddress == normalizedAddress && toAddress != normalizedAddress -> valueWei.negate()
         else -> BigInteger.ZERO
     }
-    return EthereumTransactionSummary(
+    return EvmTransactionSummary(
         hash = hash,
         confirmed = blockNumber != null,
         blockTimeSeconds = timestamp?.let(::parseIsoTimestampSeconds),

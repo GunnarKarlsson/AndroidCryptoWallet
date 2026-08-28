@@ -2,7 +2,7 @@ package network.bahn.androidcryptowallet.ui.ethereum.details
 
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 
 data class EthereumWalletDetailsUiState(
@@ -11,7 +11,7 @@ data class EthereumWalletDetailsUiState(
     val showDeleteConfirmDialog: Boolean = false,
     val isDeleting: Boolean = false,
     val errorMessage: String? = null,
-    val transactions: List<EthereumTransactionSummary> = emptyList(),
+    val transactions: List<EvmTransactionSummary> = emptyList(),
     val isLoadingTransactions: Boolean = false,
     val isRefreshingTransactions: Boolean = false,
     val isLoadingMoreTransactions: Boolean = false,

@@ -8,9 +8,9 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPage
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionPaginationCursor
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import java.math.BigInteger
 
 const val ETHERSCAN_TX_PAGE_SIZE = 50
@@ -51,14 +51,14 @@ fun parseEtherscanTxList(body: String, json: Json): List<EtherscanTxResponse> {
 fun List<EtherscanTxResponse>.toTransactionPage(
     address: String,
     page: Int,
-): EthereumTransactionPage {
+): EvmTransactionPage {
     val normalizedAddress = address.lowercase()
     val transactions = map { it.toSummary(normalizedAddress) }
     val hasMore = size == ETHERSCAN_TX_PAGE_SIZE
-    return EthereumTransactionPage(
+    return EvmTransactionPage(
         transactions = transactions,
         nextCursor = if (hasMore) {
-            EthereumTransactionPaginationCursor(
+            EvmTransactionPaginationCursor(
                 blockNumber = null,
                 index = null,
                 hash = null,
@@ -74,7 +74,7 @@ fun List<EtherscanTxResponse>.toTransactionPage(
     )
 }
 
-fun EtherscanTxResponse.toSummary(normalizedAddress: String): EthereumTransactionSummary {
+fun EtherscanTxResponse.toSummary(normalizedAddress: String): EvmTransactionSummary {
     val fromAddress = from.lowercase()
     val toAddress = to.lowercase()
     val valueWei = value.toBigIntegerOrZero()
@@ -88,7 +88,7 @@ fun EtherscanTxResponse.toSummary(normalizedAddress: String): EthereumTransactio
     val feeWei = gasUsed?.toBigIntegerOrNull()?.let { used ->
         gasPrice?.toBigIntegerOrNull()?.multiply(used)
     }
-    return EthereumTransactionSummary(
+    return EvmTransactionSummary(
         hash = hash,
         confirmed = blockNumber != null && !failed,
         blockTimeSeconds = timeStamp?.toLongOrNull(),

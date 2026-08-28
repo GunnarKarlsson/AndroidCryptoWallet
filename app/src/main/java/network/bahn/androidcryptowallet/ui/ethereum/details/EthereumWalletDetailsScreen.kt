@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.ui.chain.receiveClipboardLabelRes
 import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
@@ -402,7 +402,7 @@ private fun EthereumWalletDetailsContent(
 
 @Composable
 private fun EthereumTransactionRow(
-    tx: EthereumTransactionSummary,
+    tx: EvmTransactionSummary,
     nativeSymbol: String,
 ) {
     val netWei = tx.netWei.toBigIntegerOrNull() ?: java.math.BigInteger.ZERO
@@ -616,14 +616,14 @@ private fun EthereumWalletDetailsWithTransactionsPreview() {
             uiState = EthereumWalletDetailsUiState(
                 wallet = previewWallet(),
                 transactions = listOf(
-                    EthereumTransactionSummary(
+                    EvmTransactionSummary(
                         hash = "0x1bf67e8fd7f28df862dd8c0adf023a0e836c051802f4682c9f15c0e9bf7d722e",
                         confirmed = true,
                         blockTimeSeconds = 1_787_613_816L,
                         netWei = "1000000000000000000",
                         feeWei = "32125058233059",
                     ),
-                    EthereumTransactionSummary(
+                    EvmTransactionSummary(
                         hash = "0x0972edf7fbab6883e4b52648beb8b2404491f4e2800f7ecd4409e5f4bb782878",
                         confirmed = true,
                         blockTimeSeconds = 1_787_493_624L,

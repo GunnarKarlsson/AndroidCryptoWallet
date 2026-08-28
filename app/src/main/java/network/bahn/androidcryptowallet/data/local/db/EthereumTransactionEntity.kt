@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.data.local.db
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import network.bahn.androidcryptowallet.domain.model.EthereumTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 
 @Entity(
     tableName = "ethereum_transaction",
@@ -28,7 +28,7 @@ data class EthereumTransactionEntity(
     val sortIndex: Int,
 )
 
-fun EthereumTransactionEntity.toDomain(): EthereumTransactionSummary = EthereumTransactionSummary(
+fun EthereumTransactionEntity.toDomain(): EvmTransactionSummary = EvmTransactionSummary(
     hash = hash,
     confirmed = confirmed,
     blockTimeSeconds = blockTimeSeconds,
@@ -36,7 +36,7 @@ fun EthereumTransactionEntity.toDomain(): EthereumTransactionSummary = EthereumT
     feeWei = feeWei,
 )
 
-fun EthereumTransactionSummary.toEntity(
+fun EvmTransactionSummary.toEntity(
     walletId: String,
     sortIndex: Int,
 ): EthereumTransactionEntity = EthereumTransactionEntity(

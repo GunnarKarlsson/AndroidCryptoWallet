@@ -10,7 +10,7 @@ import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.domain.model.EthereumReceiveAddress
+import network.bahn.androidcryptowallet.domain.model.EvmReceiveAddress
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -115,9 +115,9 @@ private class FakeEthReconcileKeyEngine : EthereumKeyEngine {
     override fun deriveReceiveAddress(
         mnemonicWords: List<String>,
         passphrase: String?,
-    ): EthereumReceiveAddress {
+    ): EvmReceiveAddress {
         deriveCalls += EthDeriveCall(mnemonicWords, passphrase)
-        return EthereumReceiveAddress(address = "0xderived", index = 0)
+        return EvmReceiveAddress(address = "0xderived", index = 0)
     }
 
     override fun isValidAddress(address: String): Boolean = error("unused")

@@ -1,6 +1,6 @@
 package network.bahn.androidcryptowallet.domain.model
 
-data class EthereumTransactionSummary(
+data class EvmTransactionSummary(
     val hash: String,
     val confirmed: Boolean,
     val blockTimeSeconds: Long?,
