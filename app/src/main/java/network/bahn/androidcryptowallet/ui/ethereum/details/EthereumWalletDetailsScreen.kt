@@ -245,7 +245,7 @@ private fun EthereumWalletDetailsContent(
                 DetailCard(
                     title = stringResource(R.string.wallet_balance),
                     value = evmNativeAmountLabel(
-                        StringUtils.formatEthereumAmount(balanceWei),
+                        StringUtils.formatEvmAmount(balanceWei),
                         nativeSymbol,
                     ),
                     valueStyle = MaterialTheme.typography.headlineMedium,
@@ -406,7 +406,7 @@ private fun EthereumTransactionRow(
     nativeSymbol: String,
 ) {
     val netWei = tx.netWei.toBigIntegerOrNull() ?: java.math.BigInteger.ZERO
-    val amount = StringUtils.formatEthereumAmount(tx.netWei)
+    val amount = StringUtils.formatEvmAmount(tx.netWei)
     val signedAmount = if (netWei > java.math.BigInteger.ZERO) "+$amount" else amount
     Card(
         modifier = Modifier
@@ -434,7 +434,7 @@ private fun EthereumTransactionRow(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = StringUtils.truncateEthereumAddress(tx.hash),
+                text = StringUtils.truncateEvmAddress(tx.hash),
                 style = MaterialTheme.typography.bodyMedium,
                 fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -113,7 +113,7 @@ class EthereumSendViewModel @Inject constructor(
                 form.update { it.copy(errorMessage = FEES_FAILED) }
                 return@launch
             }
-            val amountWei = StringUtils.parseEthereumAmountToWei(current.amount)
+            val amountWei = StringUtils.parseEvmAmountToWei(current.amount)
             if (amountWei == null || amountWei <= BigInteger.ZERO) {
                 form.update { it.copy(errorMessage = INVALID_AMOUNT) }
                 return@launch

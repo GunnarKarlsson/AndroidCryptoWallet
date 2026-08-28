@@ -314,7 +314,7 @@ private fun EthereumSendTotalSummary(
     uiState: EthereumSendUiState,
 ) {
     val feeWei = uiState.estimatedFeeWei
-    val amountWei = StringUtils.parseEthereumAmountToWei(uiState.amount)
+    val amountWei = StringUtils.parseEvmAmountToWei(uiState.amount)
     val placeholder = stringResource(R.string.receive_address_placeholder)
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -336,7 +336,7 @@ private fun EthereumSendTotalSummary(
                     placeholder
                 } else {
                     evmNativeAmountLabel(
-                        StringUtils.formatEthereumAmount(feeWei),
+                        StringUtils.formatEvmAmount(feeWei),
                         uiState.nativeSymbol,
                     )
                 },
@@ -347,7 +347,7 @@ private fun EthereumSendTotalSummary(
                     placeholder
                 } else {
                     evmNativeAmountLabel(
-                        StringUtils.formatEthereumAmount(
+                        StringUtils.formatEvmAmount(
                             amountWei.add(java.math.BigInteger(feeWei)).toString(),
                         ),
                         uiState.nativeSymbol,
@@ -385,7 +385,7 @@ private fun EthereumSendRemainingBalance(
                     placeholder
                 } else {
                     evmNativeAmountLabel(
-                        StringUtils.formatEthereumAmount(remainingWei),
+                        StringUtils.formatEvmAmount(remainingWei),
                         uiState.nativeSymbol,
                     )
                 },

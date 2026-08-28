@@ -39,7 +39,7 @@ data class EthereumSendUiState(
     val remainingBalanceWei: String?
         get() {
             val available = availableBalanceWei?.let { BigInteger(it) } ?: return null
-            val amountWei = StringUtils.parseEthereumAmountToWei(amount) ?: BigInteger.ZERO
+            val amountWei = StringUtils.parseEvmAmountToWei(amount) ?: BigInteger.ZERO
             val feeWei = estimatedFeeWei?.let { BigInteger(it) } ?: BigInteger.ZERO
             return available.subtract(amountWei).subtract(feeWei).toString()
         }

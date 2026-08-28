@@ -265,7 +265,7 @@ private fun EthereumWalletListItem(
                     stringResource(R.string.receive_address_placeholder)
                 } else {
                     evmNativeAmountLabel(
-                        StringUtils.formatEthereumAmount(wallet.balanceWei),
+                        StringUtils.formatEvmAmount(wallet.balanceWei),
                         wallet.network.nativeSymbol,
                     )
                 },
@@ -277,7 +277,7 @@ private fun EthereumWalletListItem(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = StringUtils.truncateEthereumAddress(wallet.address),
+                text = StringUtils.truncateEvmAddress(wallet.address),
                 style = MaterialTheme.typography.bodyMedium,
                 fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

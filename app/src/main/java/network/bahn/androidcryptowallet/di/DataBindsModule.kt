@@ -113,7 +113,7 @@ abstract class DataBindsModule {
 
     @Binds
     @Singleton
-    abstract fun bindEthereumWalletRepository(
+    abstract fun bindEvmWalletRepository(
         impl: EvmWalletRepositoryImpl,
     ): EvmWalletRepository
 
