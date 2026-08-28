@@ -146,6 +146,10 @@ class EthereumEditWalletViewModelTest {
                 EvmFamily.ETHEREUM -> "Ethereum wallet"
                 EvmFamily.BSC -> "BSC wallet"
                 EvmFamily.POLYGON -> "Polygon wallet"
+                EvmFamily.ARBITRUM -> "Arbitrum wallet"
+                EvmFamily.BASE -> "Base wallet"
+                EvmFamily.OPTIMISM -> "Optimism wallet"
+                EvmFamily.AVALANCHE -> "Avalanche wallet"
             }
         },
     )

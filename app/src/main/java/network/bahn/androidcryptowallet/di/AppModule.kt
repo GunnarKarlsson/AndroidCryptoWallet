@@ -96,6 +96,14 @@ object AppModule {
             EvmNetwork.BSC_MAINNET to "https://bsc-dataseed.bnbchain.org",
             EvmNetwork.POLYGON_AMOY to "https://polygon-amoy-bor-rpc.publicnode.com",
             EvmNetwork.POLYGON_MAINNET to "https://polygon-bor-rpc.publicnode.com",
+            EvmNetwork.ARBITRUM_SEPOLIA to "https://sepolia-rollup.arbitrum.io/rpc",
+            EvmNetwork.ARBITRUM_MAINNET to "https://arb1.arbitrum.io/rpc",
+            EvmNetwork.BASE_SEPOLIA to "https://sepolia.base.org",
+            EvmNetwork.BASE_MAINNET to "https://mainnet.base.org",
+            EvmNetwork.OPTIMISM_SEPOLIA to "https://sepolia.optimism.io",
+            EvmNetwork.OPTIMISM_MAINNET to "https://mainnet.optimism.io",
+            EvmNetwork.AVALANCHE_FUJI to "https://api.avax-test.network/ext/bc/C/rpc",
+            EvmNetwork.AVALANCHE_MAINNET to "https://api.avax.network/ext/bc/C/rpc",
         ),
         explorerEndpoints = mapOf(
             EvmNetwork.SEPOLIA to EvmExplorerEndpoint(
@@ -120,6 +128,38 @@ object AppModule {
             ),
             EvmNetwork.POLYGON_MAINNET to EvmExplorerEndpoint(
                 baseUrl = "https://api.polygonscan.com/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.ARBITRUM_SEPOLIA to EvmExplorerEndpoint(
+                baseUrl = "https://api-sepolia.arbiscan.io/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.ARBITRUM_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api.arbiscan.io/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.BASE_SEPOLIA to EvmExplorerEndpoint(
+                baseUrl = "https://api-sepolia.basescan.org/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.BASE_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api.basescan.org/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.OPTIMISM_SEPOLIA to EvmExplorerEndpoint(
+                baseUrl = "https://api-sepolia-optimistic.etherscan.io/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.OPTIMISM_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api-optimistic.etherscan.io/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.AVALANCHE_FUJI to EvmExplorerEndpoint(
+                baseUrl = "https://api-testnet.snowtrace.io/api",
+                kind = EvmExplorerKind.ETHERSCAN,
+            ),
+            EvmNetwork.AVALANCHE_MAINNET to EvmExplorerEndpoint(
+                baseUrl = "https://api.snowtrace.io/api",
                 kind = EvmExplorerKind.ETHERSCAN,
             ),
         ),

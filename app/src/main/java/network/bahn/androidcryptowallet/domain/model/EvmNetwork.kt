@@ -12,6 +12,14 @@ enum class EvmNetwork(
     BSC_MAINNET(EvmFamily.BSC, "BSC Mainnet", chainId = 56L, nativeSymbol = "BNB"),
     POLYGON_AMOY(EvmFamily.POLYGON, "Amoy Testnet", chainId = 80_002L, nativeSymbol = "POL"),
     POLYGON_MAINNET(EvmFamily.POLYGON, "Mainnet", chainId = 137L, nativeSymbol = "POL"),
+    ARBITRUM_SEPOLIA(EvmFamily.ARBITRUM, "Sepolia", chainId = 421_614L, nativeSymbol = "ETH"),
+    ARBITRUM_MAINNET(EvmFamily.ARBITRUM, "Mainnet", chainId = 42_161L, nativeSymbol = "ETH"),
+    BASE_SEPOLIA(EvmFamily.BASE, "Sepolia", chainId = 84_532L, nativeSymbol = "ETH"),
+    BASE_MAINNET(EvmFamily.BASE, "Mainnet", chainId = 8453L, nativeSymbol = "ETH"),
+    OPTIMISM_SEPOLIA(EvmFamily.OPTIMISM, "Sepolia", chainId = 11_155_420L, nativeSymbol = "ETH"),
+    OPTIMISM_MAINNET(EvmFamily.OPTIMISM, "Mainnet", chainId = 10L, nativeSymbol = "ETH"),
+    AVALANCHE_FUJI(EvmFamily.AVALANCHE, "Fuji", chainId = 43_113L, nativeSymbol = "AVAX"),
+    AVALANCHE_MAINNET(EvmFamily.AVALANCHE, "Mainnet", chainId = 43_114L, nativeSymbol = "AVAX"),
     ;
 
     companion object {

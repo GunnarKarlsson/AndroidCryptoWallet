@@ -70,6 +70,14 @@ fun WalletNavHost(
                             navController.navigate(EvmWalletListRoute(EvmFamily.BSC))
                         SupportedChain.POLYGON ->
                             navController.navigate(EvmWalletListRoute(EvmFamily.POLYGON))
+                        SupportedChain.ARBITRUM ->
+                            navController.navigate(EvmWalletListRoute(EvmFamily.ARBITRUM))
+                        SupportedChain.BASE ->
+                            navController.navigate(EvmWalletListRoute(EvmFamily.BASE))
+                        SupportedChain.OPTIMISM ->
+                            navController.navigate(EvmWalletListRoute(EvmFamily.OPTIMISM))
+                        SupportedChain.AVALANCHE ->
+                            navController.navigate(EvmWalletListRoute(EvmFamily.AVALANCHE))
                     }
                 },
             )

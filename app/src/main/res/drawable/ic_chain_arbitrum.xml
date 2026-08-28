@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arbitrum logo mark (black on transparent) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,2L3,7v10l9,5 9,-5V7L12,2zM12,4.8l6.5,3.6v7.2L12,19.2 5.5,15.6V8.4L12,4.8z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,8.5L8.5,10.5v3L12,15.5l3.5,-2v-3L12,8.5z" />
+</vector>

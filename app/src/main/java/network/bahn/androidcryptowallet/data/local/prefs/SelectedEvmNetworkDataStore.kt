@@ -43,6 +43,10 @@ class SelectedEvmNetworkDataStore @Inject constructor(
         EvmFamily.ETHEREUM -> EvmNetwork.SEPOLIA
         EvmFamily.BSC -> EvmNetwork.BSC_TESTNET
         EvmFamily.POLYGON -> EvmNetwork.POLYGON_AMOY
+        EvmFamily.ARBITRUM -> EvmNetwork.ARBITRUM_SEPOLIA
+        EvmFamily.BASE -> EvmNetwork.BASE_SEPOLIA
+        EvmFamily.OPTIMISM -> EvmNetwork.OPTIMISM_SEPOLIA
+        EvmFamily.AVALANCHE -> EvmNetwork.AVALANCHE_FUJI
     }
 
     private companion object {

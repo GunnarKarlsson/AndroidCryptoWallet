@@ -5,6 +5,10 @@ enum class SupportedChain {
     ETHEREUM,
     BSC,
     POLYGON,
+    ARBITRUM,
+    BASE,
+    OPTIMISM,
+    AVALANCHE,
 }
 
 val SupportedChains = listOf(
@@ -12,4 +16,8 @@ val SupportedChains = listOf(
     SupportedChain.ETHEREUM,
     SupportedChain.BSC,
     SupportedChain.POLYGON,
+    SupportedChain.ARBITRUM,
+    SupportedChain.BASE,
+    SupportedChain.OPTIMISM,
+    SupportedChain.AVALANCHE,
 )

@@ -43,6 +43,62 @@ class EvmNetworkTest {
     }
 
     @Test
+    fun networksForArbitrum_returnsOnlyArbitrumNetworks() {
+        val networks = EvmNetwork.networksFor(EvmFamily.ARBITRUM)
+        assertEquals(listOf(EvmNetwork.ARBITRUM_SEPOLIA, EvmNetwork.ARBITRUM_MAINNET), networks)
+    }
+
+    @Test
+    fun arbitrumNetworksHaveExpectedChainIdsAndSymbols() {
+        assertEquals(421_614L, EvmNetwork.ARBITRUM_SEPOLIA.chainId)
+        assertEquals(42_161L, EvmNetwork.ARBITRUM_MAINNET.chainId)
+        assertEquals("ETH", EvmNetwork.ARBITRUM_SEPOLIA.nativeSymbol)
+        assertEquals("ETH", EvmNetwork.ARBITRUM_MAINNET.nativeSymbol)
+    }
+
+    @Test
+    fun networksForBase_returnsOnlyBaseNetworks() {
+        val networks = EvmNetwork.networksFor(EvmFamily.BASE)
+        assertEquals(listOf(EvmNetwork.BASE_SEPOLIA, EvmNetwork.BASE_MAINNET), networks)
+    }
+
+    @Test
+    fun baseNetworksHaveExpectedChainIdsAndSymbols() {
+        assertEquals(84_532L, EvmNetwork.BASE_SEPOLIA.chainId)
+        assertEquals(8453L, EvmNetwork.BASE_MAINNET.chainId)
+        assertEquals("ETH", EvmNetwork.BASE_SEPOLIA.nativeSymbol)
+        assertEquals("ETH", EvmNetwork.BASE_MAINNET.nativeSymbol)
+    }
+
+    @Test
+    fun networksForOptimism_returnsOnlyOptimismNetworks() {
+        val networks = EvmNetwork.networksFor(EvmFamily.OPTIMISM)
+        assertEquals(listOf(EvmNetwork.OPTIMISM_SEPOLIA, EvmNetwork.OPTIMISM_MAINNET), networks)
+    }
+
+    @Test
+    fun optimismNetworksHaveExpectedChainIdsAndSymbols() {
+        assertEquals(11_155_420L, EvmNetwork.OPTIMISM_SEPOLIA.chainId)
+        assertEquals(10L, EvmNetwork.OPTIMISM_MAINNET.chainId)
+        assertEquals("ETH", EvmNetwork.OPTIMISM_SEPOLIA.nativeSymbol)
+        assertEquals("ETH", EvmNetwork.OPTIMISM_MAINNET.nativeSymbol)
+    }
+
+    @Test
+    fun networksForAvalanche_returnsOnlyAvalancheNetworks() {
+        val networks = EvmNetwork.networksFor(EvmFamily.AVALANCHE)
+        assertEquals(listOf(EvmNetwork.AVALANCHE_FUJI, EvmNetwork.AVALANCHE_MAINNET), networks)
+    }
+
+    @Test
+    fun avalancheNetworksHaveExpectedChainIdsAndSymbols() {
+        assertEquals(43_113L, EvmNetwork.AVALANCHE_FUJI.chainId)
+        assertEquals(43_114L, EvmNetwork.AVALANCHE_MAINNET.chainId)
+        assertEquals("AVAX", EvmNetwork.AVALANCHE_FUJI.nativeSymbol)
+        assertEquals("AVAX", EvmNetwork.AVALANCHE_MAINNET.nativeSymbol)
+    }
+
+    @Test
     fun sepoliaAndMainnetKeepStoredNamesAndEthSymbol() {
         assertEquals("SEPOLIA", EvmNetwork.SEPOLIA.name)
         assertEquals("MAINNET", EvmNetwork.MAINNET.name)

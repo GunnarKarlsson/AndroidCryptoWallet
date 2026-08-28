@@ -7,4 +7,8 @@ enum class EvmFamily {
     ETHEREUM,
     BSC,
     POLYGON,
+    ARBITRUM,
+    BASE,
+    OPTIMISM,
+    AVALANCHE,
 }

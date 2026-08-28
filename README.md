@@ -1,6 +1,6 @@
 # AndroidCryptoWallet
 
-A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygon). Keys stay on device.
+A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche). Keys stay on device.
 
 ## Keys, seed, and signing
 
