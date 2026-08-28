@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import javax.inject.Inject
@@ -18,9 +19,9 @@ import javax.inject.Inject
 @HiltViewModel
 class EthereumSetupViewModel @Inject constructor(
     private val walletRepository: EthereumWalletRepository,
-    private val selectedEthereumNetworkStore: SelectedEthereumNetworkStore,
+    private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
-    private val session = EthereumSetupSession(selectedEthereumNetworkStore, viewModelScope)
+    private val session = EthereumSetupSession(selectedEvmNetworkStore, viewModelScope)
     private val createNetwork = session.network
     private val mnemonicWords = MutableStateFlow<List<String>>(emptyList())
     private val passphrase = MutableStateFlow("")
@@ -80,7 +81,7 @@ class EthereumSetupViewModel @Inject constructor(
                 mnemonicWords = words,
                 passphrase = passphrase.value.takeIf { it.isNotBlank() },
             )
-            selectedEthereumNetworkStore.setNetwork(createNetwork.value)
+            selectedEvmNetworkStore.setNetwork(EvmFamily.ETHEREUM, createNetwork.value)
             mnemonicWords.value = emptyList()
             passphrase.value = ""
             eventsChannel.send(EthereumSetupEvent.WalletCreated)

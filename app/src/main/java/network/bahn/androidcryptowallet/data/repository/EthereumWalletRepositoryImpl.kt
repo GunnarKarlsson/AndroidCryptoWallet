@@ -15,7 +15,8 @@ import network.bahn.androidcryptowallet.data.local.db.nextCursor
 import network.bahn.androidcryptowallet.data.local.db.toDomain
 import network.bahn.androidcryptowallet.data.local.db.toEntity
 import network.bahn.androidcryptowallet.data.local.db.toJson
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
@@ -40,7 +41,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
     private val mnemonicStore: EthereumMnemonicStore,
     private val walletDao: EthereumWalletDao,
     private val transactionDao: EthereumTransactionDao,
-    private val selectedEthereumNetworkStore: SelectedEthereumNetworkStore,
+    private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
     private val remote: EthereumRemoteDataSource,
     private val transactionRemote: EthereumTransactionRemoteDataSource,
     private val timeProvider: TimeProvider,
@@ -48,7 +49,7 @@ class EthereumWalletRepositoryImpl @Inject constructor(
 ) : EthereumWalletRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeWallets(): Flow<List<EthereumWallet>> =
-        selectedEthereumNetworkStore.selectedNetwork.flatMapLatest { network ->
+        selectedEvmNetworkStore.selectedNetwork(EvmFamily.ETHEREUM).flatMapLatest { network ->
             walletDao.observeByNetwork(network.name).map { rows -> rows.map { it.toDomain() } }
         }
 

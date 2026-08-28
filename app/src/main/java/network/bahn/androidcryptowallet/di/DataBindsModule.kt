@@ -6,8 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkDataStore
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkDataStore
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkDataStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedBitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedEthereumMnemonicStore
@@ -93,9 +93,9 @@ abstract class DataBindsModule {
 
     @Binds
     @Singleton
-    abstract fun bindSelectedEthereumNetworkStore(
-        impl: SelectedEthereumNetworkDataStore,
-    ): SelectedEthereumNetworkStore
+    abstract fun bindSelectedEvmNetworkStore(
+        impl: SelectedEvmNetworkDataStore,
+    ): SelectedEvmNetworkStore
 
     @Binds
     @Singleton

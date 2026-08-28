@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
@@ -17,11 +18,11 @@ import javax.inject.Inject
 @HiltViewModel
 class EthereumWalletListViewModel @Inject constructor(
     walletRepository: EthereumWalletRepository,
-    private val selectedEthereumNetworkStore: SelectedEthereumNetworkStore,
+    private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
     catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {
     val uiState: StateFlow<EthereumWalletListUiState> = combine(
-        selectedEthereumNetworkStore.selectedNetwork,
+        selectedEvmNetworkStore.selectedNetwork(EvmFamily.ETHEREUM),
         walletRepository.observeWallets(),
         catalogReadiness.observeReady(),
     ) { network, wallets, ready ->
@@ -38,7 +39,7 @@ class EthereumWalletListViewModel @Inject constructor(
 
     fun onNetworkSelected(network: EvmNetwork) {
         viewModelScope.launch {
-            selectedEthereumNetworkStore.setNetwork(network)
+            selectedEvmNetworkStore.setNetwork(EvmFamily.ETHEREUM, network)
         }
     }
 }

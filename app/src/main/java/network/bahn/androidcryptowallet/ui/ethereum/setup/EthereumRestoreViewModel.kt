@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
 import javax.inject.Inject
@@ -18,9 +19,9 @@ import javax.inject.Inject
 @HiltViewModel
 class EthereumRestoreViewModel @Inject constructor(
     private val walletRepository: EthereumWalletRepository,
-    private val selectedEthereumNetworkStore: SelectedEthereumNetworkStore,
+    private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
-    private val session = EthereumSetupSession(selectedEthereumNetworkStore, viewModelScope)
+    private val session = EthereumSetupSession(selectedEvmNetworkStore, viewModelScope)
     private val restoreNetwork = session.network
     private val mnemonicWords = MutableStateFlow(List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" })
     private val passphrase = MutableStateFlow("")
@@ -89,7 +90,7 @@ class EthereumRestoreViewModel @Inject constructor(
                 mnemonicWords = words,
                 passphrase = passphrase.value.takeIf { it.isNotBlank() },
             )
-            selectedEthereumNetworkStore.setNetwork(restoreNetwork.value)
+            selectedEvmNetworkStore.setNetwork(EvmFamily.ETHEREUM, restoreNetwork.value)
             mnemonicWords.value = List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" }
             passphrase.value = ""
             eventsChannel.send(EthereumRestoreEvent.WalletRestored)

@@ -10,7 +10,8 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EthereumWallet
 import network.bahn.androidcryptowallet.domain.repository.EthereumWalletRepository
@@ -89,7 +90,7 @@ class EthereumWalletListViewModelTest {
         ready: MutableStateFlow<Boolean> = MutableStateFlow(false),
     ) = EthereumWalletListViewModel(
         walletRepository = FakeEthListWalletRepository(wallets),
-        selectedEthereumNetworkStore = FakeEthListNetworkStore(network),
+        selectedEvmNetworkStore = FakeEthListNetworkStore(network),
         catalogReadiness = FakeEthCatalogReadiness(ready),
     )
 }
@@ -143,9 +144,10 @@ private class FakeEthListWalletRepository(
 
 private class FakeEthListNetworkStore(
     private val network: MutableStateFlow<EvmNetwork>,
-) : SelectedEthereumNetworkStore {
-    override val selectedNetwork: Flow<EvmNetwork> = network
-    override suspend fun setNetwork(network: EvmNetwork) {
+) : SelectedEvmNetworkStore {
+    override fun selectedNetwork(family: EvmFamily): Flow<EvmNetwork> = network
+    override suspend fun setNetwork(family: EvmFamily, network: EvmNetwork) {
+        require(network.family == family)
         this.network.value = network
     }
 }

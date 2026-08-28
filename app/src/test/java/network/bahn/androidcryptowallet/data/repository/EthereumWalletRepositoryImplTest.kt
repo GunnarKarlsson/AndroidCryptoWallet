@@ -13,7 +13,8 @@ import network.bahn.androidcryptowallet.data.local.db.EthereumWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletEntity
 import network.bahn.androidcryptowallet.data.local.db.EthereumWalletTxCacheEntity
 import network.bahn.androidcryptowallet.data.local.db.toJson
-import network.bahn.androidcryptowallet.data.local.prefs.SelectedEthereumNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.data.local.secure.EthereumMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.EthereumRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EthereumTransactionRemoteDataSource
@@ -39,7 +40,7 @@ class EthereumWalletRepositoryImplTest {
     fun createWritesWalletForChosenNetworkOnly() = runTest {
         val engine = FakeEthereumKeyEngine()
         val store = FakeEthereumMnemonicStore()
-        val networkStore = FakeSelectedEthereumNetworkStore()
+        val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
 
         repo.createWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
@@ -54,7 +55,7 @@ class EthereumWalletRepositoryImplTest {
         assertEquals(1, engine.validateCalls)
         assertEquals(1, engine.deriveCalls)
 
-        networkStore.setNetwork(EvmNetwork.MAINNET)
+        networkStore.setNetwork(EvmFamily.ETHEREUM, EvmNetwork.MAINNET)
         assertTrue(repo.observeWallets().first().isEmpty())
     }
 
@@ -90,7 +91,7 @@ class EthereumWalletRepositoryImplTest {
     fun restoreWritesWalletForChosenNetwork() = runTest {
         val engine = FakeEthereumKeyEngine()
         val store = FakeEthereumMnemonicStore()
-        val networkStore = FakeSelectedEthereumNetworkStore()
+        val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(engine = engine, store = store, networkStore = networkStore)
 
         repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
@@ -153,16 +154,16 @@ class EthereumWalletRepositoryImplTest {
     @Test
     fun restoreDifferentNetworkCreatesAnotherWallet() = runTest {
         val store = FakeEthereumMnemonicStore()
-        val networkStore = FakeSelectedEthereumNetworkStore()
+        val networkStore = FakeSelectedEvmNetworkStore()
         val repo = createRepository(store = store, networkStore = networkStore)
 
         repo.restoreWallet(EvmNetwork.SEPOLIA, VALID_WORDS, passphrase = null)
         repo.restoreWallet(EvmNetwork.MAINNET, VALID_WORDS, passphrase = null)
 
         assertEquals(2, store.saved.size)
-        networkStore.setNetwork(EvmNetwork.SEPOLIA)
+        networkStore.setNetwork(EvmFamily.ETHEREUM, EvmNetwork.SEPOLIA)
         assertEquals(1, repo.observeWallets().first().size)
-        networkStore.setNetwork(EvmNetwork.MAINNET)
+        networkStore.setNetwork(EvmFamily.ETHEREUM, EvmNetwork.MAINNET)
         assertEquals(1, repo.observeWallets().first().size)
     }
 
@@ -413,7 +414,7 @@ class EthereumWalletRepositoryImplTest {
         store: FakeEthereumMnemonicStore = FakeEthereumMnemonicStore(),
         walletDao: FakeEthereumWalletDao = FakeEthereumWalletDao(),
         transactionDao: FakeEthereumTransactionDao = FakeEthereumTransactionDao(),
-        networkStore: FakeSelectedEthereumNetworkStore = FakeSelectedEthereumNetworkStore(),
+        networkStore: FakeSelectedEvmNetworkStore = FakeSelectedEvmNetworkStore(),
         remote: FakeEthereumRemoteDataSource = FakeEthereumRemoteDataSource(),
         transactionRemote: FakeEthereumTransactionRemoteDataSource = FakeEthereumTransactionRemoteDataSource(),
         timeProvider: FakeTimeProvider = FakeTimeProvider(),
@@ -423,7 +424,7 @@ class EthereumWalletRepositoryImplTest {
         mnemonicStore = store,
         walletDao = walletDao,
         transactionDao = transactionDao,
-        selectedEthereumNetworkStore = networkStore,
+        selectedEvmNetworkStore = networkStore,
         remote = remote,
         transactionRemote = transactionRemote,
         timeProvider = timeProvider,
@@ -513,12 +514,13 @@ private class FakeEthereumMnemonicStore : EthereumMnemonicStore {
     override fun loadPassphrase(walletId: String): String? = saved[walletId]?.passphrase
 }
 
-private class FakeSelectedEthereumNetworkStore(
+private class FakeSelectedEvmNetworkStore(
     initial: EvmNetwork = EvmNetwork.SEPOLIA,
-) : SelectedEthereumNetworkStore {
+) : SelectedEvmNetworkStore {
     private val network = MutableStateFlow(initial)
-    override val selectedNetwork: Flow<EvmNetwork> = network
-    override suspend fun setNetwork(network: EvmNetwork) {
+    override fun selectedNetwork(family: EvmFamily): Flow<EvmNetwork> = network
+    override suspend fun setNetwork(family: EvmFamily, network: EvmNetwork) {
+        require(network.family == family)
         this.network.value = network
     }
 }
