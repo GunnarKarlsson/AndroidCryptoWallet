@@ -28,7 +28,7 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
-class EthereumWalletListViewModelTest {
+class EvmWalletListViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -54,7 +54,7 @@ class EthereumWalletListViewModelTest {
         val ready = MutableStateFlow(false)
         val wallets = MutableStateFlow(emptyList<EvmWallet>())
         val viewModel = createViewModel(wallets = wallets, ready = ready)
-        val states = mutableListOf<EthereumWalletListUiState>()
+        val states = mutableListOf<EvmWalletListUiState>()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { states.add(it) }
         }
@@ -72,7 +72,7 @@ class EthereumWalletListViewModelTest {
         val ready = MutableStateFlow(false)
         val wallets = MutableStateFlow(listOf(WALLET))
         val viewModel = createViewModel(wallets = wallets, ready = ready)
-        val states = mutableListOf<EthereumWalletListUiState>()
+        val states = mutableListOf<EvmWalletListUiState>()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { states.add(it) }
         }
@@ -95,7 +95,7 @@ class EthereumWalletListViewModelTest {
         network: MutableStateFlow<EvmNetwork> = MutableStateFlow(EvmNetwork.SEPOLIA),
         wallets: MutableStateFlow<List<EvmWallet>> = MutableStateFlow(emptyList()),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(false),
-    ) = EthereumWalletListViewModel(
+    ) = EvmWalletListViewModel(
         savedStateHandle = savedStateHandleForEvmWalletList(family),
         walletRepository = FakeEthListWalletRepository(wallets),
         selectedEvmNetworkStore = FakeEthListNetworkStore(network),

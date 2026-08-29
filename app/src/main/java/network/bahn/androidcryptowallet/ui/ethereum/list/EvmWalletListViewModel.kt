@@ -19,7 +19,7 @@ import network.bahn.androidcryptowallet.ui.navigation.EvmWalletListRoute
 import javax.inject.Inject
 
 @HiltViewModel
-class EthereumWalletListViewModel @Inject constructor(
+class EvmWalletListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     walletRepository: EvmWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
@@ -28,12 +28,12 @@ class EthereumWalletListViewModel @Inject constructor(
     private val family: EvmFamily = savedStateHandle.toRoute<EvmWalletListRoute>().family
     private val availableNetworks = EvmNetwork.networksFor(family)
 
-    val uiState: StateFlow<EthereumWalletListUiState> = combine(
+    val uiState: StateFlow<EvmWalletListUiState> = combine(
         selectedEvmNetworkStore.selectedNetwork(family),
         walletRepository.observeWallets(family),
         catalogReadiness.observeReady(),
     ) { network, wallets, ready ->
-        EthereumWalletListUiState(
+        EvmWalletListUiState(
             family = family,
             availableNetworks = availableNetworks,
             selectedNetwork = network,
@@ -43,7 +43,7 @@ class EthereumWalletListViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumWalletListUiState(
+        initialValue = EvmWalletListUiState(
             family = family,
             availableNetworks = availableNetworks,
         ),

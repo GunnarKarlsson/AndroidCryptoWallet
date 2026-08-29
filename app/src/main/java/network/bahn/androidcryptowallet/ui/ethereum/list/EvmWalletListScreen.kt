@@ -58,22 +58,22 @@ import network.bahn.androidcryptowallet.ui.chain.WalletListItemTitle
 import network.bahn.androidcryptowallet.ui.chain.chainIconRes
 import network.bahn.androidcryptowallet.ui.chain.walletListItemLabelRes
 import network.bahn.androidcryptowallet.ui.chain.walletsTitleRes
-import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
+import network.bahn.androidcryptowallet.ui.ethereum.EvmNetworkDropdown
 import network.bahn.androidcryptowallet.ui.ethereum.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
-fun EthereumWalletListScreen(
+fun EvmWalletListScreen(
     onBack: () -> Unit,
     onCreateWallet: () -> Unit,
     onRestoreWallet: () -> Unit,
     onWalletClick: (walletId: String) -> Unit,
-    viewModel: EthereumWalletListViewModel = hiltViewModel(),
+    viewModel: EvmWalletListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    EthereumWalletListContent(
+    EvmWalletListContent(
         uiState = uiState,
         onBack = onBack,
         onNetworkSelected = viewModel::onNetworkSelected,
@@ -85,8 +85,8 @@ fun EthereumWalletListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EthereumWalletListContent(
-    uiState: EthereumWalletListUiState,
+private fun EvmWalletListContent(
+    uiState: EvmWalletListUiState,
     onBack: () -> Unit,
     onNetworkSelected: (EvmNetwork) -> Unit,
     onCreateWallet: () -> Unit,
@@ -133,7 +133,7 @@ private fun EthereumWalletListContent(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp),
         ) {
-            EthereumNetworkDropdown(
+            EvmNetworkDropdown(
                 networks = uiState.availableNetworks,
                 selectedNetwork = uiState.selectedNetwork,
                 onNetworkSelected = onNetworkSelected,
@@ -148,7 +148,7 @@ private fun EthereumWalletListContent(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(uiState.wallets, key = { it.id }) { wallet ->
-                            EthereumWalletListItem(
+                            EvmWalletListItem(
                                 wallet = wallet,
                                 family = uiState.family,
                                 onClick = { onWalletClick(wallet.id) },
@@ -233,7 +233,7 @@ private fun EthereumWalletListContent(
 }
 
 @Composable
-private fun EthereumWalletListItem(
+private fun EvmWalletListItem(
     wallet: EvmWallet,
     family: EvmFamily,
     onClick: () -> Unit,
@@ -288,10 +288,10 @@ private fun EthereumWalletListItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumWalletListLoadingPreview() {
+private fun EvmWalletListLoadingPreview() {
     WalletTheme {
-        EthereumWalletListContent(
-            uiState = EthereumWalletListUiState(),
+        EvmWalletListContent(
+            uiState = EvmWalletListUiState(),
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
@@ -303,10 +303,10 @@ private fun EthereumWalletListLoadingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumWalletListEmptyPreview() {
+private fun EvmWalletListEmptyPreview() {
     WalletTheme {
-        EthereumWalletListContent(
-            uiState = EthereumWalletListUiState(isLoading = false),
+        EvmWalletListContent(
+            uiState = EvmWalletListUiState(isLoading = false),
             onBack = {},
             onNetworkSelected = {},
             onCreateWallet = {},
@@ -318,10 +318,10 @@ private fun EthereumWalletListEmptyPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumWalletListPopulatedPreview() {
+private fun EvmWalletListPopulatedPreview() {
     WalletTheme {
-        EthereumWalletListContent(
-            uiState = EthereumWalletListUiState(
+        EvmWalletListContent(
+            uiState = EvmWalletListUiState(
                 isLoading = false,
                 wallets = listOf(
                     EvmWallet(

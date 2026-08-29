@@ -22,7 +22,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EthereumNetworkDropdown(
+fun EvmNetworkDropdown(
     networks: List<EvmNetwork>,
     selectedNetwork: EvmNetwork,
     onNetworkSelected: (EvmNetwork) -> Unit,

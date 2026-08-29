@@ -35,7 +35,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
 import network.bahn.androidcryptowallet.ui.navigation.EvmRestoreGraphRoute
 import network.bahn.androidcryptowallet.ui.navigation.EvmWalletListRoute
-import network.bahn.androidcryptowallet.ui.ethereum.list.EthereumWalletListScreen
+import network.bahn.androidcryptowallet.ui.ethereum.list.EvmWalletListScreen
 import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsScreen
 import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsViewModel
 import network.bahn.androidcryptowallet.ui.ethereum.edit.EthereumEditWalletScreen
@@ -95,7 +95,7 @@ fun WalletNavHost(
         }
         composable<EvmWalletListRoute> { entry ->
             val family = entry.toRoute<EvmWalletListRoute>().family
-            EthereumWalletListScreen(
+            EvmWalletListScreen(
                 onBack = { navController.popBackStack() },
                 onCreateWallet = { navController.navigate(EvmCreateGraphRoute(family)) },
                 onRestoreWallet = { navController.navigate(EvmRestoreGraphRoute(family)) },

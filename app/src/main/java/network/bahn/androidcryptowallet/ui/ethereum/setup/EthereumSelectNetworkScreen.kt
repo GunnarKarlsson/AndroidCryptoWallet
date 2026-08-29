@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
-import network.bahn.androidcryptowallet.ui.ethereum.EthereumNetworkDropdown
+import network.bahn.androidcryptowallet.ui.ethereum.EvmNetworkDropdown
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.DebugNextButton
@@ -74,7 +74,7 @@ fun EthereumSelectNetworkScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            EthereumNetworkDropdown(
+            EvmNetworkDropdown(
                 networks = networks,
                 selectedNetwork = selectedNetwork,
                 onNetworkSelected = onNetworkSelected,
