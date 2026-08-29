@@ -52,31 +52,31 @@ data class BitcoinEditWalletRoute(val walletId: String)
 data class EvmCreateGraphRoute(val family: EvmFamily)
 
 @Serializable
-data object EthereumSelectNetworkRoute
+data object EvmSelectNetworkRoute
 
 @Serializable
-data object EthereumCreateWalletRoute
+data object EvmCreateWalletRoute
 
 @Serializable
-data object EthereumConfirmMnemonicRoute
+data object EvmConfirmMnemonicRoute
 
 @Serializable
 data class EvmRestoreGraphRoute(val family: EvmFamily)
 
 @Serializable
-data object EthereumRestoreSelectNetworkRoute
+data object EvmRestoreSelectNetworkRoute
 
 @Serializable
-data object EthereumRestoreWalletRoute
+data object EvmRestoreWalletRoute
 
 @Serializable
-data class EthereumWalletDetailsRoute(val walletId: String)
+data class EvmWalletDetailsRoute(val walletId: String)
 
 @Serializable
-data class EthereumSendRoute(val walletId: String)
+data class EvmSendRoute(val walletId: String)
 
 @Serializable
-data class EthereumReceiveRoute(val walletId: String)
+data class EvmReceiveRoute(val walletId: String)
 
 @Serializable
-data class EthereumEditWalletRoute(val walletId: String)
+data class EvmEditWalletRoute(val walletId: String)

@@ -23,7 +23,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
-import network.bahn.androidcryptowallet.ui.navigation.EthereumSendRoute
+import network.bahn.androidcryptowallet.ui.navigation.EvmSendRoute
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 import java.math.BigInteger
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class EthereumSendViewModel @Inject constructor(
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
-            ?: savedStateHandle.toRoute<EthereumSendRoute>().walletId
+            ?: savedStateHandle.toRoute<EvmSendRoute>().walletId
     private val wallet: StateFlow<EvmWallet?> = walletRepository.observeWallet(walletId)
         .stateIn(
             scope = viewModelScope,

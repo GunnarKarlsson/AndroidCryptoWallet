@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
-import network.bahn.androidcryptowallet.ui.navigation.EthereumEditWalletRoute
+import network.bahn.androidcryptowallet.ui.navigation.EvmEditWalletRoute
 import javax.inject.Inject
 
 sealed interface EthereumEditWalletEvent {
@@ -36,7 +36,7 @@ class EthereumEditWalletViewModel @Inject constructor(
 ) : ViewModel() {
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
-            ?: savedStateHandle.toRoute<EthereumEditWalletRoute>().walletId
+            ?: savedStateHandle.toRoute<EvmEditWalletRoute>().walletId
     private val form = MutableStateFlow(FormState())
     private val eventsChannel = Channel<EthereumEditWalletEvent>(Channel.BUFFERED)
     private var confirmJob: Job? = null

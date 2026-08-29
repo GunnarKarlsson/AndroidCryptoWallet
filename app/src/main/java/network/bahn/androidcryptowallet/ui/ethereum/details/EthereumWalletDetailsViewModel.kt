@@ -22,7 +22,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
-import network.bahn.androidcryptowallet.ui.navigation.EthereumWalletDetailsRoute
+import network.bahn.androidcryptowallet.ui.navigation.EvmWalletDetailsRoute
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,7 +33,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     private val routeHandle = savedStateHandle
     private val walletId: String =
         savedStateHandle.get<String>("walletId")
-            ?: savedStateHandle.toRoute<EthereumWalletDetailsRoute>().walletId
+            ?: savedStateHandle.toRoute<EvmWalletDetailsRoute>().walletId
     private val isRefreshing = MutableStateFlow(false)
     private val deleteState = MutableStateFlow(DeleteState())
     private val errorMessage = MutableStateFlow<String?>(null)
