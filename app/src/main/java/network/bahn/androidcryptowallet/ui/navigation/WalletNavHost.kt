@@ -36,8 +36,8 @@ import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
 import network.bahn.androidcryptowallet.ui.navigation.EvmRestoreGraphRoute
 import network.bahn.androidcryptowallet.ui.navigation.EvmWalletListRoute
 import network.bahn.androidcryptowallet.ui.ethereum.list.EvmWalletListScreen
-import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsScreen
-import network.bahn.androidcryptowallet.ui.ethereum.details.EthereumWalletDetailsViewModel
+import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsScreen
+import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsViewModel
 import network.bahn.androidcryptowallet.ui.ethereum.edit.EthereumEditWalletScreen
 import network.bahn.androidcryptowallet.ui.ethereum.receive.EthereumReceiveScreen
 import network.bahn.androidcryptowallet.ui.ethereum.send.EthereumSendScreen
@@ -106,7 +106,7 @@ fun WalletNavHost(
         }
         composable<EvmWalletDetailsRoute> { entry ->
             val walletId = entry.toRoute<EvmWalletDetailsRoute>().walletId
-            EthereumWalletDetailsScreen(
+            EvmWalletDetailsScreen(
                 onBack = { navController.popBackStack() },
                 onEdit = { navController.navigate(EvmEditWalletRoute(walletId)) },
                 onSend = { navController.navigate(EvmSendRoute(walletId)) },
@@ -124,7 +124,7 @@ fun WalletNavHost(
                 onBack = { navController.popBackStack() },
                 onSent = {
                     navController.previousBackStackEntry?.savedStateHandle?.set(
-                        EthereumWalletDetailsViewModel.RELOAD_WALLET_KEY,
+                        EvmWalletDetailsViewModel.RELOAD_WALLET_KEY,
                         true,
                     )
                     navController.popBackStack()

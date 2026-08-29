@@ -26,7 +26,7 @@ import network.bahn.androidcryptowallet.ui.navigation.EvmWalletDetailsRoute
 import javax.inject.Inject
 
 @HiltViewModel
-class EthereumWalletDetailsViewModel @Inject constructor(
+class EvmWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EvmWalletRepository,
 ) : ViewModel() {
@@ -38,7 +38,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     private val deleteState = MutableStateFlow(DeleteState())
     private val errorMessage = MutableStateFlow<String?>(null)
     private val txLoadState = MutableStateFlow(TxLoadState())
-    private val eventsChannel = Channel<EthereumWalletDetailsEvent>(Channel.BUFFERED)
+    private val eventsChannel = Channel<EvmWalletDetailsEvent>(Channel.BUFFERED)
     private var nextCursor: EvmTransactionPaginationCursor? = null
     private var firstPageJob: Job? = null
     private var loadMoreJob: Job? = null
@@ -47,14 +47,14 @@ class EthereumWalletDetailsViewModel @Inject constructor(
 
     val events = eventsChannel.receiveAsFlow()
 
-    val uiState: StateFlow<EthereumWalletDetailsUiState> = combine(
+    val uiState: StateFlow<EvmWalletDetailsUiState> = combine(
         walletRepository.observeWallet(walletId),
         isRefreshing,
         deleteState,
         errorMessage,
         txLoadState,
     ) { wallet, refreshing, delete, error, txs ->
-        EthereumWalletDetailsUiState(
+        EvmWalletDetailsUiState(
             wallet = wallet,
             isRefreshing = refreshing,
             showDeleteConfirmDialog = delete.showConfirmDialog,
@@ -70,7 +70,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumWalletDetailsUiState(isLoadingTransactions = true),
+        initialValue = EvmWalletDetailsUiState(isLoadingTransactions = true),
     )
 
     init {
@@ -118,7 +118,7 @@ class EthereumWalletDetailsViewModel @Inject constructor(
             try {
                 walletRepository.deleteWallet(walletId)
                 deleteState.update { it.copy(showConfirmDialog = false) }
-                eventsChannel.send(EthereumWalletDetailsEvent.WalletDeleted)
+                eventsChannel.send(EvmWalletDetailsEvent.WalletDeleted)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

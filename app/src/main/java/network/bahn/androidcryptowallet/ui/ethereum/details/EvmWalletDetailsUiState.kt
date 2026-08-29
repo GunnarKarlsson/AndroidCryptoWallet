@@ -5,7 +5,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.EvmWallet
 
-data class EthereumWalletDetailsUiState(
+data class EvmWalletDetailsUiState(
     val wallet: EvmWallet? = null,
     val isRefreshing: Boolean = false,
     val showDeleteConfirmDialog: Boolean = false,
@@ -25,6 +25,6 @@ data class EthereumWalletDetailsUiState(
     val family: EvmFamily? get() = wallet?.network?.family
 }
 
-sealed interface EthereumWalletDetailsEvent {
-    data object WalletDeleted : EthereumWalletDetailsEvent
+sealed interface EvmWalletDetailsEvent {
+    data object WalletDeleted : EvmWalletDetailsEvent
 }

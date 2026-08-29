@@ -76,12 +76,12 @@ import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
-fun EthereumWalletDetailsScreen(
+fun EvmWalletDetailsScreen(
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onSend: () -> Unit,
     onReceive: () -> Unit,
-    viewModel: EthereumWalletDetailsViewModel = hiltViewModel(),
+    viewModel: EvmWalletDetailsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
@@ -90,11 +90,11 @@ fun EthereumWalletDetailsScreen(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                EthereumWalletDetailsEvent.WalletDeleted -> onBack()
+                EvmWalletDetailsEvent.WalletDeleted -> onBack()
             }
         }
     }
-    EthereumWalletDetailsContent(
+    EvmWalletDetailsContent(
         uiState = uiState,
         onRefresh = viewModel::onRefresh,
         onRefreshTransactions = viewModel::onRefreshTransactions,
@@ -111,8 +111,8 @@ fun EthereumWalletDetailsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EthereumWalletDetailsContent(
-    uiState: EthereumWalletDetailsUiState,
+private fun EvmWalletDetailsContent(
+    uiState: EvmWalletDetailsUiState,
     onRefresh: () -> Unit,
     onRefreshTransactions: () -> Unit,
     onLoadMore: () -> Unit,
@@ -360,7 +360,7 @@ private fun EthereumWalletDetailsContent(
                 }
                 else -> {
                     items(uiState.transactions.size, key = { uiState.transactions[it].hash }) { index ->
-                        EthereumTransactionRow(
+                        EvmTransactionRow(
                             tx = uiState.transactions[index],
                             nativeSymbol = nativeSymbol,
                         )
@@ -401,7 +401,7 @@ private fun EthereumWalletDetailsContent(
 }
 
 @Composable
-private fun EthereumTransactionRow(
+private fun EvmTransactionRow(
     tx: EvmTransactionSummary,
     nativeSymbol: String,
 ) {
@@ -430,7 +430,7 @@ private fun EthereumTransactionRow(
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                EthereumTxStatusMarker(confirmed = tx.confirmed)
+                EvmTxStatusMarker(confirmed = tx.confirmed)
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -452,7 +452,7 @@ private fun EthereumTransactionRow(
 }
 
 @Composable
-private fun EthereumTxStatusMarker(confirmed: Boolean) {
+private fun EvmTxStatusMarker(confirmed: Boolean) {
     val label = if (confirmed) {
         stringResource(R.string.tx_status_confirmed)
     } else {
@@ -610,10 +610,10 @@ private fun previewWallet() = EvmWallet(
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumWalletDetailsWithTransactionsPreview() {
+private fun EvmWalletDetailsWithTransactionsPreview() {
     WalletTheme {
-        EthereumWalletDetailsContent(
-            uiState = EthereumWalletDetailsUiState(
+        EvmWalletDetailsContent(
+            uiState = EvmWalletDetailsUiState(
                 wallet = previewWallet(),
                 transactions = listOf(
                     EvmTransactionSummary(
@@ -648,10 +648,10 @@ private fun EthereumWalletDetailsWithTransactionsPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumWalletDetailsZeroBalancePreview() {
+private fun EvmWalletDetailsZeroBalancePreview() {
     WalletTheme {
-        EthereumWalletDetailsContent(
-            uiState = EthereumWalletDetailsUiState(
+        EvmWalletDetailsContent(
+            uiState = EvmWalletDetailsUiState(
                 wallet = previewWallet().copy(balanceWei = "0"),
             ),
             onRefresh = {},
@@ -670,10 +670,10 @@ private fun EthereumWalletDetailsZeroBalancePreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumWalletDetailsScreenPreview() {
+private fun EvmWalletDetailsScreenPreview() {
     WalletTheme {
-        EthereumWalletDetailsContent(
-            uiState = EthereumWalletDetailsUiState(
+        EvmWalletDetailsContent(
+            uiState = EvmWalletDetailsUiState(
                 wallet = previewWallet(),
                 isRefreshing = true,
             ),

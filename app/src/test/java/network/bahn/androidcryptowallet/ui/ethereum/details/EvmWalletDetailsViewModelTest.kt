@@ -25,7 +25,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class EthereumWalletDetailsViewModelTest {
+class EvmWalletDetailsViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -176,7 +176,7 @@ class EthereumWalletDetailsViewModelTest {
     fun onConfirmDeleteCallsRepoAndEmitsWalletDeleted() = runTest {
         val repo = FakeEthDetailsWalletRepository()
         val viewModel = createViewModel(repo)
-        val events = mutableListOf<EthereumWalletDetailsEvent>()
+        val events = mutableListOf<EvmWalletDetailsEvent>()
         val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
@@ -188,7 +188,7 @@ class EthereumWalletDetailsViewModelTest {
         viewModel.onConfirmDelete()
 
         assertEquals(listOf(WALLET.id), repo.deleteWalletCalls)
-        assertEquals(listOf(EthereumWalletDetailsEvent.WalletDeleted), events)
+        assertEquals(listOf(EvmWalletDetailsEvent.WalletDeleted), events)
         assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
         collectJob.cancel()
         eventsJob.cancel()
@@ -200,7 +200,7 @@ class EthereumWalletDetailsViewModelTest {
             deleteError = IllegalStateException("boom"),
         )
         val viewModel = createViewModel(repo)
-        val events = mutableListOf<EthereumWalletDetailsEvent>()
+        val events = mutableListOf<EvmWalletDetailsEvent>()
         val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
@@ -212,7 +212,7 @@ class EthereumWalletDetailsViewModelTest {
         viewModel.onConfirmDelete()
 
         assertEquals(listOf(WALLET.id), repo.deleteWalletCalls)
-        assertEquals(emptyList<EthereumWalletDetailsEvent>(), events)
+        assertEquals(emptyList<EvmWalletDetailsEvent>(), events)
         assertEquals(false, viewModel.uiState.value.isDeleting)
         assertEquals(false, viewModel.uiState.value.showDeleteConfirmDialog)
         assertEquals("boom", viewModel.uiState.value.errorMessage)
@@ -223,7 +223,7 @@ class EthereumWalletDetailsViewModelTest {
     private fun createViewModel(
         repo: FakeEthDetailsWalletRepository = FakeEthDetailsWalletRepository(),
         savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
-    ) = EthereumWalletDetailsViewModel(
+    ) = EvmWalletDetailsViewModel(
         savedStateHandle = savedStateHandle,
         walletRepository = repo,
     )
