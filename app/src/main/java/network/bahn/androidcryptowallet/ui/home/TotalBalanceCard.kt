@@ -1,7 +1,9 @@
 package network.bahn.androidcryptowallet.ui.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -31,15 +33,16 @@ fun TotalBalanceCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(24.dp),
         ) {
             Text(
                 text = stringResource(R.string.home_total_label),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
             )
             if (isLoading) {
@@ -48,18 +51,18 @@ fun TotalBalanceCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
             } else {
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = totalFiatFormatted ?: stringResource(R.string.home_total_placeholder),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(top = 4.dp),
                 )
                 if (assetCount > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = pluralStringResource(R.plurals.home_asset_count, assetCount, assetCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 4.dp),
                     )
                 }
             }

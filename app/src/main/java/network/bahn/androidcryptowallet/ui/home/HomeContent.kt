@@ -1,6 +1,7 @@
 package network.bahn.androidcryptowallet.ui.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +35,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
-import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
+import network.bahn.androidcryptowallet.ui.theme.WalletTopAppBar
 import java.math.BigInteger
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,17 +52,19 @@ fun HomeContent(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column {
-                TopAppBar(
-                    colors = walletTopAppBarColors(),
-                    title = { Text(stringResource(R.string.home_title)) },
-                    navigationIcon = {
-                        Image(
-                            painter = painterResource(R.drawable.ic_logo),
-                            contentDescription = stringResource(R.string.varna_logo),
-                            modifier = Modifier
-                                .padding(start = 12.dp, end = 12.dp)
-                                .size(32.dp),
-                        )
+                WalletTopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.ic_logo),
+                                contentDescription = stringResource(R.string.varna_logo),
+                                modifier = Modifier.size(32.dp),
+                            )
+                            Text(stringResource(R.string.home_title))
+                        }
                     },
                     actions = {
                         if (uiState.isRefreshing) {

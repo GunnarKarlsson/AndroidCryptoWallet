@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import network.bahn.androidcryptowallet.R
+import network.bahn.androidcryptowallet.ui.theme.walletShellContentWindowInsets
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 import network.bahn.androidcryptowallet.ui.home.HomeScreen
 import network.bahn.androidcryptowallet.ui.navigation.HomeRoute
@@ -38,6 +39,7 @@ fun MainShellScreen(
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = walletShellContentWindowInsets,
         bottomBar = {
             MainBottomBar(navController = navController)
         },
