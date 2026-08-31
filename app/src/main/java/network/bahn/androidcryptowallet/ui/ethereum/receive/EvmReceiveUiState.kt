@@ -2,7 +2,7 @@ package network.bahn.androidcryptowallet.ui.ethereum.receive
 
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 
-data class EthereumReceiveUiState(
+data class EvmReceiveUiState(
     val address: String? = null,
     val networkLabel: String? = null,
     val family: EvmFamily? = null,

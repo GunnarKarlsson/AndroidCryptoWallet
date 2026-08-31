@@ -61,12 +61,12 @@ import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.util.QrCodeBitmap
 
 @Composable
-fun EthereumReceiveScreen(
+fun EvmReceiveScreen(
     onBack: () -> Unit,
-    viewModel: EthereumReceiveViewModel = hiltViewModel(),
+    viewModel: EvmReceiveViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    EthereumReceiveContent(
+    EvmReceiveContent(
         uiState = uiState,
         onBack = onBack,
     )
@@ -74,8 +74,8 @@ fun EthereumReceiveScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EthereumReceiveContent(
-    uiState: EthereumReceiveUiState,
+private fun EvmReceiveContent(
+    uiState: EvmReceiveUiState,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -117,7 +117,7 @@ private fun EthereumReceiveContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            EthereumReceiveQrCard(bitmap = qrBitmap)
+            EvmReceiveQrCard(bitmap = qrBitmap)
             Text(
                 text = stringResource(
                     R.string.network_value,
@@ -142,7 +142,7 @@ private fun EthereumReceiveContent(
                 OutlinedButton(
                     onClick = {
                         if (address == null) return@OutlinedButton
-                        copyEthereumAddress(context, address, clipboardLabel)
+                        copyEvmAddress(context, address, clipboardLabel)
                         scope.launch { snackbarHostState.showSnackbar(copiedMessage) }
                     },
                     enabled = address != null,
@@ -159,7 +159,7 @@ private fun EthereumReceiveContent(
                 Button(
                     onClick = {
                         if (address == null) return@Button
-                        shareEthereumAddress(context, address)
+                        shareEvmAddress(context, address)
                     },
                     enabled = address != null,
                     modifier = Modifier.weight(1f),
@@ -178,7 +178,7 @@ private fun EthereumReceiveContent(
 }
 
 @Composable
-private fun EthereumReceiveQrCard(bitmap: Bitmap?) {
+private fun EvmReceiveQrCard(bitmap: Bitmap?) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -200,12 +200,12 @@ private fun EthereumReceiveQrCard(bitmap: Bitmap?) {
     }
 }
 
-private fun copyEthereumAddress(context: Context, address: String, label: String) {
+private fun copyEvmAddress(context: Context, address: String, label: String) {
     val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
     clipboard.setPrimaryClip(ClipData.newPlainText(label, address))
 }
 
-private fun shareEthereumAddress(context: Context, address: String) {
+private fun shareEvmAddress(context: Context, address: String) {
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, address)
@@ -217,10 +217,10 @@ private fun shareEthereumAddress(context: Context, address: String) {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumReceiveScreenPreview() {
+private fun EvmReceiveScreenPreview() {
     WalletTheme {
-        EthereumReceiveContent(
-            uiState = EthereumReceiveUiState(
+        EvmReceiveContent(
+            uiState = EvmReceiveUiState(
                 address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 networkLabel = "Sepolia",
                 paymentUri = "ethereum:0x9858EfFD232B4033E47d90003D41EC34EcaEda94@11155111",
@@ -232,10 +232,10 @@ private fun EthereumReceiveScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumReceiveScreenMainnetPreview() {
+private fun EvmReceiveScreenMainnetPreview() {
     WalletTheme {
-        EthereumReceiveContent(
-            uiState = EthereumReceiveUiState(
+        EvmReceiveContent(
+            uiState = EvmReceiveUiState(
                 address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 networkLabel = "Mainnet",
                 paymentUri = "ethereum:0x9858EfFD232B4033E47d90003D41EC34EcaEda94@1",
@@ -247,10 +247,10 @@ private fun EthereumReceiveScreenMainnetPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumReceiveScreenEmptyPreview() {
+private fun EvmReceiveScreenEmptyPreview() {
     WalletTheme {
-        EthereumReceiveContent(
-            uiState = EthereumReceiveUiState(),
+        EvmReceiveContent(
+            uiState = EvmReceiveUiState(),
             onBack = {},
         )
     }

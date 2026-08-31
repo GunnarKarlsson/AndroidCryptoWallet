@@ -15,7 +15,7 @@ import network.bahn.androidcryptowallet.ui.navigation.EvmReceiveRoute
 import javax.inject.Inject
 
 @HiltViewModel
-class EthereumReceiveViewModel @Inject constructor(
+class EvmReceiveViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     walletRepository: EvmWalletRepository,
 ) : ViewModel() {
@@ -23,13 +23,13 @@ class EthereumReceiveViewModel @Inject constructor(
         savedStateHandle.get<String>("walletId")
             ?: savedStateHandle.toRoute<EvmReceiveRoute>().walletId
 
-    val uiState: StateFlow<EthereumReceiveUiState> = walletRepository.observeWallet(walletId)
+    val uiState: StateFlow<EvmReceiveUiState> = walletRepository.observeWallet(walletId)
         .map { wallet ->
             if (wallet == null) {
-                EthereumReceiveUiState()
+                EvmReceiveUiState()
             } else {
                 val address = wallet.address.takeIf { it.isNotBlank() }
-                EthereumReceiveUiState(
+                EvmReceiveUiState(
                     address = address,
                     networkLabel = wallet.network.label,
                     family = wallet.network.family,
@@ -42,6 +42,6 @@ class EthereumReceiveViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = EthereumReceiveUiState(),
+            initialValue = EvmReceiveUiState(),
         )
 }

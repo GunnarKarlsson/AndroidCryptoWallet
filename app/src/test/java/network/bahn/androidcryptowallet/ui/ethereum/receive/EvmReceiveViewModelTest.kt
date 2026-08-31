@@ -27,7 +27,7 @@ import org.junit.Test
 import java.math.BigInteger
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class EthereumReceiveViewModelTest {
+class EvmReceiveViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -71,7 +71,7 @@ class EthereumReceiveViewModelTest {
 
     private fun createViewModel(
         repo: FakeReceiveEthWalletRepository,
-    ) = EthereumReceiveViewModel(
+    ) = EvmReceiveViewModel(
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
         walletRepository = repo,
     )
