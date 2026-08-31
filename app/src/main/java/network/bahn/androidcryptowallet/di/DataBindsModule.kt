@@ -27,6 +27,7 @@ import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryI
 import network.bahn.androidcryptowallet.data.repository.ConsolidatedTransactionRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.EvmWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.PortfolioRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.ProviderSettingsRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
@@ -37,6 +38,7 @@ import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepositor
 import network.bahn.androidcryptowallet.domain.repository.ConsolidatedTransactionRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
+import network.bahn.androidcryptowallet.domain.repository.ProviderSettingsRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import network.bahn.androidcryptowallet.ui.chain.ContextEvmFamilyDefaultNames
 import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
@@ -122,6 +124,12 @@ abstract class DataBindsModule {
     abstract fun bindEvmWalletRepository(
         impl: EvmWalletRepositoryImpl,
     ): EvmWalletRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProviderSettingsRepository(
+        impl: ProviderSettingsRepositoryImpl,
+    ): ProviderSettingsRepository
 
     @Binds
     @Singleton

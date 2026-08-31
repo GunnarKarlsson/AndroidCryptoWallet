@@ -53,6 +53,8 @@ import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupViewModel
 import network.bahn.androidcryptowallet.domain.model.ConsolidatedTransaction
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 import network.bahn.androidcryptowallet.ui.navigation.BitcoinWalletListRoute
+import network.bahn.androidcryptowallet.domain.model.ProviderSetting
+import network.bahn.androidcryptowallet.ui.settings.ProviderEditScreen
 import network.bahn.androidcryptowallet.ui.shell.MainShellScreen
 
 @Composable
@@ -83,6 +85,14 @@ fun WalletNavHost(
                             navController.navigate(EvmWalletDetailsRoute(transaction.walletId))
                     }
                 },
+                onProviderClick = { provider ->
+                    navController.navigate(ProviderEditRoute(provider.id))
+                },
+            )
+        }
+        composable<ProviderEditRoute> {
+            ProviderEditScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable<ChainSelectRoute> {

@@ -18,14 +18,22 @@ class MsApiFactory @Inject constructor(
 ) : MsApiProvider {
     private val jsonMediaType = "application/json".toMediaType()
     private val apis = ConcurrentHashMap<BitcoinNetwork, MsApi>()
+    private val cachedBaseUrls = ConcurrentHashMap<BitcoinNetwork, String>()
 
-    override fun get(network: BitcoinNetwork): MsApi =
-        apis.getOrPut(network) {
+    override fun get(network: BitcoinNetwork): MsApi {
+        val baseUrl = config.baseUrl(network)
+        val cachedUrl = cachedBaseUrls[network]
+        if (cachedUrl == baseUrl) {
+            apis[network]?.let { return it }
+        }
+        cachedBaseUrls[network] = baseUrl
+        return apis.compute(network) { _, _ ->
             Retrofit.Builder()
-                .baseUrl(config.baseUrl(network))
+                .baseUrl(baseUrl)
                 .client(okHttpClient)
                 .addConverterFactory(json.asConverterFactory(jsonMediaType))
                 .build()
                 .create(MsApi::class.java)
-        }
+        }!!
+    }
 }

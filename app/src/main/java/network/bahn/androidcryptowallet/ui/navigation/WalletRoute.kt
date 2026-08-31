@@ -16,6 +16,9 @@ data object TransactionsRoute
 data object SettingsRoute
 
 @Serializable
+data class ProviderEditRoute(val providerId: String)
+
+@Serializable
 data object ChainSelectRoute
 
 @Serializable

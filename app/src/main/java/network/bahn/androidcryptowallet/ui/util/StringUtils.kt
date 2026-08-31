@@ -44,6 +44,9 @@ object StringUtils {
     fun walletDisplayName(name: String?, fallback: String): String =
         name?.trim()?.takeIf { it.isNotEmpty() } ?: fallback
 
+    fun truncateProviderUrl(url: String, maxLength: Int = 48): String =
+        if (url.length <= maxLength) url else url.take(maxLength - 1) + "…"
+
     /** 1 native token = 10^18 wei. Always eighteen fractional digits, including zero. */
     fun formatEvmAmount(wei: String): String =
         wei.toBigDecimal()

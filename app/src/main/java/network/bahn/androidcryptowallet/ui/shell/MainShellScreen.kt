@@ -30,7 +30,9 @@ import network.bahn.androidcryptowallet.ui.home.HomeScreen
 import network.bahn.androidcryptowallet.ui.navigation.HomeRoute
 import network.bahn.androidcryptowallet.ui.navigation.SettingsRoute
 import network.bahn.androidcryptowallet.ui.navigation.TransactionsRoute
-import network.bahn.androidcryptowallet.ui.settings.SettingsPlaceholderScreen
+import network.bahn.androidcryptowallet.domain.model.ProviderSetting
+import network.bahn.androidcryptowallet.ui.settings.SettingsScreen
+import network.bahn.androidcryptowallet.ui.settings.ProviderEditScreen
 import network.bahn.androidcryptowallet.ui.transactions.ConsolidatedTransactionsScreen
 
 @Composable
@@ -39,6 +41,7 @@ fun MainShellScreen(
     onAddWallet: () -> Unit,
     onHoldingClick: (PortfolioHoldingDestination) -> Unit,
     onTransactionClick: (ConsolidatedTransaction) -> Unit,
+    onProviderClick: (ProviderSetting) -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     Scaffold(
@@ -67,7 +70,10 @@ fun MainShellScreen(
                 )
             }
             composable<SettingsRoute> {
-                SettingsPlaceholderScreen()
+                SettingsScreen(
+                    viewModelStoreOwner = shellBackStackEntry,
+                    onProviderClick = onProviderClick,
+                )
             }
         }
     }

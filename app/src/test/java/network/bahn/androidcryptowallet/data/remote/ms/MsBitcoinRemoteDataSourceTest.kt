@@ -1,6 +1,7 @@
 package network.bahn.androidcryptowallet.data.remote.ms
 
 import kotlinx.coroutines.test.runTest
+import network.bahn.androidcryptowallet.data.repository.testMsBitcoinConfig
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody
@@ -246,7 +247,7 @@ class MsBitcoinRemoteDataSourceTest {
     }
 }
 
-private val TEST_CONFIG = MsBitcoinConfig(
+private val TEST_CONFIG = testMsBitcoinConfig(
     testnet4BaseUrl = "https://mempool.space/testnet4/api/",
     mainnetBaseUrl = "https://mempool.space/api/",
 )
