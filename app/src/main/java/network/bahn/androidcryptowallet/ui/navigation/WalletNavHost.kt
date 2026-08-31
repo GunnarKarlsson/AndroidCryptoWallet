@@ -50,6 +50,7 @@ import network.bahn.androidcryptowallet.ui.evm.setup.EvmRestoreViewModel
 import network.bahn.androidcryptowallet.ui.evm.setup.EvmSelectNetworkScreen
 import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupEvent
 import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupViewModel
+import network.bahn.androidcryptowallet.ui.shell.MainShellScreen
 
 @Composable
 fun WalletNavHost(
@@ -57,10 +58,16 @@ fun WalletNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = ChainSelectRoute,
+        startDestination = MainShellRoute,
     ) {
+        composable<MainShellRoute> {
+            MainShellScreen(
+                onAddWallet = { navController.navigate(ChainSelectRoute) },
+            )
+        }
         composable<ChainSelectRoute> {
             ChainSelectScreen(
+                onBack = { navController.popBackStack() },
                 onChainSelected = { chain ->
                     when (chain) {
                         SupportedChain.BITCOIN -> navController.navigate(BitcoinWalletListRoute)

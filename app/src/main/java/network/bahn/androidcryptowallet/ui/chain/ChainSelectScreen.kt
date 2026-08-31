@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +39,7 @@ import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 fun ChainSelectScreen(
     chains: List<SupportedChain> = SupportedChains,
     onChainSelected: (SupportedChain) -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -46,13 +49,22 @@ fun ChainSelectScreen(
                     colors = walletTopAppBarColors(),
                     title = { Text(stringResource(R.string.select_chain_title)) },
                     navigationIcon = {
-                        Image(
-                            painter = painterResource(R.drawable.ic_logo),
-                            contentDescription = stringResource(R.string.varna_logo),
-                            modifier = Modifier
-                                .padding(start = 12.dp, end = 12.dp)
-                                .size(32.dp),
-                        )
+                        if (onBack != null) {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                    contentDescription = stringResource(R.string.navigate_back),
+                                )
+                            }
+                        } else {
+                            Image(
+                                painter = painterResource(R.drawable.ic_logo),
+                                contentDescription = stringResource(R.string.varna_logo),
+                                modifier = Modifier
+                                    .padding(start = 12.dp, end = 12.dp)
+                                    .size(32.dp),
+                            )
+                        }
                     },
                 )
                 HorizontalDivider(

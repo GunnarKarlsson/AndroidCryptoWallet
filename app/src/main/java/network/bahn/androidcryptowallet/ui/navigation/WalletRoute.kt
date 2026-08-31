@@ -4,6 +4,18 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import kotlinx.serialization.Serializable
 
 @Serializable
+data object MainShellRoute
+
+@Serializable
+data object HomeRoute
+
+@Serializable
+data object TransactionsRoute
+
+@Serializable
+data object SettingsRoute
+
+@Serializable
 data object ChainSelectRoute
 
 @Serializable
