@@ -23,6 +23,7 @@ import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.EvmWalletRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.PortfolioRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.BitcoinKeyEngine
 import network.bahn.androidcryptowallet.data.wallet.EvmKeyEngine
@@ -31,6 +32,7 @@ import network.bahn.androidcryptowallet.data.wallet.Web3jEvmKeyEngine
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import network.bahn.androidcryptowallet.ui.chain.ContextEvmFamilyDefaultNames
 import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
@@ -116,6 +118,12 @@ abstract class DataBindsModule {
     abstract fun bindEvmWalletRepository(
         impl: EvmWalletRepositoryImpl,
     ): EvmWalletRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPortfolioRepository(
+        impl: PortfolioRepositoryImpl,
+    ): PortfolioRepository
 
     @Binds
     @Singleton

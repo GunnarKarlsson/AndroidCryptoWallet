@@ -22,7 +22,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import network.bahn.androidcryptowallet.R
-import network.bahn.androidcryptowallet.ui.home.HomePlaceholderScreen
+import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
+import network.bahn.androidcryptowallet.ui.home.HomeScreen
 import network.bahn.androidcryptowallet.ui.navigation.HomeRoute
 import network.bahn.androidcryptowallet.ui.navigation.SettingsRoute
 import network.bahn.androidcryptowallet.ui.navigation.TransactionsRoute
@@ -32,6 +33,7 @@ import network.bahn.androidcryptowallet.ui.transactions.TransactionsPlaceholderS
 @Composable
 fun MainShellScreen(
     onAddWallet: () -> Unit,
+    onHoldingClick: (PortfolioHoldingDestination) -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     Scaffold(
@@ -46,7 +48,10 @@ fun MainShellScreen(
             modifier = Modifier.padding(innerPadding),
         ) {
             composable<HomeRoute> {
-                HomePlaceholderScreen(onAddWallet = onAddWallet)
+                HomeScreen(
+                    onAddWallet = onAddWallet,
+                    onHoldingClick = onHoldingClick,
+                )
             }
             composable<TransactionsRoute> {
                 TransactionsPlaceholderScreen()
