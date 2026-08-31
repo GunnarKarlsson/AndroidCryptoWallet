@@ -77,7 +77,7 @@ fun WalletNavHost(
         }
         composable<ChainSelectRoute> {
             ChainSelectScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { navController.popBackToHome() },
                 onChainSelected = { chain ->
                     when (chain) {
                         SupportedChain.BITCOIN -> navController.navigate(BitcoinWalletListRoute)
@@ -101,7 +101,7 @@ fun WalletNavHost(
         }
         composable<BitcoinWalletListRoute> {
             BitcoinWalletListScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { navController.popBackToHome() },
                 onCreateWallet = { navController.navigate(BitcoinCreateGraphRoute) },
                 onRestoreWallet = { navController.navigate(BitcoinRestoreGraphRoute) },
                 onNetworkStatus = { navController.navigate(BitcoinNetworkStatusRoute) },
@@ -113,7 +113,7 @@ fun WalletNavHost(
         composable<EvmWalletListRoute> { entry ->
             val family = entry.toRoute<EvmWalletListRoute>().family
             EvmWalletListScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { navController.popBackToHome() },
                 onCreateWallet = { navController.navigate(EvmCreateGraphRoute(family)) },
                 onRestoreWallet = { navController.navigate(EvmRestoreGraphRoute(family)) },
                 onWalletClick = { walletId ->
@@ -227,10 +227,7 @@ fun WalletNavHost(
                     setupViewModel.events.collect { event ->
                         when (event) {
                             BitcoinSetupEvent.WalletCreated -> {
-                                navController.popBackStack(
-                                    route = BitcoinCreateGraphRoute,
-                                    inclusive = true,
-                                )
+                                navController.popBackToHome()
                             }
                         }
                     }
@@ -264,10 +261,7 @@ fun WalletNavHost(
                     restoreViewModel.events.collect { event ->
                         when (event) {
                             BitcoinRestoreEvent.WalletRestored -> {
-                                navController.popBackStack(
-                                    route = BitcoinRestoreGraphRoute,
-                                    inclusive = true,
-                                )
+                                navController.popBackToHome()
                             }
                         }
                     }
@@ -323,10 +317,7 @@ fun WalletNavHost(
                     setupViewModel.events.collect { event ->
                         when (event) {
                             EvmSetupEvent.WalletCreated -> {
-                                navController.popBackStack(
-                                    route = EvmCreateGraphRoute(uiState.family),
-                                    inclusive = true,
-                                )
+                                navController.popBackToHome()
                             }
                         }
                     }
@@ -361,10 +352,7 @@ fun WalletNavHost(
                     restoreViewModel.events.collect { event ->
                         when (event) {
                             EvmRestoreEvent.WalletRestored -> {
-                                navController.popBackStack(
-                                    route = EvmRestoreGraphRoute(uiState.family),
-                                    inclusive = true,
-                                )
+                                navController.popBackToHome()
                             }
                         }
                     }
