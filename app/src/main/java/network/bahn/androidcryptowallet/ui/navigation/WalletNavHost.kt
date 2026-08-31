@@ -35,21 +35,21 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
 import network.bahn.androidcryptowallet.ui.navigation.EvmRestoreGraphRoute
 import network.bahn.androidcryptowallet.ui.navigation.EvmWalletListRoute
-import network.bahn.androidcryptowallet.ui.ethereum.list.EvmWalletListScreen
-import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsScreen
-import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsViewModel
-import network.bahn.androidcryptowallet.ui.ethereum.edit.EvmEditWalletScreen
-import network.bahn.androidcryptowallet.ui.ethereum.receive.EvmReceiveScreen
-import network.bahn.androidcryptowallet.ui.ethereum.send.EvmSendScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmConfirmMnemonicScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmCreateWalletScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmImportWalletScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmRestoreEvent
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmRestoreSelectNetworkScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmRestoreViewModel
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmSelectNetworkScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmSetupEvent
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmSetupViewModel
+import network.bahn.androidcryptowallet.ui.evm.list.EvmWalletListScreen
+import network.bahn.androidcryptowallet.ui.evm.details.EvmWalletDetailsScreen
+import network.bahn.androidcryptowallet.ui.evm.details.EvmWalletDetailsViewModel
+import network.bahn.androidcryptowallet.ui.evm.edit.EvmEditWalletScreen
+import network.bahn.androidcryptowallet.ui.evm.receive.EvmReceiveScreen
+import network.bahn.androidcryptowallet.ui.evm.send.EvmSendScreen
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmConfirmMnemonicScreen
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmCreateWalletScreen
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmImportWalletScreen
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmRestoreEvent
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmRestoreSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmRestoreViewModel
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupEvent
+import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupViewModel
 
 @Composable
 fun WalletNavHost(

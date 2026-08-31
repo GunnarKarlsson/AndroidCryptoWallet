@@ -1,0 +1,219 @@
+package network.bahn.androidcryptowallet.ui.evm.edit
+
+import androidx.lifecycle.SavedStateHandle
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
+import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class EvmEditWalletViewModelTest {
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun prefillsDefaultWhenNameMissing() = runTest {
+        val viewModel = createViewModel(FakeEthEditWalletRepository())
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertEquals("Ethereum wallet", viewModel.uiState.value.name)
+        assertTrue(viewModel.uiState.value.isWalletLoaded)
+        job.cancel()
+    }
+
+    @Test
+    fun prefillsCustomName() = runTest {
+        val repo = FakeEthEditWalletRepository(
+            wallet = MutableStateFlow(WALLET.copy(name = "Savings")),
+        )
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertEquals("Savings", viewModel.uiState.value.name)
+        job.cancel()
+    }
+
+    @Test
+    fun confirmEmitsNavigateBack() = runTest {
+        val repo = FakeEthEditWalletRepository()
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        val events = mutableListOf<EvmEditWalletEvent>()
+        val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
+            viewModel.events.collect { events += it }
+        }
+        viewModel.onNameChange("Holiday")
+
+        viewModel.onConfirm()
+
+        assertEquals(listOf(RenameCall(WALLET.id, "Holiday")), repo.renameCalls)
+        assertEquals(listOf(EvmEditWalletEvent.Saved), events)
+        job.cancel()
+        eventsJob.cancel()
+    }
+
+    @Test
+    fun blankConfirmSavesBlankForRepositoryToNull() = runTest {
+        val repo = FakeEthEditWalletRepository()
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onNameChange("   ")
+
+        viewModel.onConfirm()
+
+        assertEquals(listOf(RenameCall(WALLET.id, "   ")), repo.renameCalls)
+        job.cancel()
+    }
+
+    @Test
+    fun errorStaysOnScreen() = runTest {
+        val repo = FakeEthEditWalletRepository(
+            renameError = IllegalStateException("Wallet not found"),
+        )
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onNameChange("Savings")
+
+        viewModel.onConfirm()
+
+        assertEquals("Wallet not found", viewModel.uiState.value.errorMessage)
+        assertFalse(viewModel.uiState.value.isSubmitting)
+        assertTrue(viewModel.uiState.value.canConfirm)
+        job.cancel()
+    }
+
+    @Test
+    fun submittingDisablesConfirm() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val repo = FakeEthEditWalletRepository(renameGate = gate)
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+        viewModel.onNameChange("Savings")
+        assertTrue(viewModel.uiState.value.canConfirm)
+
+        viewModel.onConfirm()
+
+        assertTrue(viewModel.uiState.value.isSubmitting)
+        assertFalse(viewModel.uiState.value.canConfirm)
+        gate.complete(Unit)
+        job.cancel()
+    }
+
+    private fun createViewModel(
+        repo: FakeEthEditWalletRepository,
+    ) = EvmEditWalletViewModel(
+        savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
+        walletRepository = repo,
+        defaultNames = EvmFamilyDefaultNames { family ->
+            when (family) {
+                EvmFamily.ETHEREUM -> "Ethereum wallet"
+                EvmFamily.BSC -> "BSC wallet"
+                EvmFamily.POLYGON -> "Polygon wallet"
+                EvmFamily.ARBITRUM -> "Arbitrum wallet"
+                EvmFamily.BASE -> "Base wallet"
+                EvmFamily.OPTIMISM -> "Optimism wallet"
+                EvmFamily.AVALANCHE -> "Avalanche wallet"
+            }
+        },
+    )
+}
+
+private val WALLET = EvmWallet(
+    id = "wallet-1",
+    network = EvmNetwork.SEPOLIA,
+    address = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
+)
+
+private data class RenameCall(
+    val walletId: String,
+    val name: String?,
+)
+
+private class FakeEthEditWalletRepository(
+    private val wallet: MutableStateFlow<EvmWallet?> = MutableStateFlow(WALLET),
+    private val renameError: Exception? = null,
+    private val renameGate: CompletableDeferred<Unit>? = null,
+) : EvmWalletRepository {
+    val renameCalls = mutableListOf<RenameCall>()
+
+    override fun observeWallets(family: EvmFamily): Flow<List<EvmWallet>> = emptyFlow()
+    override fun observeWallet(id: String): Flow<EvmWallet?> = wallet
+    override fun generateMnemonic() = error("unused")
+
+    override suspend fun createWallet(
+        network: EvmNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) = error("unused")
+
+    override suspend fun restoreWallet(
+        network: EvmNetwork,
+        mnemonicWords: List<String>,
+        passphrase: String?,
+    ) = error("unused")
+
+    override suspend fun refreshBalance(walletId: String) = error("unused")
+
+    override suspend fun deleteWallet(walletId: String) = error("unused")
+
+    override suspend fun renameWallet(walletId: String, name: String?) {
+        renameGate?.await()
+        renameError?.let { throw it }
+        renameCalls += RenameCall(walletId, name)
+    }
+
+    override suspend fun getCachedTransactions(walletId: String) = error("unused")
+
+    override suspend fun getTransactions(
+        walletId: String,
+        afterCursor: network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor?,
+    ) = error("unused")
+
+    override fun isValidAddress(address: String) = error("unused")
+
+    override suspend fun getFeeData(walletId: String) = error("unused")
+
+    override suspend fun send(
+        walletId: String,
+        recipientAddress: String,
+        amountWei: java.math.BigInteger,
+        gasPreset: network.bahn.androidcryptowallet.domain.model.EvmGasPreset,
+    ) = error("unused")
+}

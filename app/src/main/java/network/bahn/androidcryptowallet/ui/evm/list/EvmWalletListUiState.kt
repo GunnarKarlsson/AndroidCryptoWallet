@@ -1,0 +1,13 @@
+package network.bahn.androidcryptowallet.ui.evm.list
+
+import network.bahn.androidcryptowallet.domain.model.EvmFamily
+import network.bahn.androidcryptowallet.domain.model.EvmNetwork
+import network.bahn.androidcryptowallet.domain.model.EvmWallet
+
+data class EvmWalletListUiState(
+    val family: EvmFamily = EvmFamily.ETHEREUM,
+    val availableNetworks: List<EvmNetwork> = EvmNetwork.networksFor(EvmFamily.ETHEREUM),
+    val selectedNetwork: EvmNetwork = EvmNetwork.SEPOLIA,
+    val wallets: List<EvmWallet> = emptyList(),
+    val isLoading: Boolean = true,
+)
