@@ -1,4 +1,4 @@
-package network.bahn.androidcryptowallet.ui.home
+package network.bahn.androidcryptowallet.ui.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,46 +13,35 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeStore
 import network.bahn.androidcryptowallet.domain.model.WalletNetworkMode
-import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
+import network.bahn.androidcryptowallet.domain.repository.ConsolidatedTransactionRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val portfolioRepository: PortfolioRepository,
+class ConsolidatedTransactionsViewModel @Inject constructor(
+    private val consolidatedTransactionRepository: ConsolidatedTransactionRepository,
     private val walletNetworkModeStore: WalletNetworkModeStore,
     catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {
     private val isRefreshing = MutableStateFlow(false)
-    /** Guards the one automatic refresh per app session (shell ViewModel lifetime). */
-    private var hasAutoRefreshedThisSession = false
 
-    val uiState: StateFlow<HomeUiState> = combine(
-        portfolioRepository.observeHoldings(),
-        catalogReadiness.observeReady(),
+    val uiState: StateFlow<ConsolidatedTransactionsUiState> = combine(
+        consolidatedTransactionRepository.observeTransactions(),
         walletNetworkModeStore.observeMode(),
+        catalogReadiness.observeReady(),
         isRefreshing,
-    ) { holdings, ready, networkMode, refreshing ->
-        HomeUiState(
-            holdings = holdings,
-            assetCount = holdings.size,
-            totalFiatFormatted = null,
+    ) { transactions, networkMode, catalogReady, refreshing ->
+        ConsolidatedTransactionsUiState(
+            transactions = transactions,
             networkMode = networkMode,
-            isTotalLoading = refreshing,
-            isHoldingsLoading = holdings.isEmpty() && (!ready || refreshing),
+            isLoading = !catalogReady,
+            isRefreshing = refreshing,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = HomeUiState(),
+        initialValue = ConsolidatedTransactionsUiState(),
     )
-
-    /** Refreshes balances once when the app session starts; manual [refresh] any time. */
-    fun onEnter() {
-        if (hasAutoRefreshedThisSession) return
-        hasAutoRefreshedThisSession = true
-        refresh()
-    }
 
     fun setNetworkMode(mode: WalletNetworkMode) {
         viewModelScope.launch {
@@ -65,11 +54,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             isRefreshing.update { true }
             try {
-                portfolioRepository.refreshAllBalances()
+                consolidatedTransactionRepository.refreshAllTransactions()
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // Keep cached balances visible; refresh is best-effort on home.
+                // Keep cached transactions visible; refresh is best-effort.
             } finally {
                 isRefreshing.update { false }
             }

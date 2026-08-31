@@ -1,31 +1,24 @@
-package network.bahn.androidcryptowallet.ui.home
+package network.bahn.androidcryptowallet.ui.transactions
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
+import network.bahn.androidcryptowallet.domain.model.ConsolidatedTransaction
 
 @Composable
-fun HomeScreen(
-    onAddWallet: () -> Unit,
-    onHoldingClick: (PortfolioHoldingDestination) -> Unit,
+fun ConsolidatedTransactionsScreen(
+    onTransactionClick: (ConsolidatedTransaction) -> Unit,
     viewModelStoreOwner: ViewModelStoreOwner,
-    viewModel: HomeViewModel = hiltViewModel(viewModelStoreOwner),
+    viewModel: ConsolidatedTransactionsViewModel = hiltViewModel(viewModelStoreOwner),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.onEnter()
-    }
-
-    HomeContent(
+    ConsolidatedTransactionsContent(
         uiState = uiState,
         onRefresh = viewModel::refresh,
-        onAddWallet = onAddWallet,
-        onHoldingClick = onHoldingClick,
+        onTransactionClick = onTransactionClick,
         onNetworkModeSelected = viewModel::setNetworkMode,
     )
 }

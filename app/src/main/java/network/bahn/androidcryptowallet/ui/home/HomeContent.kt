@@ -34,6 +34,7 @@ import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
+import network.bahn.androidcryptowallet.domain.model.WalletNetworkMode
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.theme.WalletTopAppBar
 import java.math.BigInteger
@@ -45,6 +46,7 @@ fun HomeContent(
     onRefresh: () -> Unit,
     onAddWallet: () -> Unit,
     onHoldingClick: (PortfolioHoldingDestination) -> Unit,
+    onNetworkModeSelected: (WalletNetworkMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -90,6 +92,12 @@ fun HomeContent(
             contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item {
+                HomeNetworkModeSelector(
+                    selectedMode = uiState.networkMode,
+                    onModeSelected = onNetworkModeSelected,
+                )
+            }
             item {
                 TotalBalanceCard(
                     totalFiatFormatted = uiState.totalFiatFormatted,
@@ -175,6 +183,7 @@ private fun HomeContentPreview() {
             onRefresh = {},
             onAddWallet = {},
             onHoldingClick = {},
+            onNetworkModeSelected = {},
         )
     }
 }

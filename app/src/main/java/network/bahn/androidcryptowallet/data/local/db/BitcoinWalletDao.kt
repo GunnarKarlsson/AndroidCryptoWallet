@@ -8,6 +8,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BitcoinWalletDao {
+    @Query("SELECT id FROM bitcoin_wallet WHERE network = :network")
+    suspend fun listIdsByNetwork(network: String): List<String>
+
+    @Query("SELECT id FROM bitcoin_wallet")
+    suspend fun listAllIds(): List<String>
+
     @Query("SELECT * FROM bitcoin_wallet WHERE network = :network ORDER BY id")
     fun observeByNetwork(network: String): Flow<List<BitcoinWalletEntity>>
 

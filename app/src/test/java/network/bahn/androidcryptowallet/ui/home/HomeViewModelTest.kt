@@ -14,6 +14,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
+import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeStore
+import network.bahn.androidcryptowallet.domain.model.WalletNetworkMode
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import org.junit.After
@@ -150,8 +152,19 @@ class HomeViewModelTest {
         portfolioRepository: PortfolioRepository = FakePortfolioRepository(holdings),
     ): HomeViewModel = HomeViewModel(
         portfolioRepository = portfolioRepository,
+        walletNetworkModeStore = FakeWalletNetworkModeStore(),
         catalogReadiness = FakeWalletCatalogReadiness(ready),
     )
+}
+
+private class FakeWalletNetworkModeStore(
+    private val mode: MutableStateFlow<WalletNetworkMode> = MutableStateFlow(WalletNetworkMode.TESTNET),
+) : WalletNetworkModeStore {
+    override fun observeMode(): Flow<WalletNetworkMode> = mode
+
+    override suspend fun setMode(mode: WalletNetworkMode) {
+        this.mode.value = mode
+    }
 }
 
 private class FakePortfolioRepository(

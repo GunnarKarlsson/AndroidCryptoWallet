@@ -150,6 +150,11 @@ private open class FakeCatalogWalletDao : BitcoinWalletDao {
     override fun observeByNetwork(network: String): Flow<List<BitcoinWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
+    override suspend fun listIdsByNetwork(network: String): List<String> =
+        items.value.filter { it.network == network }.map { it.id }
+
+    override suspend fun listAllIds(): List<String> = items.value.map { it.id }
+
     override fun observeById(id: String): Flow<BitcoinWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
 
@@ -257,6 +262,10 @@ private class EmptyEvmCatalogWalletDao : EvmWalletDao {
         network: String,
     ): Flow<List<network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity>> =
         MutableStateFlow(emptyList())
+
+    override suspend fun listIdsByNetwork(network: String): List<String> = emptyList()
+
+    override suspend fun listAllIds(): List<String> = emptyList()
 
     override fun observeById(
         id: String,

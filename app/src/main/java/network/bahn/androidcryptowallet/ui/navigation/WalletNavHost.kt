@@ -50,6 +50,7 @@ import network.bahn.androidcryptowallet.ui.evm.setup.EvmRestoreViewModel
 import network.bahn.androidcryptowallet.ui.evm.setup.EvmSelectNetworkScreen
 import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupEvent
 import network.bahn.androidcryptowallet.ui.evm.setup.EvmSetupViewModel
+import network.bahn.androidcryptowallet.domain.model.ConsolidatedTransaction
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 import network.bahn.androidcryptowallet.ui.navigation.BitcoinWalletListRoute
 import network.bahn.androidcryptowallet.ui.shell.MainShellScreen
@@ -72,6 +73,14 @@ fun WalletNavHost(
                             navController.navigate(BitcoinWalletListRoute)
                         is PortfolioHoldingDestination.Evm ->
                             navController.navigate(EvmWalletListRoute(destination.family))
+                    }
+                },
+                onTransactionClick = { transaction ->
+                    when (transaction) {
+                        is ConsolidatedTransaction.Bitcoin ->
+                            navController.navigate(BitcoinWalletDetailsRoute(transaction.walletId))
+                        is ConsolidatedTransaction.Evm ->
+                            navController.navigate(EvmWalletDetailsRoute(transaction.walletId))
                     }
                 },
             )

@@ -8,6 +8,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EvmWalletDao {
+    @Query("SELECT id FROM ethereum_wallet WHERE network = :network")
+    suspend fun listIdsByNetwork(network: String): List<String>
+
+    @Query("SELECT id FROM ethereum_wallet")
+    suspend fun listAllIds(): List<String>
+
     @Query("SELECT * FROM ethereum_wallet WHERE network = :network ORDER BY id")
     fun observeByNetwork(network: String): Flow<List<EvmWalletEntity>>
 

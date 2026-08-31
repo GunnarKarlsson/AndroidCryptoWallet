@@ -8,6 +8,8 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkD
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedBitcoinNetworkStore
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkDataStore
 import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
+import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeDataStore
+import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeStore
 import network.bahn.androidcryptowallet.data.local.secure.BitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedBitcoinMnemonicStore
 import network.bahn.androidcryptowallet.data.local.secure.EncryptedEvmMnemonicStore
@@ -22,6 +24,7 @@ import network.bahn.androidcryptowallet.data.remote.ms.MsApiProvider
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.ConsolidatedTransactionRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.EvmWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.PortfolioRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
@@ -31,6 +34,7 @@ import network.bahn.androidcryptowallet.data.wallet.WalletCatalogInitializer
 import network.bahn.androidcryptowallet.data.wallet.Web3jEvmKeyEngine
 import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.ConsolidatedTransactionRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
@@ -124,6 +128,18 @@ abstract class DataBindsModule {
     abstract fun bindPortfolioRepository(
         impl: PortfolioRepositoryImpl,
     ): PortfolioRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWalletNetworkModeStore(
+        impl: WalletNetworkModeDataStore,
+    ): WalletNetworkModeStore
+
+    @Binds
+    @Singleton
+    abstract fun bindConsolidatedTransactionRepository(
+        impl: ConsolidatedTransactionRepositoryImpl,
+    ): ConsolidatedTransactionRepository
 
     @Binds
     @Singleton

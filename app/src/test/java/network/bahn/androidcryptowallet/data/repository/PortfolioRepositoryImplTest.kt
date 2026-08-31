@@ -43,7 +43,7 @@ class PortfolioRepositoryImplTest {
         requireNotNull(holding)
         assertEquals(BigInteger("3000000000000000000"), holding.balanceWei)
         assertEquals("ETH", holding.nativeSymbol)
-        assertEquals("Ethereum (ETH)", holding.headline)
+        assertEquals("Ethereum Sepolia (ETH)", holding.headline)
 
         assertEquals(null, PortfolioRepositoryImpl.aggregateEvm(EvmFamily.BSC, emptyList()))
         assertEquals(
@@ -78,8 +78,8 @@ class PortfolioRepositoryImplTest {
 
         val holdings = repo.observeHoldings().first()
         assertEquals(2, holdings.size)
-        assertEquals("Bitcoin (BTC)", holdings[0].headline)
-        assertEquals("Polygon (POL)", holdings[1].headline)
+        assertEquals("Bitcoin Testnet4 (BTC)", holdings[0].headline)
+        assertEquals("Polygon Mainnet (POL)", holdings[1].headline)
     }
 
     private fun wallet(

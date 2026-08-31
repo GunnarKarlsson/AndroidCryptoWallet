@@ -6,9 +6,28 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BitcoinTransactionDao {
+    @Query(
+        """
+        SELECT
+            t.walletId AS walletId,
+            t.txid AS txid,
+            t.confirmed AS confirmed,
+            t.blockTimeSeconds AS blockTimeSeconds,
+            t.netSatoshis AS netSatoshis,
+            t.feeSatoshis AS feeSatoshis,
+            t.sortIndex AS sortIndex,
+            w.name AS walletName,
+            w.network AS walletNetwork
+        FROM bitcoin_transaction t
+        INNER JOIN bitcoin_wallet w ON t.walletId = w.id
+        """,
+    )
+    fun observeAllWithWallet(): Flow<List<BitcoinTransactionWithWalletRow>>
+
     @Query("SELECT * FROM bitcoin_transaction WHERE walletId = :walletId ORDER BY sortIndex ASC")
     suspend fun listByWalletId(walletId: String): List<BitcoinTransactionEntity>
 

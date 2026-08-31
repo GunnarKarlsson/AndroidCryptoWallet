@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -9,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import network.bahn.androidcryptowallet.data.local.db.EvmTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.EvmTransactionEntity
+import network.bahn.androidcryptowallet.data.local.db.EvmTransactionWithWalletRow
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletEntity
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletTxCacheEntity
@@ -558,6 +560,11 @@ private class FakeEvmWalletDao : EvmWalletDao {
     override fun observeByNetwork(network: String): Flow<List<EvmWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
+    override suspend fun listIdsByNetwork(network: String): List<String> =
+        items.value.filter { it.network == network }.map { it.id }
+
+    override suspend fun listAllIds(): List<String> = items.value.map { it.id }
+
     override fun observeById(id: String): Flow<EvmWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
 
@@ -663,6 +670,8 @@ private class FakeTimeProvider(
 private class FakeEvmTransactionDao : EvmTransactionDao {
     val transactions = mutableListOf<EvmTransactionEntity>()
     var cache: EvmWalletTxCacheEntity? = null
+
+    override fun observeAllWithWallet(): Flow<List<EvmTransactionWithWalletRow>> = emptyFlow()
 
     override suspend fun listByWalletId(walletId: String): List<EvmTransactionEntity> =
         transactions.filter { it.walletId == walletId }.sortedBy { it.sortIndex }

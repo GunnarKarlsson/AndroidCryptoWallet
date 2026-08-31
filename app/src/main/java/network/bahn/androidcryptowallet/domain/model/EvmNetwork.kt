@@ -22,6 +22,19 @@ enum class EvmNetwork(
     AVALANCHE_MAINNET(EvmFamily.AVALANCHE, "Mainnet", chainId = 43_114L, nativeSymbol = "AVAX"),
     ;
 
+    val isMainnet: Boolean
+        get() = when (this) {
+            MAINNET,
+            BSC_MAINNET,
+            POLYGON_MAINNET,
+            ARBITRUM_MAINNET,
+            BASE_MAINNET,
+            OPTIMISM_MAINNET,
+            AVALANCHE_MAINNET,
+            -> true
+            else -> false
+        }
+
     companion object {
         fun networksFor(family: EvmFamily): List<EvmNetwork> =
             entries.filter { it.family == family }

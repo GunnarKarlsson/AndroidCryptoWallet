@@ -14,6 +14,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmWallet
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
+import network.bahn.androidcryptowallet.domain.model.portfolioHeadline
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
@@ -76,7 +77,7 @@ class PortfolioRepositoryImpl @Inject constructor(
             return listOf(
                 PortfolioHolding(
                     destination = PortfolioHoldingDestination.Bitcoin,
-                    headline = "Bitcoin (BTC)",
+                    headline = wallets.first().network.portfolioHeadline(),
                     nativeSymbol = "BTC",
                     balanceSatoshis = totalSatoshis,
                 ),
@@ -85,27 +86,17 @@ class PortfolioRepositoryImpl @Inject constructor(
 
         fun aggregateEvm(family: EvmFamily, wallets: List<EvmWallet>): PortfolioHolding? {
             if (wallets.isEmpty()) return null
+            val network = wallets.first().network
             val totalWei = wallets.fold(BigInteger.ZERO) { acc, wallet ->
                 acc + (wallet.balanceWei?.toBigIntegerOrNull() ?: BigInteger.ZERO)
             }
             if (totalWei == BigInteger.ZERO) return null
-            val nativeSymbol = wallets.first().network.nativeSymbol
             return PortfolioHolding(
                 destination = PortfolioHoldingDestination.Evm(family),
-                headline = "${family.displayName()} ($nativeSymbol)",
-                nativeSymbol = nativeSymbol,
+                headline = network.portfolioHeadline(),
+                nativeSymbol = network.nativeSymbol,
                 balanceWei = totalWei,
             )
-        }
-
-        private fun EvmFamily.displayName(): String = when (this) {
-            EvmFamily.ETHEREUM -> "Ethereum"
-            EvmFamily.BSC -> "BSC"
-            EvmFamily.POLYGON -> "Polygon"
-            EvmFamily.ARBITRUM -> "Arbitrum"
-            EvmFamily.BASE -> "Base"
-            EvmFamily.OPTIMISM -> "Optimism"
-            EvmFamily.AVALANCHE -> "Avalanche"
         }
     }
 }

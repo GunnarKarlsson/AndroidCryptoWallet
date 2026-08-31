@@ -5,9 +5,28 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EvmTransactionDao {
+    @Query(
+        """
+        SELECT
+            t.walletId AS walletId,
+            t.hash AS hash,
+            t.confirmed AS confirmed,
+            t.blockTimeSeconds AS blockTimeSeconds,
+            t.netWei AS netWei,
+            t.feeWei AS feeWei,
+            t.sortIndex AS sortIndex,
+            w.name AS walletName,
+            w.network AS walletNetwork
+        FROM ethereum_transaction t
+        INNER JOIN ethereum_wallet w ON t.walletId = w.id
+        """,
+    )
+    fun observeAllWithWallet(): Flow<List<EvmTransactionWithWalletRow>>
+
     @Query("SELECT * FROM ethereum_transaction WHERE walletId = :walletId ORDER BY sortIndex ASC")
     suspend fun listByWalletId(walletId: String): List<EvmTransactionEntity>
 

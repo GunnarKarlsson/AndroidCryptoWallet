@@ -2,12 +2,14 @@ package network.bahn.androidcryptowallet.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionEntity
+import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionWithWalletRow
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletEntity
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletTxCacheEntity
@@ -645,6 +647,11 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
     override fun observeByNetwork(network: String): Flow<List<BitcoinWalletEntity>> =
         items.map { rows -> rows.filter { it.network == network } }
 
+    override suspend fun listIdsByNetwork(network: String): List<String> =
+        items.value.filter { it.network == network }.map { it.id }
+
+    override suspend fun listAllIds(): List<String> = items.value.map { it.id }
+
     override fun observeById(id: String): Flow<BitcoinWalletEntity?> =
         items.map { rows -> rows.find { it.id == id } }
 
@@ -710,6 +717,8 @@ private class FakeBitcoinWalletDao : BitcoinWalletDao {
 private class FakeBitcoinTransactionDao : BitcoinTransactionDao {
     private val items = mutableListOf<BitcoinTransactionEntity>()
     private val caches = mutableMapOf<String, BitcoinWalletTxCacheEntity>()
+
+    override fun observeAllWithWallet(): Flow<List<BitcoinTransactionWithWalletRow>> = emptyFlow()
 
     override suspend fun listByWalletId(walletId: String): List<BitcoinTransactionEntity> =
         items.filter { it.walletId == walletId }.sortedBy { it.sortIndex }
