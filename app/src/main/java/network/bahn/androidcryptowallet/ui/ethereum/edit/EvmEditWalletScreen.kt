@@ -38,20 +38,20 @@ import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 
 @Composable
-fun EthereumEditWalletScreen(
+fun EvmEditWalletScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
-    viewModel: EthereumEditWalletViewModel = hiltViewModel(),
+    viewModel: EvmEditWalletViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                EthereumEditWalletEvent.Saved -> onSaved()
+                EvmEditWalletEvent.Saved -> onSaved()
             }
         }
     }
-    EthereumEditWalletContent(
+    EvmEditWalletContent(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
         onConfirm = viewModel::onConfirm,
@@ -61,8 +61,8 @@ fun EthereumEditWalletScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EthereumEditWalletContent(
-    uiState: EthereumEditWalletUiState,
+private fun EvmEditWalletContent(
+    uiState: EvmEditWalletUiState,
     onNameChange: (String) -> Unit,
     onConfirm: () -> Unit,
     onBack: () -> Unit,
@@ -134,10 +134,10 @@ private fun EthereumEditWalletContent(
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumEditWalletDefaultPreview() {
+private fun EvmEditWalletDefaultPreview() {
     WalletTheme {
-        EthereumEditWalletContent(
-            uiState = EthereumEditWalletUiState(
+        EvmEditWalletContent(
+            uiState = EvmEditWalletUiState(
                 name = "Ethereum wallet",
                 isWalletLoaded = true,
             ),
@@ -150,10 +150,10 @@ private fun EthereumEditWalletDefaultPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumEditWalletNamedPreview() {
+private fun EvmEditWalletNamedPreview() {
     WalletTheme {
-        EthereumEditWalletContent(
-            uiState = EthereumEditWalletUiState(
+        EvmEditWalletContent(
+            uiState = EvmEditWalletUiState(
                 name = "Savings",
                 isWalletLoaded = true,
             ),
@@ -166,10 +166,10 @@ private fun EthereumEditWalletNamedPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumEditWalletSubmittingPreview() {
+private fun EvmEditWalletSubmittingPreview() {
     WalletTheme {
-        EthereumEditWalletContent(
-            uiState = EthereumEditWalletUiState(
+        EvmEditWalletContent(
+            uiState = EvmEditWalletUiState(
                 name = "Savings",
                 isSubmitting = true,
                 isWalletLoaded = true,

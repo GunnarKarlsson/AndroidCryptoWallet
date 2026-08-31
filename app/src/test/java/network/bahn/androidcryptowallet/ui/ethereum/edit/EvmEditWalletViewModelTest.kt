@@ -25,7 +25,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class EthereumEditWalletViewModelTest {
+class EvmEditWalletViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -69,7 +69,7 @@ class EthereumEditWalletViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumEditWalletEvent>()
+        val events = mutableListOf<EvmEditWalletEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -78,7 +78,7 @@ class EthereumEditWalletViewModelTest {
         viewModel.onConfirm()
 
         assertEquals(listOf(RenameCall(WALLET.id, "Holiday")), repo.renameCalls)
-        assertEquals(listOf(EthereumEditWalletEvent.Saved), events)
+        assertEquals(listOf(EvmEditWalletEvent.Saved), events)
         job.cancel()
         eventsJob.cancel()
     }
@@ -138,7 +138,7 @@ class EthereumEditWalletViewModelTest {
 
     private fun createViewModel(
         repo: FakeEthEditWalletRepository,
-    ) = EthereumEditWalletViewModel(
+    ) = EvmEditWalletViewModel(
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
         walletRepository = repo,
         defaultNames = EvmFamilyDefaultNames { family ->

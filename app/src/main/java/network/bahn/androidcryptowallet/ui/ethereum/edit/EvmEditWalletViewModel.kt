@@ -24,12 +24,12 @@ import network.bahn.androidcryptowallet.ui.chain.EvmFamilyDefaultNames
 import network.bahn.androidcryptowallet.ui.navigation.EvmEditWalletRoute
 import javax.inject.Inject
 
-sealed interface EthereumEditWalletEvent {
-    data object Saved : EthereumEditWalletEvent
+sealed interface EvmEditWalletEvent {
+    data object Saved : EvmEditWalletEvent
 }
 
 @HiltViewModel
-class EthereumEditWalletViewModel @Inject constructor(
+class EvmEditWalletViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EvmWalletRepository,
     private val defaultNames: EvmFamilyDefaultNames,
@@ -38,16 +38,16 @@ class EthereumEditWalletViewModel @Inject constructor(
         savedStateHandle.get<String>("walletId")
             ?: savedStateHandle.toRoute<EvmEditWalletRoute>().walletId
     private val form = MutableStateFlow(FormState())
-    private val eventsChannel = Channel<EthereumEditWalletEvent>(Channel.BUFFERED)
+    private val eventsChannel = Channel<EvmEditWalletEvent>(Channel.BUFFERED)
     private var confirmJob: Job? = null
 
     val events = eventsChannel.receiveAsFlow()
 
-    val uiState: StateFlow<EthereumEditWalletUiState> = combine(
+    val uiState: StateFlow<EvmEditWalletUiState> = combine(
         walletRepository.observeWallet(walletId),
         form,
     ) { wallet, formState ->
-        EthereumEditWalletUiState(
+        EvmEditWalletUiState(
             family = wallet?.network?.family,
             name = formState.name,
             isSubmitting = formState.isSubmitting,
@@ -57,7 +57,7 @@ class EthereumEditWalletViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumEditWalletUiState(),
+        initialValue = EvmEditWalletUiState(),
     )
 
     init {
@@ -91,7 +91,7 @@ class EthereumEditWalletViewModel @Inject constructor(
             form.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
                 walletRepository.renameWallet(walletId, form.value.name)
-                eventsChannel.send(EthereumEditWalletEvent.Saved)
+                eventsChannel.send(EvmEditWalletEvent.Saved)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -110,7 +110,7 @@ class EthereumEditWalletViewModel @Inject constructor(
     }
 
     private companion object {
-        const val TAG = "EthereumEditWallet"
+        const val TAG = "EvmEditWallet"
         const val MAX_NAME_LENGTH = 40
         const val SAVE_FAILED = "Could not save wallet name"
     }
