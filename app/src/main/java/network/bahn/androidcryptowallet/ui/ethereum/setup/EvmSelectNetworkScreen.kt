@@ -32,7 +32,7 @@ import network.bahn.androidcryptowallet.ui.util.DebugNextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EthereumRestoreSelectNetworkScreen(
+fun EvmSelectNetworkScreen(
     networks: List<EvmNetwork>,
     selectedNetwork: EvmNetwork,
     onNetworkSelected: (EvmNetwork) -> Unit,
@@ -93,9 +93,9 @@ fun EthereumRestoreSelectNetworkScreen(
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumRestoreSelectNetworkScreenPreview() {
+private fun EvmSelectNetworkScreenPreview() {
     WalletTheme {
-        EthereumRestoreSelectNetworkScreen(
+        EvmSelectNetworkScreen(
             networks = EvmNetwork.networksFor(EvmFamily.ETHEREUM),
             selectedNetwork = EvmNetwork.SEPOLIA,
             onNetworkSelected = {},

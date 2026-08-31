@@ -9,7 +9,7 @@ import network.bahn.androidcryptowallet.data.local.prefs.SelectedEvmNetworkStore
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
-internal class EthereumSetupSession(
+internal class EvmSetupSession(
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
     private val family: EvmFamily,
     private val scope: CoroutineScope,

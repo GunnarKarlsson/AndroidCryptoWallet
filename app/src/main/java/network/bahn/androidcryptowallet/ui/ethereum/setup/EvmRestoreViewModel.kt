@@ -20,31 +20,31 @@ import network.bahn.androidcryptowallet.ui.navigation.EvmRestoreGraphRoute
 import javax.inject.Inject
 
 @HiltViewModel
-class EthereumRestoreViewModel @Inject constructor(
+class EvmRestoreViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EvmWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
     private val family: EvmFamily = savedStateHandle.toRoute<EvmRestoreGraphRoute>().family
     private val availableNetworks = EvmNetwork.networksFor(family)
-    private val session = EthereumSetupSession(selectedEvmNetworkStore, family, viewModelScope)
+    private val session = EvmSetupSession(selectedEvmNetworkStore, family, viewModelScope)
     private val restoreNetwork = session.network
     private val mnemonicWords = MutableStateFlow(List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" })
     private val passphrase = MutableStateFlow("")
     private val isRestoring = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
-    private val eventsChannel = Channel<EthereumRestoreEvent>(Channel.BUFFERED)
+    private val eventsChannel = Channel<EvmRestoreEvent>(Channel.BUFFERED)
 
     val events = eventsChannel.receiveAsFlow()
 
-    val uiState: StateFlow<EthereumRestoreUiState> = combine(
+    val uiState: StateFlow<EvmRestoreUiState> = combine(
         restoreNetwork,
         mnemonicWords,
         passphrase,
         isRestoring,
         errorMessage,
     ) { network, words, phrase, restoring, error ->
-        EthereumRestoreUiState(
+        EvmRestoreUiState(
             family = family,
             availableNetworks = availableNetworks,
             restoreNetwork = network,
@@ -56,7 +56,7 @@ class EthereumRestoreViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumRestoreUiState(
+        initialValue = EvmRestoreUiState(
             family = family,
             availableNetworks = availableNetworks,
         ),
@@ -105,12 +105,12 @@ class EthereumRestoreViewModel @Inject constructor(
             selectedEvmNetworkStore.setNetwork(family, restoreNetwork.value)
             mnemonicWords.value = List(ETH_RESTORE_MNEMONIC_WORD_COUNT) { "" }
             passphrase.value = ""
-            eventsChannel.send(EthereumRestoreEvent.WalletRestored)
+            eventsChannel.send(EvmRestoreEvent.WalletRestored)
         }
     }
 
     private companion object {
-        const val TAG = "EthereumRestore"
+        const val TAG = "EvmRestore"
         const val RESTORE_FAILED_FALLBACK = "Could not restore wallet"
     }
 }

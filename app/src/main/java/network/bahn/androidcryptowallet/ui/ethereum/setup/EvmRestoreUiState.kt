@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.ui.ethereum.setup
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
-data class EthereumRestoreUiState(
+data class EvmRestoreUiState(
     val family: EvmFamily = EvmFamily.ETHEREUM,
     val availableNetworks: List<EvmNetwork> = EvmNetwork.networksFor(EvmFamily.ETHEREUM),
     val restoreNetwork: EvmNetwork = EvmNetwork.SEPOLIA,
@@ -20,6 +20,6 @@ data class EthereumRestoreUiState(
 
 const val ETH_RESTORE_MNEMONIC_WORD_COUNT = 12
 
-sealed interface EthereumRestoreEvent {
-    data object WalletRestored : EthereumRestoreEvent
+sealed interface EvmRestoreEvent {
+    data object WalletRestored : EvmRestoreEvent
 }

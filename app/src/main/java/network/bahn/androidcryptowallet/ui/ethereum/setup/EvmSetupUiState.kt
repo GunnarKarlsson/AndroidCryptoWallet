@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.ui.ethereum.setup
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 
-data class EthereumSetupUiState(
+data class EvmSetupUiState(
     val family: EvmFamily = EvmFamily.ETHEREUM,
     val availableNetworks: List<EvmNetwork> = EvmNetwork.networksFor(EvmFamily.ETHEREUM),
     val createNetwork: EvmNetwork = EvmNetwork.SEPOLIA,
@@ -13,6 +13,6 @@ data class EthereumSetupUiState(
     val errorMessage: String? = null,
 )
 
-sealed interface EthereumSetupEvent {
-    data object WalletCreated : EthereumSetupEvent
+sealed interface EvmSetupEvent {
+    data object WalletCreated : EvmSetupEvent
 }

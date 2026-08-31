@@ -41,15 +41,15 @@ import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsView
 import network.bahn.androidcryptowallet.ui.ethereum.edit.EvmEditWalletScreen
 import network.bahn.androidcryptowallet.ui.ethereum.receive.EvmReceiveScreen
 import network.bahn.androidcryptowallet.ui.ethereum.send.EvmSendScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumConfirmMnemonicScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumCreateWalletScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumImportWalletScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumRestoreEvent
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumRestoreSelectNetworkScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumRestoreViewModel
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSelectNetworkScreen
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSetupEvent
-import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumSetupViewModel
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmConfirmMnemonicScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmCreateWalletScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmImportWalletScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmRestoreEvent
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmRestoreSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmRestoreViewModel
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmSelectNetworkScreen
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmSetupEvent
+import network.bahn.androidcryptowallet.ui.ethereum.setup.EvmSetupViewModel
 
 @Composable
 fun WalletNavHost(
@@ -274,7 +274,7 @@ fun WalletNavHost(
             composable<EvmSelectNetworkRoute> { entry ->
                 val setupViewModel = entry.evmCreateGraphViewModel(navController)
                 val uiState by setupViewModel.uiState.collectAsStateWithLifecycle()
-                EthereumSelectNetworkScreen(
+                EvmSelectNetworkScreen(
                     networks = uiState.availableNetworks,
                     selectedNetwork = uiState.createNetwork,
                     onNetworkSelected = setupViewModel::onCreateNetworkSelected,
@@ -291,7 +291,7 @@ fun WalletNavHost(
                 LaunchedEffect(setupViewModel) {
                     setupViewModel.ensureMnemonicGenerated()
                 }
-                EthereumCreateWalletScreen(
+                EvmCreateWalletScreen(
                     words = uiState.mnemonicWords,
                     passphrase = uiState.passphrase,
                     onPassphraseChange = setupViewModel::onPassphraseChange,
@@ -305,7 +305,7 @@ fun WalletNavHost(
                 LaunchedEffect(setupViewModel) {
                     setupViewModel.events.collect { event ->
                         when (event) {
-                            EthereumSetupEvent.WalletCreated -> {
+                            EvmSetupEvent.WalletCreated -> {
                                 navController.popBackStack(
                                     route = EvmCreateGraphRoute(uiState.family),
                                     inclusive = true,
@@ -314,7 +314,7 @@ fun WalletNavHost(
                         }
                     }
                 }
-                EthereumConfirmMnemonicScreen(
+                EvmConfirmMnemonicScreen(
                     questions = BitcoinPlaceholderMnemonic.quizQuestions(uiState.mnemonicWords),
                     isSubmitting = uiState.isCreating,
                     errorMessage = uiState.errorMessage,
@@ -329,7 +329,7 @@ fun WalletNavHost(
             composable<EvmRestoreSelectNetworkRoute> { entry ->
                 val restoreViewModel = entry.evmRestoreGraphViewModel(navController)
                 val uiState by restoreViewModel.uiState.collectAsStateWithLifecycle()
-                EthereumRestoreSelectNetworkScreen(
+                EvmRestoreSelectNetworkScreen(
                     networks = uiState.availableNetworks,
                     selectedNetwork = uiState.restoreNetwork,
                     onNetworkSelected = restoreViewModel::onRestoreNetworkSelected,
@@ -343,7 +343,7 @@ fun WalletNavHost(
                 LaunchedEffect(restoreViewModel) {
                     restoreViewModel.events.collect { event ->
                         when (event) {
-                            EthereumRestoreEvent.WalletRestored -> {
+                            EvmRestoreEvent.WalletRestored -> {
                                 navController.popBackStack(
                                     route = EvmRestoreGraphRoute(uiState.family),
                                     inclusive = true,
@@ -352,7 +352,7 @@ fun WalletNavHost(
                         }
                     }
                 }
-                EthereumImportWalletScreen(
+                EvmImportWalletScreen(
                     mnemonicWords = uiState.mnemonicWords,
                     passphrase = uiState.passphrase,
                     isSubmitting = uiState.isRestoring,
@@ -391,7 +391,7 @@ private fun NavBackStackEntry.restoreGraphViewModel(
 @Composable
 private fun NavBackStackEntry.evmCreateGraphViewModel(
     navController: NavHostController,
-): EthereumSetupViewModel {
+): EvmSetupViewModel {
     val parentEntry = remember(this) {
         navController.getBackStackEntry<EvmCreateGraphRoute>()
     }
@@ -401,7 +401,7 @@ private fun NavBackStackEntry.evmCreateGraphViewModel(
 @Composable
 private fun NavBackStackEntry.evmRestoreGraphViewModel(
     navController: NavHostController,
-): EthereumRestoreViewModel {
+): EvmRestoreViewModel {
     val parentEntry = remember(this) {
         navController.getBackStackEntry<EvmRestoreGraphRoute>()
     }

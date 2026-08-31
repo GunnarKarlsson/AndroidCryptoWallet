@@ -20,31 +20,31 @@ import network.bahn.androidcryptowallet.ui.navigation.EvmCreateGraphRoute
 import javax.inject.Inject
 
 @HiltViewModel
-class EthereumSetupViewModel @Inject constructor(
+class EvmSetupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EvmWalletRepository,
     private val selectedEvmNetworkStore: SelectedEvmNetworkStore,
 ) : ViewModel() {
     private val family: EvmFamily = savedStateHandle.toRoute<EvmCreateGraphRoute>().family
     private val availableNetworks = EvmNetwork.networksFor(family)
-    private val session = EthereumSetupSession(selectedEvmNetworkStore, family, viewModelScope)
+    private val session = EvmSetupSession(selectedEvmNetworkStore, family, viewModelScope)
     private val createNetwork = session.network
     private val mnemonicWords = MutableStateFlow<List<String>>(emptyList())
     private val passphrase = MutableStateFlow("")
     private val isCreating = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
-    private val eventsChannel = Channel<EthereumSetupEvent>(Channel.BUFFERED)
+    private val eventsChannel = Channel<EvmSetupEvent>(Channel.BUFFERED)
 
     val events = eventsChannel.receiveAsFlow()
 
-    val uiState: StateFlow<EthereumSetupUiState> = combine(
+    val uiState: StateFlow<EvmSetupUiState> = combine(
         createNetwork,
         mnemonicWords,
         passphrase,
         isCreating,
         errorMessage,
     ) { network, words, phrase, creating, error ->
-        EthereumSetupUiState(
+        EvmSetupUiState(
             family = family,
             availableNetworks = availableNetworks,
             createNetwork = network,
@@ -56,7 +56,7 @@ class EthereumSetupViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumSetupUiState(
+        initialValue = EvmSetupUiState(
             family = family,
             availableNetworks = availableNetworks,
         ),
@@ -96,12 +96,12 @@ class EthereumSetupViewModel @Inject constructor(
             selectedEvmNetworkStore.setNetwork(family, createNetwork.value)
             mnemonicWords.value = emptyList()
             passphrase.value = ""
-            eventsChannel.send(EthereumSetupEvent.WalletCreated)
+            eventsChannel.send(EvmSetupEvent.WalletCreated)
         }
     }
 
     private companion object {
-        const val TAG = "EthereumSetup"
+        const val TAG = "EvmSetup"
         const val CREATE_FAILED_FALLBACK = "Could not create wallet"
     }
 }

@@ -28,7 +28,7 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
-class EthereumSetupViewModelTest {
+class EvmSetupViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -49,7 +49,7 @@ class EthereumSetupViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumSetupEvent>()
+        val events = mutableListOf<EvmSetupEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -62,7 +62,7 @@ class EthereumSetupViewModelTest {
             walletRepo.createCalls,
         )
         assertEquals(listOf(EvmNetwork.MAINNET), networkStore.setCalls)
-        assertEquals(listOf(EthereumSetupEvent.WalletCreated), events)
+        assertEquals(listOf(EvmSetupEvent.WalletCreated), events)
         assertTrue(viewModel.uiState.value.mnemonicWords.isEmpty())
         job.cancel()
         eventsJob.cancel()
@@ -78,7 +78,7 @@ class EthereumSetupViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumSetupEvent>()
+        val events = mutableListOf<EvmSetupEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -151,7 +151,7 @@ class EthereumSetupViewModelTest {
         walletRepo: FakeEthSetupWalletRepository,
         networkStore: FakeEthSetupNetworkStore = FakeEthSetupNetworkStore(),
         family: EvmFamily = EvmFamily.ETHEREUM,
-    ) = EthereumSetupViewModel(
+    ) = EvmSetupViewModel(
         savedStateHandle = savedStateHandleForEvmCreateGraph(family),
         walletRepository = walletRepo,
         selectedEvmNetworkStore = networkStore,

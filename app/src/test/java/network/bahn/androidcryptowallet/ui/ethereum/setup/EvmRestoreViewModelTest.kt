@@ -29,7 +29,7 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
-class EthereumRestoreViewModelTest {
+class EvmRestoreViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -48,7 +48,7 @@ class EthereumRestoreViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumRestoreEvent>()
+        val events = mutableListOf<EvmRestoreEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -61,7 +61,7 @@ class EthereumRestoreViewModelTest {
             walletRepo.restoreCalls,
         )
         assertEquals(listOf(EvmNetwork.SEPOLIA), networkStore.setCalls)
-        assertEquals(listOf(EthereumRestoreEvent.WalletRestored), events)
+        assertEquals(listOf(EvmRestoreEvent.WalletRestored), events)
         job.cancel()
         eventsJob.cancel()
     }
@@ -91,7 +91,7 @@ class EthereumRestoreViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumRestoreEvent>()
+        val events = mutableListOf<EvmRestoreEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -114,7 +114,7 @@ class EthereumRestoreViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumRestoreEvent>()
+        val events = mutableListOf<EvmRestoreEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -126,7 +126,7 @@ class EthereumRestoreViewModelTest {
 
         assertEquals(2, walletRepo.restoreCalls.size)
         assertEquals(
-            listOf(EthereumRestoreEvent.WalletRestored, EthereumRestoreEvent.WalletRestored),
+            listOf(EvmRestoreEvent.WalletRestored, EvmRestoreEvent.WalletRestored),
             events,
         )
         job.cancel()
@@ -216,7 +216,7 @@ class EthereumRestoreViewModelTest {
         walletRepo: FakeEthRestoreWalletRepository,
         networkStore: FakeEthRestoreNetworkStore = FakeEthRestoreNetworkStore(),
         family: EvmFamily = EvmFamily.ETHEREUM,
-    ) = EthereumRestoreViewModel(
+    ) = EvmRestoreViewModel(
         savedStateHandle = savedStateHandleForEvmRestoreGraph(family),
         walletRepository = walletRepo,
         selectedEvmNetworkStore = networkStore,
