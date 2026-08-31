@@ -59,20 +59,20 @@ import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
 @Composable
-fun EthereumSendScreen(
+fun EvmSendScreen(
     onBack: () -> Unit,
     onSent: () -> Unit,
-    viewModel: EthereumSendViewModel = hiltViewModel(),
+    viewModel: EvmSendViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                EthereumSendEvent.Sent -> onSent()
+                EvmSendEvent.Sent -> onSent()
             }
         }
     }
-    EthereumSendContent(
+    EvmSendContent(
         uiState = uiState,
         onRecipientChange = viewModel::onRecipientChange,
         onAmountChange = viewModel::onAmountChange,
@@ -85,8 +85,8 @@ fun EthereumSendScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EthereumSendContent(
-    uiState: EthereumSendUiState,
+private fun EvmSendContent(
+    uiState: EvmSendUiState,
     onRecipientChange: (String) -> Unit,
     onAmountChange: (String) -> Unit,
     onGasPresetSelected: (EvmGasPreset) -> Unit,
@@ -239,8 +239,8 @@ private fun EthereumSendContent(
                     }
                 }
             }
-            EthereumSendTotalSummary(uiState = uiState)
-            EthereumSendRemainingBalance(uiState = uiState)
+            EvmSendTotalSummary(uiState = uiState)
+            EvmSendRemainingBalance(uiState = uiState)
             val errorMessage = uiState.errorMessage
             if (errorMessage != null) {
                 Text(
@@ -310,8 +310,8 @@ private fun EvmGasPresetCard(
 }
 
 @Composable
-private fun EthereumSendTotalSummary(
-    uiState: EthereumSendUiState,
+private fun EvmSendTotalSummary(
+    uiState: EvmSendUiState,
 ) {
     val feeWei = uiState.estimatedFeeWei
     val amountWei = StringUtils.parseEvmAmountToWei(uiState.amount)
@@ -330,7 +330,7 @@ private fun EthereumSendTotalSummary(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            EthereumSendSummaryRow(
+            EvmSendSummaryRow(
                 label = stringResource(R.string.send_fee_row),
                 value = if (feeWei == null) {
                     placeholder
@@ -341,7 +341,7 @@ private fun EthereumSendTotalSummary(
                     )
                 },
             )
-            EthereumSendSummaryRow(
+            EvmSendSummaryRow(
                 label = stringResource(R.string.send_total_label),
                 value = if (amountWei == null || feeWei == null) {
                     placeholder
@@ -360,8 +360,8 @@ private fun EthereumSendTotalSummary(
 }
 
 @Composable
-private fun EthereumSendRemainingBalance(
-    uiState: EthereumSendUiState,
+private fun EvmSendRemainingBalance(
+    uiState: EvmSendUiState,
 ) {
     val remainingWei = uiState.remainingBalanceWei
     val placeholder = stringResource(R.string.receive_address_placeholder)
@@ -379,7 +379,7 @@ private fun EthereumSendRemainingBalance(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
-            EthereumSendSummaryRow(
+            EvmSendSummaryRow(
                 label = stringResource(R.string.send_remaining_label),
                 value = if (remainingWei == null) {
                     placeholder
@@ -397,7 +397,7 @@ private fun EthereumSendRemainingBalance(
 }
 
 @Composable
-private fun EthereumSendSummaryRow(
+private fun EvmSendSummaryRow(
     label: String,
     value: String,
     emphasize: Boolean = false,
@@ -453,10 +453,10 @@ private val PreviewFeeData = EvmFeeData(
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumSendScreenPreview() {
+private fun EvmSendScreenPreview() {
     WalletTheme {
-        EthereumSendContent(
-            uiState = EthereumSendUiState(
+        EvmSendContent(
+            uiState = EvmSendUiState(
                 availableBalanceWei = "5000000000000000000",
                 feeData = PreviewFeeData,
             ),
@@ -472,10 +472,10 @@ private fun EthereumSendScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumSendScreenFilledPreview() {
+private fun EvmSendScreenFilledPreview() {
     WalletTheme {
-        EthereumSendContent(
-            uiState = EthereumSendUiState(
+        EvmSendContent(
+            uiState = EvmSendUiState(
                 recipient = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 amount = "0.010000000000000000",
                 gasPreset = EvmGasPreset.Fast,
@@ -494,10 +494,10 @@ private fun EthereumSendScreenFilledPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumSendScreenSubmittingPreview() {
+private fun EvmSendScreenSubmittingPreview() {
     WalletTheme {
-        EthereumSendContent(
-            uiState = EthereumSendUiState(
+        EvmSendContent(
+            uiState = EvmSendUiState(
                 recipient = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 amount = "0.010000000000000000",
                 isSubmitting = true,
@@ -516,10 +516,10 @@ private fun EthereumSendScreenSubmittingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EthereumSendScreenOverspendPreview() {
+private fun EvmSendScreenOverspendPreview() {
     WalletTheme {
-        EthereumSendContent(
-            uiState = EthereumSendUiState(
+        EvmSendContent(
+            uiState = EvmSendUiState(
                 recipient = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
                 amount = "4.900000000000000000",
                 gasPreset = EvmGasPreset.Fast,

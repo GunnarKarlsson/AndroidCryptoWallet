@@ -40,7 +40,7 @@ import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsScre
 import network.bahn.androidcryptowallet.ui.ethereum.details.EvmWalletDetailsViewModel
 import network.bahn.androidcryptowallet.ui.ethereum.edit.EthereumEditWalletScreen
 import network.bahn.androidcryptowallet.ui.ethereum.receive.EthereumReceiveScreen
-import network.bahn.androidcryptowallet.ui.ethereum.send.EthereumSendScreen
+import network.bahn.androidcryptowallet.ui.ethereum.send.EvmSendScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumConfirmMnemonicScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumCreateWalletScreen
 import network.bahn.androidcryptowallet.ui.ethereum.setup.EthereumImportWalletScreen
@@ -120,7 +120,7 @@ fun WalletNavHost(
             )
         }
         composable<EvmSendRoute> {
-            EthereumSendScreen(
+            EvmSendScreen(
                 onBack = { navController.popBackStack() },
                 onSent = {
                     navController.previousBackStackEntry?.savedStateHandle?.set(

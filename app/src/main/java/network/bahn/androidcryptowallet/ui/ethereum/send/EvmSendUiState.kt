@@ -10,7 +10,7 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 import java.math.BigInteger
 import java.math.RoundingMode
 
-data class EthereumSendUiState(
+data class EvmSendUiState(
     val nativeSymbol: String = EvmNetwork.SEPOLIA.nativeSymbol,
     val recipient: String = "",
     val amount: String = "",

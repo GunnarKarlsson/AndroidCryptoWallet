@@ -28,12 +28,12 @@ import network.bahn.androidcryptowallet.ui.util.StringUtils
 import java.math.BigInteger
 import javax.inject.Inject
 
-sealed interface EthereumSendEvent {
-    data object Sent : EthereumSendEvent
+sealed interface EvmSendEvent {
+    data object Sent : EvmSendEvent
 }
 
 @HiltViewModel
-class EthereumSendViewModel @Inject constructor(
+class EvmSendViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EvmWalletRepository,
 ) : ViewModel() {
@@ -48,18 +48,18 @@ class EthereumSendViewModel @Inject constructor(
         )
     private val form = MutableStateFlow(FormState())
     private val feeState = MutableStateFlow(FeeState(isLoading = true))
-    private val eventsChannel = Channel<EthereumSendEvent>(Channel.BUFFERED)
+    private val eventsChannel = Channel<EvmSendEvent>(Channel.BUFFERED)
     private var sendJob: Job? = null
     private var feeJob: Job? = null
 
     val events = eventsChannel.receiveAsFlow()
 
-    val uiState: StateFlow<EthereumSendUiState> = combine(
+    val uiState: StateFlow<EvmSendUiState> = combine(
         wallet,
         form,
         feeState,
     ) { currentWallet, formState, fees ->
-        EthereumSendUiState(
+        EvmSendUiState(
             nativeSymbol = currentWallet?.network?.nativeSymbol
                 ?: EvmNetwork.SEPOLIA.nativeSymbol,
             recipient = formState.recipient,
@@ -75,7 +75,7 @@ class EthereumSendViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EthereumSendUiState(isLoadingFees = true),
+        initialValue = EvmSendUiState(isLoadingFees = true),
     )
 
     init {
@@ -131,7 +131,7 @@ class EthereumSendViewModel @Inject constructor(
                     amountWei = amountWei,
                     gasPreset = current.gasPreset,
                 )
-                eventsChannel.send(EthereumSendEvent.Sent)
+                eventsChannel.send(EvmSendEvent.Sent)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -169,7 +169,7 @@ class EthereumSendViewModel @Inject constructor(
 
     private companion object {
         val ETH_AMOUNT_PATTERN = Regex("^\\d*\\.?\\d{0,18}$")
-        const val TAG = "EthereumSend"
+        const val TAG = "EvmSend"
         const val INVALID_ADDRESS = "Enter a valid Ethereum address"
         const val INVALID_AMOUNT = "Enter an amount greater than zero"
         const val WALLET_MISSING = "Wallet not found"

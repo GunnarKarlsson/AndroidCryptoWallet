@@ -29,7 +29,7 @@ import org.junit.Test
 import java.math.BigInteger
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class EthereumSendViewModelTest {
+class EvmSendViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -108,7 +108,7 @@ class EthereumSendViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect { }
         }
-        val events = mutableListOf<EthereumSendEvent>()
+        val events = mutableListOf<EvmSendEvent>()
         val eventsJob = backgroundScope.launch(Dispatchers.Unconfined) {
             viewModel.events.collect { events += it }
         }
@@ -129,7 +129,7 @@ class EthereumSendViewModelTest {
             ),
             repo.sendCalls,
         )
-        assertEquals(listOf(EthereumSendEvent.Sent), events)
+        assertEquals(listOf(EvmSendEvent.Sent), events)
         job.cancel()
         eventsJob.cancel()
     }
@@ -171,7 +171,7 @@ class EthereumSendViewModelTest {
 
     private fun createViewModel(
         repo: FakeSendEthWalletRepository,
-    ) = EthereumSendViewModel(
+    ) = EvmSendViewModel(
         savedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
         walletRepository = repo,
     )
