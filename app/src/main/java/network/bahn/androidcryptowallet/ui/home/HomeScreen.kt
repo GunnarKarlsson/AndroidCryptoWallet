@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 
@@ -11,7 +12,8 @@ import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 fun HomeScreen(
     onAddWallet: () -> Unit,
     onHoldingClick: (PortfolioHoldingDestination) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModelStoreOwner: ViewModelStoreOwner,
+    viewModel: HomeViewModel = hiltViewModel(viewModelStoreOwner),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

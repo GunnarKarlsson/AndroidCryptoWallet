@@ -21,7 +21,8 @@ class HomeViewModel @Inject constructor(
     catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {
     private val isRefreshing = MutableStateFlow(false)
-    private var hasEntered = false
+    /** Guards the one automatic refresh per app session (shell ViewModel lifetime). */
+    private var hasAutoRefreshedThisSession = false
 
     val uiState: StateFlow<HomeUiState> = combine(
         portfolioRepository.observeHoldings(),
@@ -29,11 +30,11 @@ class HomeViewModel @Inject constructor(
         isRefreshing,
     ) { holdings, ready, refreshing ->
         HomeUiState(
-            holdings = if (ready) holdings else emptyList(),
-            assetCount = if (ready) holdings.size else 0,
+            holdings = holdings,
+            assetCount = holdings.size,
             totalFiatFormatted = null,
-            isLoading = !ready,
-            isRefreshing = refreshing,
+            isTotalLoading = refreshing,
+            isHoldingsLoading = holdings.isEmpty() && (!ready || refreshing),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -41,9 +42,10 @@ class HomeViewModel @Inject constructor(
         initialValue = HomeUiState(),
     )
 
+    /** Refreshes balances once when the app session starts; manual [refresh] any time. */
     fun onEnter() {
-        if (hasEntered) return
-        hasEntered = true
+        if (hasAutoRefreshedThisSession) return
+        hasAutoRefreshedThisSession = true
         refresh()
     }
 

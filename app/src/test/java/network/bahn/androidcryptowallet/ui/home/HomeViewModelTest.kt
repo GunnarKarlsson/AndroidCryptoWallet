@@ -1,5 +1,6 @@
 package network.bahn.androidcryptowallet.ui.home
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
@@ -34,14 +36,16 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun initialStateIsLoading() = runTest {
-        val viewModel = createViewModel()
-        assertTrue(viewModel.uiState.value.isLoading)
+    fun initialStateShowsHoldingsLoadingWhenCatalogNotReadyAndNoHoldings() = runTest {
+        val viewModel = createViewModel(ready = MutableStateFlow(false))
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isHoldingsLoading)
         assertTrue(viewModel.uiState.value.holdings.isEmpty())
     }
 
     @Test
-    fun showsHoldingsAfterCatalogReady() = runTest {
+    fun showsCachedHoldingsBeforeCatalogReady() = runTest {
         val ready = MutableStateFlow(false)
         val holdings = listOf(
             PortfolioHolding(
@@ -52,26 +56,90 @@ class HomeViewModelTest {
             ),
         )
         val viewModel = createViewModel(holdings = holdings, ready = ready)
-        val states = mutableListOf<HomeUiState>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.uiState.collect { states.add(it) }
-        }
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
 
-        ready.value = true
+        assertFalse(viewModel.uiState.value.isHoldingsLoading)
+        assertEquals(1, viewModel.uiState.value.assetCount)
+        assertEquals("Bitcoin (BTC)", viewModel.uiState.value.holdings.single().headline)
+    }
 
-        val latest = states.last()
-        assertFalse(latest.isLoading)
-        assertEquals(1, latest.assetCount)
-        assertEquals("Bitcoin (BTC)", latest.holdings.single().headline)
-        job.cancel()
+    @Test
+    fun refreshKeepsCachedHoldingsVisible() = runTest {
+        val holdings = listOf(
+            PortfolioHolding(
+                destination = PortfolioHoldingDestination.Bitcoin,
+                headline = "Bitcoin (BTC)",
+                nativeSymbol = "BTC",
+                balanceSatoshis = 100L,
+            ),
+        )
+        val viewModel = createViewModel(holdings = holdings, ready = MutableStateFlow(true))
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.value.holdings.size)
+        assertFalse(viewModel.uiState.value.isTotalLoading)
+    }
+
+    @Test
+    fun refreshSetsTotalLoadingWhileHoldingsStayVisible() = runTest {
+        val portfolioRepository = SlowRefreshPortfolioRepository(
+            holdings = listOf(
+                PortfolioHolding(
+                    destination = PortfolioHoldingDestination.Bitcoin,
+                    headline = "Bitcoin (BTC)",
+                    nativeSymbol = "BTC",
+                    balanceSatoshis = 100L,
+                ),
+            ),
+        )
+        val viewModel = createViewModel(
+            portfolioRepository = portfolioRepository,
+            ready = MutableStateFlow(true),
+        )
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.refresh()
+        assertTrue(viewModel.uiState.value.isTotalLoading)
+        assertFalse(viewModel.uiState.value.isHoldingsLoading)
+        assertEquals(1, viewModel.uiState.value.holdings.size)
+
+        portfolioRepository.completeRefresh()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isTotalLoading)
     }
 
     @Test
     fun refreshCallsRepository() = runTest {
         val portfolioRepository = FakePortfolioRepository()
         val viewModel = createViewModel(portfolioRepository = portfolioRepository, ready = MutableStateFlow(true))
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
 
         viewModel.refresh()
+
+        assertEquals(1, portfolioRepository.refreshCalls)
+    }
+
+    @Test
+    fun onEnterDoesNotAutoRefreshAgainAfterFirstVisit() = runTest {
+        val portfolioRepository = FakePortfolioRepository()
+        val viewModel = createViewModel(
+            portfolioRepository = portfolioRepository,
+            ready = MutableStateFlow(true),
+        )
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onEnter()
+        advanceUntilIdle()
+        viewModel.onEnter()
+        advanceUntilIdle()
 
         assertEquals(1, portfolioRepository.refreshCalls)
     }
@@ -79,7 +147,7 @@ class HomeViewModelTest {
     private fun createViewModel(
         holdings: List<PortfolioHolding> = emptyList(),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(true),
-        portfolioRepository: FakePortfolioRepository = FakePortfolioRepository(holdings),
+        portfolioRepository: PortfolioRepository = FakePortfolioRepository(holdings),
     ): HomeViewModel = HomeViewModel(
         portfolioRepository = portfolioRepository,
         catalogReadiness = FakeWalletCatalogReadiness(ready),
@@ -95,6 +163,22 @@ private class FakePortfolioRepository(
 
     override suspend fun refreshAllBalances() {
         refreshCalls++
+    }
+}
+
+private class SlowRefreshPortfolioRepository(
+    private val holdings: List<PortfolioHolding>,
+) : PortfolioRepository {
+    private val refreshGate = CompletableDeferred<Unit>()
+
+    override fun observeHoldings(): Flow<List<PortfolioHolding>> = flowOf(holdings)
+
+    override suspend fun refreshAllBalances() {
+        refreshGate.await()
+    }
+
+    fun completeRefresh() {
+        refreshGate.complete(Unit)
     }
 }
 

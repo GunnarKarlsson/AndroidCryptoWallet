@@ -62,8 +62,9 @@ fun WalletNavHost(
         navController = navController,
         startDestination = MainShellRoute,
     ) {
-        composable<MainShellRoute> {
+        composable<MainShellRoute> { shellEntry ->
             MainShellScreen(
+                shellBackStackEntry = shellEntry,
                 onAddWallet = { navController.navigate(ChainSelectRoute) },
                 onHoldingClick = { destination ->
                     when (destination) {

@@ -67,21 +67,11 @@ fun HomeContent(
                         }
                     },
                     actions = {
-                        if (uiState.isRefreshing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .padding(end = 16.dp)
-                                    .size(24.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary,
+                        IconButton(onClick = onRefresh) {
+                            Icon(
+                                imageVector = Icons.Outlined.Refresh,
+                                contentDescription = stringResource(R.string.refresh_balance),
                             )
-                        } else {
-                            IconButton(onClick = onRefresh) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Refresh,
-                                    contentDescription = stringResource(R.string.refresh_balance),
-                                )
-                            }
                         }
                     },
                 )
@@ -104,10 +94,26 @@ fun HomeContent(
                 TotalBalanceCard(
                     totalFiatFormatted = uiState.totalFiatFormatted,
                     assetCount = uiState.assetCount,
-                    isLoading = uiState.isLoading,
+                    isLoading = uiState.isTotalLoading,
                 )
             }
-            if (!uiState.isLoading && uiState.holdings.isEmpty()) {
+            if (uiState.isHoldingsLoading) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+            if (!uiState.isHoldingsLoading && uiState.holdings.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
@@ -163,7 +169,8 @@ private fun HomeContentPreview() {
                     ),
                 ),
                 assetCount = 2,
-                isLoading = false,
+                isTotalLoading = true,
+                isHoldingsLoading = false,
             ),
             onRefresh = {},
             onAddWallet = {},

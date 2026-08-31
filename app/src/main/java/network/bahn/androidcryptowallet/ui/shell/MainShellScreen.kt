@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -33,6 +34,7 @@ import network.bahn.androidcryptowallet.ui.transactions.TransactionsPlaceholderS
 
 @Composable
 fun MainShellScreen(
+    shellBackStackEntry: NavBackStackEntry,
     onAddWallet: () -> Unit,
     onHoldingClick: (PortfolioHoldingDestination) -> Unit,
     navController: NavHostController = rememberNavController(),
@@ -51,6 +53,7 @@ fun MainShellScreen(
         ) {
             composable<HomeRoute> {
                 HomeScreen(
+                    viewModelStoreOwner = shellBackStackEntry,
                     onAddWallet = onAddWallet,
                     onHoldingClick = onHoldingClick,
                 )
