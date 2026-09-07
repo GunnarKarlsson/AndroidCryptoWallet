@@ -1,6 +1,6 @@
 # AndroidCryptoWallet
 
-A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche). Keys stay on device.
+A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche). Keys stay on device. Easily extendable for more EVM chains.
 
 ## Keys, seed, and signing
 
@@ -37,7 +37,19 @@ To add another chain client later:
 
 ## EVM chains
 
-Adding another EVM chain is easy. All families share the same wallet screens and backend (JSON-RPC, signing, tx history). BSC is the reference implementation.
+AndroidCryptoWallet supports easily adding new EVM chains, but curated by the developer. In the future we might add the feature for the user to add chains.
+
+Currently supported EVM chains:
+* Ethereum — Mainnet (`1`), Sepolia (`11155111`)
+* BSC — Mainnet (`56`), BSC Testnet (`97`)
+* Polygon — Mainnet (`137`), Amoy (`80002`)
+* Arbitrum — Mainnet (`42161`), Sepolia (`421614`)
+* Base — Mainnet (`8453`), Sepolia (`84532`)
+* Optimism — Mainnet (`10`), Sepolia (`11155420`)
+* Avalanche — Mainnet (`43114`), Fuji (`43113`)
+
+
+Adding another EVM chain as developer is easy. All families share the same wallet screens and backend (JSON-RPC, signing, tx history). BSC is the reference implementation.
 
 Each **family** (Ethereum, BSC, …) is a chain-select entry. Users pick a **network** inside that family (Sepolia, BSC Testnet, …) from the dropdown. You do not add new screen packages or repositories.
 
@@ -51,6 +63,8 @@ Each **family** (Ethereum, BSC, …) is a chain-select entry. Users pick a **net
 - Amount labels from `network.nativeSymbol`
 
 ### Checklist
+
+How to add a chain:
 
 #### 1. Domain — `EvmFamily` + `EvmNetwork`
 
