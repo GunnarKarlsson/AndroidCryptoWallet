@@ -10,3 +10,13 @@
 .externalNativeBuild
 .cxx
 local.properties
+.kotlin/
+
+# Release artifacts and signing / vendor secrets
+*.apk
+*.aab
+*.jks
+*.keystore
+google-services.json
+keystore.properties
+/app/release/

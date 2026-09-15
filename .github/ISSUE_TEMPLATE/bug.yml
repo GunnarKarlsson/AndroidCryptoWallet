@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a functional or UI bug in the wallet
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not report security vulnerabilities here.** Use a [private security advisory](https://github.com/GunnarKarlsson/AndroidCryptoWallet/security/advisories/new). See [SECURITY.md](https://github.com/GunnarKarlsson/AndroidCryptoWallet/blob/main/SECURITY.md).
+
+        Do not paste a real mnemonic, private key, or funded mainnet address.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, starting from a cold start if it matters.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: chain
+    attributes:
+      label: Chain
+      options:
+        - Bitcoin
+        - Ethereum
+        - BSC
+        - Polygon
+        - Arbitrum
+        - Base
+        - Optimism
+        - Avalanche
+        - Home / all wallets
+        - Not chain-specific
+    validations:
+      required: true
+  - type: input
+    id: network
+    attributes:
+      label: Network
+      description: For example testnet4, Sepolia, BSC Testnet, or mainnet.
+    validations:
+      required: false
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: versionName / git commit if known (see CHANGELOG.md).
+    validations:
+      required: false
+  - type: input
+    id: android-version
+    attributes:
+      label: Android version and device
+      description: For example Android 14 emulator (API 34), or Pixel 7 / Android 15.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant logcat or a stack trace. Redact addresses if they are funded mainnet wallets.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag in images for UI bugs.
+    validations:
+      required: false

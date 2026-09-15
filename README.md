@@ -182,6 +182,14 @@ Manual smoke (do not clear emulator app data):
 2. Optionally set mock watch-only addresses (`MOCK_BITCOIN_WALLET_TESTNET4` / `MOCK_BITCOIN_WALLET_MAINNET`) to any bitcoin address you want to view in the wallet lists and tx lists.
 3. Open the project in Android Studio and run the `debug` build (Bitcoin testnet4).
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build, which tests to run, and PR expectations. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+This is a wallet. Report vulnerabilities **privately** — see [SECURITY.md](SECURITY.md). Do not open a public GitHub issue for security findings.
+
+Released changes are listed in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

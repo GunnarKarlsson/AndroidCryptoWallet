@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a user-facing change or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For large changes (new chains, signing, storage, Room migrations), start here before a PR. See [CONTRIBUTING.md](https://github.com/GunnarKarlsson/AndroidCryptoWallet/blob/main/CONTRIBUTING.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard or missing today? Who is this for?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should the app do instead? Include screens or data sources if you know them.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Bitcoin
+        - EVM
+        - Home / portfolio
+        - Settings
+        - Security / keys
+        - Tests / tooling
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about, or existing issues this overlaps with.
+    validations:
+      required: false
