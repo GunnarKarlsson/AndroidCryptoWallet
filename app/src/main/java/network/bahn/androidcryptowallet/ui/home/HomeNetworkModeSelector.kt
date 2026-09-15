@@ -2,6 +2,7 @@ package network.bahn.androidcryptowallet.ui.home
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -31,6 +32,7 @@ fun HomeNetworkModeSelector(
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
                     count = WalletNetworkMode.entries.size,
+                    baseShape = RoundedCornerShape(0.dp),
                 ),
                 onClick = { onModeSelected(mode) },
                 selected = selectedMode == mode,

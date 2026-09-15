@@ -55,6 +55,7 @@ import network.bahn.androidcryptowallet.domain.model.EvmFeeData
 import network.bahn.androidcryptowallet.domain.model.EvmGasPreset
 import network.bahn.androidcryptowallet.ui.evm.evmNativeAmountLabel
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
+import network.bahn.androidcryptowallet.ui.theme.walletPrimaryButtonColors
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -118,6 +119,7 @@ private fun EvmSendContent(
             Button(
                 onClick = onSend,
                 enabled = uiState.canSend,
+                colors = walletPrimaryButtonColors(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()

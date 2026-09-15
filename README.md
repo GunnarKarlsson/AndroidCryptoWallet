@@ -2,6 +2,13 @@
 
 A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche). Keys stay on device. Easily extendable for more EVM chains.
 
+## Screenshots
+
+<p>
+<img src="docs/screenshot-home.png" alt="Home portfolio with total USD balance" width="280">
+<img src="docs/screenshot-btc-wallet.png" alt="Bitcoin wallet details with balance and transactions" width="280">
+</p>
+
 ## Keys, seed, and signing
 
 Supported BIPs:

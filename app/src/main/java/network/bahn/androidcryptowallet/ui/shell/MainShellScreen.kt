@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -24,6 +25,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.ui.theme.walletShellContentWindowInsets
+import network.bahn.androidcryptowallet.ui.theme.walletNavigationBarItemColors
+import network.bahn.androidcryptowallet.ui.theme.WalletSurfaceVariant
 import network.bahn.androidcryptowallet.domain.model.ConsolidatedTransaction
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
 import network.bahn.androidcryptowallet.ui.home.HomeScreen
@@ -86,10 +89,16 @@ private fun MainBottomBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = WalletSurfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 0.dp,
+    ) {
+        val itemColors = walletNavigationBarItemColors()
         NavigationBarItem(
             selected = currentDestination?.hasRoute(HomeRoute::class) == true,
             onClick = { navController.navigateToTopLevel(HomeRoute) },
+            colors = itemColors,
             icon = {
                 Icon(
                     imageVector = Icons.Outlined.Home,
@@ -102,6 +111,7 @@ private fun MainBottomBar(
         NavigationBarItem(
             selected = currentDestination?.hasRoute(TransactionsRoute::class) == true,
             onClick = { navController.navigateToTopLevel(TransactionsRoute) },
+            colors = itemColors,
             icon = {
                 Icon(
                     imageVector = Icons.Outlined.Menu,
@@ -114,6 +124,7 @@ private fun MainBottomBar(
         NavigationBarItem(
             selected = currentDestination?.hasRoute(SettingsRoute::class) == true,
             onClick = { navController.navigateToTopLevel(SettingsRoute) },
+            colors = itemColors,
             icon = {
                 Icon(
                     imageVector = Icons.Outlined.Settings,

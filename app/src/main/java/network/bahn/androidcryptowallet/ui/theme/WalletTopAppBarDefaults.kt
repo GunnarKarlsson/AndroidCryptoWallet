@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -19,6 +21,23 @@ fun walletTopAppBarColors() = TopAppBarDefaults.topAppBarColors(
     titleContentColor = Color.White,
     navigationIconContentColor = Color.White,
     actionIconContentColor = Color.White,
+)
+
+@Composable
+fun walletPrimaryButtonColors() = ButtonDefaults.buttonColors(
+    containerColor = Color.Black,
+    contentColor = Color.White,
+    disabledContainerColor = Color.Black.copy(alpha = 0.38f),
+    disabledContentColor = Color.White.copy(alpha = 0.38f),
+)
+
+@Composable
+fun walletNavigationBarItemColors() = NavigationBarItemDefaults.colors(
+    selectedIconColor = WalletOnBackground,
+    selectedTextColor = WalletOnBackground,
+    indicatorColor = WalletGreyContainer,
+    unselectedIconColor = WalletMuted,
+    unselectedTextColor = WalletMuted,
 )
 
 /**

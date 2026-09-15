@@ -3,7 +3,7 @@ package network.bahn.androidcryptowallet.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val WalletBlue = Color(0xFF1565C0)
-val WalletBlueContainer = Color(0xFFD6E3FF)
+val WalletGreyContainer = Color(0xFFE0E0E0)
 val WalletBackground = Color(0xFFFFFFFF)
 val WalletOnBackground = Color(0xFF424242)
 val WalletMuted = Color(0xFF616161)

@@ -51,6 +51,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import network.bahn.androidcryptowallet.R
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
+import network.bahn.androidcryptowallet.ui.theme.walletPrimaryButtonColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -112,6 +113,7 @@ private fun BitcoinSendContent(
             Button(
                 onClick = onSend,
                 enabled = uiState.canSend,
+                colors = walletPrimaryButtonColors(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()

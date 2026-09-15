@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,9 +43,10 @@ fun TotalBalanceCard(
             .height(TotalBalanceCardHeight),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = Color.Black,
+            contentColor = Color.White,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
             modifier = Modifier
@@ -60,7 +62,7 @@ fun TotalBalanceCard(
                 Text(
                     text = stringResource(R.string.home_total_label),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    color = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.weight(1f),
                 )
                 Box(modifier = Modifier.size(TotalBalanceTitleRowHeight)) {
@@ -70,7 +72,7 @@ fun TotalBalanceCard(
                                 .size(20.dp)
                                 .align(Alignment.Center),
                             strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = Color.White,
                         )
                     }
                 }
@@ -85,7 +87,7 @@ fun TotalBalanceCard(
                     Text(
                         text = totalFiatFormatted ?: stringResource(R.string.home_total_placeholder),
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = Color.White,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (assetCount > 0) {
@@ -96,7 +98,7 @@ fun TotalBalanceCard(
                                 assetCount,
                             ),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                            color = Color.White.copy(alpha = 0.7f),
                         )
                     } else {
                         Spacer(modifier = Modifier.height(20.dp))

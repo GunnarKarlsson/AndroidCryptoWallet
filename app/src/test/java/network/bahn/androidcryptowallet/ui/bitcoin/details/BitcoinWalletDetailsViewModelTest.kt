@@ -16,6 +16,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
+import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.domain.model.NativeAssetId
 import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
@@ -44,6 +45,32 @@ class BitcoinWalletDetailsViewModelTest {
         val viewModel = createViewModel()
         assertTrue(viewModel.uiState.value.isLoadingTransactions)
         assertTrue(viewModel.uiState.value.transactions.isEmpty())
+        assertFalse(viewModel.uiState.value.showSend)
+    }
+
+    @Test
+    fun watchOnlyWalletDoesNotShowSend() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            wallet = MutableStateFlow(WALLET.copy(kind = BitcoinWalletKind.WATCH_ONLY)),
+        )
+        val viewModel = createViewModel(repo)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertFalse(viewModel.uiState.value.showSend)
+        job.cancel()
+    }
+
+    @Test
+    fun hdWalletShowsSend() = runTest {
+        val viewModel = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertTrue(viewModel.uiState.value.showSend)
+        job.cancel()
     }
 
     @Test

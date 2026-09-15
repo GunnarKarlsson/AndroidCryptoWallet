@@ -25,6 +25,7 @@ data class BitcoinWalletDetailsUiState(
     val unconfirmedBalanceSatoshis: Long? get() = wallet?.unconfirmedBalanceSatoshis
     val balanceUpdatedAtMillis: Long? get() = wallet?.balanceUpdatedAtMillis
     val isWatchOnly: Boolean get() = wallet?.kind == BitcoinWalletKind.WATCH_ONLY
+    val showSend: Boolean get() = wallet != null && !isWatchOnly
 }
 
 sealed interface BitcoinWalletDetailsEvent {

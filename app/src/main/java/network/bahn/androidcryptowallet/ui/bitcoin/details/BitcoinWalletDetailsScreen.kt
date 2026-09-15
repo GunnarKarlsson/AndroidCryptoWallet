@@ -72,6 +72,7 @@ import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
 import network.bahn.androidcryptowallet.domain.model.BitcoinWalletKind
 import network.bahn.androidcryptowallet.ui.theme.walletTopAppBarColors
+import network.bahn.androidcryptowallet.ui.theme.walletPrimaryButtonColors
 import network.bahn.androidcryptowallet.ui.theme.WalletTheme
 import network.bahn.androidcryptowallet.ui.util.StringUtils
 
@@ -277,12 +278,13 @@ private fun BitcoinWalletDetailsContent(
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(22.dp),
                                     strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = Color.White,
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Outlined.Refresh,
                                     contentDescription = stringResource(R.string.refresh_balance),
+                                    tint = Color.White,
                                 )
                             }
                         }
@@ -301,12 +303,14 @@ private fun BitcoinWalletDetailsContent(
                     ) {
                         Text(stringResource(R.string.receive_title))
                     }
-                    Button(
-                        onClick = onSend,
-                        enabled = !uiState.isWatchOnly,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(stringResource(R.string.send_title))
+                    if (uiState.showSend) {
+                        Button(
+                            onClick = onSend,
+                            modifier = Modifier.weight(1f),
+                            colors = walletPrimaryButtonColors(),
+                        ) {
+                            Text(stringResource(R.string.send_title))
+                        }
                     }
                 }
             }
@@ -545,9 +549,10 @@ private fun DetailCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = Color.Black,
+            contentColor = Color.White,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
             modifier = Modifier
@@ -566,7 +571,7 @@ private fun DetailCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.weight(1f),
                 )
                 trailing?.invoke()
@@ -576,14 +581,14 @@ private fun DetailCard(
                 text = value,
                 style = valueStyle,
                 fontFamily = valueFontFamily,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = Color.White,
             )
             if (secondaryValue != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = secondaryValue,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.7f),
                 )
             }
             if (caption != null) {
@@ -591,7 +596,7 @@ private fun DetailCard(
                 Text(
                     text = caption,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.7f),
                     textAlign = TextAlign.Start,
                 )
             }
