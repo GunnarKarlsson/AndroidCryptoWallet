@@ -1,6 +1,13 @@
 # AndroidCryptoWallet
 
-A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche). Keys stay on device. Easily extendable for more EVM chains.
+[![License: MIT](https://img.shields.io/github/license/GunnarKarlsson/AndroidCryptoWallet)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Min SDK](https://img.shields.io/badge/minSdk-26-green)](app/build.gradle.kts)
+[![API](https://img.shields.io/badge/targetSdk-37-blue)](app/build.gradle.kts)
+
+AndroidCryptoWallet is a non-custodial Android wallet for Bitcoin and several EVM chains. You create or restore a wallet from a BIP-39 seed; keys stay on the device. Bitcoin uses native SegWit. Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, and Avalanche share one EVM stack that is easy to extend with another curated chain.
+
+> **Disclaimer.** This software has not been audited. Use testnets first. Never share a seed phrase. You are responsible for funds you put on mainnet.
 
 ## Screenshots
 
@@ -9,7 +16,64 @@ A non-custodial Android wallet for Bitcoin and EVM chains (Ethereum, BSC, Polygo
 <img src="docs/screenshot-btc-wallet.png" alt="Bitcoin wallet details with balance and transactions" width="280">
 </p>
 
-## Keys, seed, and signing
+## Features
+
+- Non-custodial; seed encrypted with Android Keystore + EncryptedSharedPreferences
+- Bitcoin native SegWit (BIP-84), testnet4 + mainnet
+- EVM: Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche
+- Watch-only Bitcoin
+- Compose + Hilt + Room + BDK + Web3j
+
+## Non-features
+
+- Single-address Bitcoin model (change returns to receive index 0)
+- No ERC-20 / NFT portfolio yet
+- No hardware wallets
+- Not audited
+- Not on Play / F-Droid yet
+
+## Security model
+
+Keys never leave the device. The secret at rest is the **seed** (BIP-39 mnemonic plus optional passphrase), stored in `EncryptedSharedPreferences` under an Android Keystore `MasterKey` (AES-256). Android backup is disabled (`allowBackup="false"`). Public data (receive address, network, derivation index) lives in Room. Secrets never go in Room, DataStore, or logs.
+
+Signing does not persist private keys. On send, the app decrypts the seed, rebuilds keys in memory, signs, and drops the seed. Watch-only Bitcoin wallets have no seed and cannot send.
+
+This project has **not** been audited. Report vulnerabilities **privately** — see [SECURITY.md](SECURITY.md). Do not open a public GitHub issue for security findings.
+
+## Supported chains
+
+**Bitcoin** — native SegWit on mainnet and testnet4, including watch-only addresses.
+
+**EVM** — one wallet UI per family; pick the network from a dropdown. New EVM families are curated by the developer (users cannot add arbitrary RPCs yet).
+
+| Family | Mainnet | Testnet |
+|--------|---------|---------|
+| Ethereum | `1` | Sepolia `11155111` |
+| BSC | `56` | BSC Testnet `97` |
+| Polygon | `137` | Amoy `80002` |
+| Arbitrum | `42161` | Sepolia `421614` |
+| Base | `8453` | Sepolia `84532` |
+| Optimism | `10` | Sepolia `11155420` |
+| Avalanche | `43114` | Fuji `43113` |
+
+## Build from source
+
+1. Copy `local.properties.example` to `local.properties` (Android Studio also creates this with `sdk.dir`).
+2. Optionally set mock watch-only addresses (`MOCK_BITCOIN_WALLET_TESTNET4` / `MOCK_BITCOIN_WALLET_MAINNET`) to any bitcoin address you want to view in the wallet lists and tx lists.
+3. Open the project in Android Studio and run the `debug` build (Bitcoin testnet4), or from the repo root:
+
+```bash
+./gradlew :app:assembleDebug
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for tests, PR expectations, and emulator-data warnings. Do not uninstall the debug app or run instrumented tests against an emulator that already has wallets — those flows wipe Room and the encrypted mnemonic store.
+
+## Architecture
+
+Compose UI, Hilt, Room, [BDK](https://github.com/bitcoindevkit) (Bitcoin), and [Web3j](https://docs.web3j.io/) (EVM). Bitcoin chain data comes from [mempool.space](https://mempool.space). EVM balance/send uses JSON-RPC; tx history uses Blockscout or Etherscan-compatible explorers.
+
+<details>
+<summary>Bitcoin: keys, seed, and signing (BIP-39 / BIP-32 / BIP-84)</summary>
 
 Supported BIPs:
 
@@ -23,7 +87,10 @@ At rest, the seed is stored in `EncryptedSharedPreferences` keyed by wallet id, 
 
 Signing does not persist private keys. On send, the app decrypts the seed, BDK rebuilds an in-memory BIP-84 wallet, derives the key for the receive address, signs the PSBT, and drops the seed from the call stack. Watch-only wallets have no seed and cannot send.
 
-## Balance and UTXOs
+</details>
+
+<details>
+<summary>Bitcoin: balance and UTXOs</summary>
 
 The wallet is a **single-address** model: balance, history, and coins all belong to the BIP-84 receive address (external index 0). Change from a send is paid back to that same address, so it stays visible and spendable on the next send.
 
@@ -31,7 +98,10 @@ The amount shown on wallet details is the address chain balance from the RPC pro
 
 Spending does not use that cached display figure. Right before building a transaction the app fetches UTXOs for the receive address and keeps only **confirmed** outputs (`status.confirmed == true`). Unconfirmed coins cannot be selected. Those confirmed UTXOs are the spendable balance: their satoshi values are what BDK coin-selects against the send amount plus fee. Fee is `sum(inputs) − sum(outputs)` at the chosen sat/vB rate; if confirmed UTXOs cannot cover amount plus fee, send fails with insufficient funds.
 
-## RPC provider
+</details>
+
+<details>
+<summary>Bitcoin RPC provider</summary>
 
 Chain data comes from [mempool.space](https://mempool.space) (Esplora-compatible HTTP: address balance, history, UTXOs, and broadcast). Mainnet uses `https://mempool.space/api/`; testnet4 uses `https://mempool.space/testnet4/api/`. No API key is required for low request quantities.
 
@@ -42,25 +112,16 @@ To add another chain client later:
 3. Put provider-specific URLs and keys in `local.properties` → BuildConfig, never in git.
 4. Reuse the existing `MsApiFactory` pattern (per-network Retrofit cache) if the API is HTTP.
 
-## EVM chains
+</details>
+
+<details>
+<summary>EVM stack</summary>
 
 AndroidCryptoWallet supports easily adding new EVM chains, but curated by the developer. In the future we might add the feature for the user to add chains.
 
-Currently supported EVM chains:
-* Ethereum — Mainnet (`1`), Sepolia (`11155111`)
-* BSC — Mainnet (`56`), BSC Testnet (`97`)
-* Polygon — Mainnet (`137`), Amoy (`80002`)
-* Arbitrum — Mainnet (`42161`), Sepolia (`421614`)
-* Base — Mainnet (`8453`), Sepolia (`84532`)
-* Optimism — Mainnet (`10`), Sepolia (`11155420`)
-* Avalanche — Mainnet (`43114`), Fuji (`43113`)
+Each **family** (Ethereum, BSC, …) is a chain-select entry. Users pick a **network** inside that family (Sepolia, BSC Testnet, …) from the dropdown. You do not add new screen packages or repositories. All families share the same wallet screens and backend (JSON-RPC, signing, tx history). BSC is the reference implementation.
 
-
-Adding another EVM chain as developer is easy. All families share the same wallet screens and backend (JSON-RPC, signing, tx history). BSC is the reference implementation.
-
-Each **family** (Ethereum, BSC, …) is a chain-select entry. Users pick a **network** inside that family (Sepolia, BSC Testnet, …) from the dropdown. You do not add new screen packages or repositories.
-
-### What you get for free
+What you get for free:
 
 - JSON-RPC balance/send and EIP-1559 signing (`JsonRpcEthereumRemoteDataSource`, `Web3jEthereumKeyEngine`)
 - BIP-44 coin type `60'` (MetaMask-compatible addresses)
@@ -69,9 +130,13 @@ Each **family** (Ethereum, BSC, …) is a chain-select entry. Users pick a **net
 - Receive QR: EIP-681 `ethereum:address@chainId`
 - Amount labels from `network.nativeSymbol`
 
-### Checklist
+</details>
 
-How to add a chain:
+## Adding a chain
+
+How to add a curated EVM family. All families share the same wallet screens and backend. BSC is the reference implementation.
+
+### Checklist
 
 #### 1. Domain — `EvmFamily` + `EvmNetwork`
 
@@ -183,12 +248,6 @@ Manual smoke (do not clear emulator app data):
 | Defaults | `SelectedEvmNetworkDataStore.kt` |
 | Tests | `EvmNetworkTest.kt`, `EvmChainCatalogTest.kt`, `EtherscanTxMappingTest.kt` |
 
-## Setup
-
-1. Copy `local.properties.example` to `local.properties` (Android Studio also creates this with `sdk.dir`).
-2. Optionally set mock watch-only addresses (`MOCK_BITCOIN_WALLET_TESTNET4` / `MOCK_BITCOIN_WALLET_MAINNET`) to any bitcoin address you want to view in the wallet lists and tx lists.
-3. Open the project in Android Studio and run the `debug` build (Bitcoin testnet4).
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build, which tests to run, and PR expectations. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -200,3 +259,5 @@ Released changes are listed in [CHANGELOG.md](CHANGELOG.md).
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+This software has not been audited. Use testnets first. Never share a seed phrase. You are responsible for funds you put on mainnet.
