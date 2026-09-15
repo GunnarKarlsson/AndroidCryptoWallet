@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.data.remote.etherscan
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -26,7 +25,6 @@ class EtherscanEvmTransactionRemoteDataSource @Inject constructor(
         afterCursor: EvmTransactionPaginationCursor?,
     ): EvmTransactionPage = withContext(Dispatchers.IO) {
         val page = afterCursor?.page ?: 1
-        Log.d(TAG, "Requesting Etherscan transactions for $network page=$page")
         val url = catalog.explorerBaseUrl(network).toHttpUrl().newBuilder()
             .addQueryParameter("module", "account")
             .addQueryParameter("action", "txlist")
@@ -48,12 +46,6 @@ class EtherscanEvmTransactionRemoteDataSource @Inject constructor(
             response.body.string()
         }
         val transactions = parseEtherscanTxList(responseBody, json)
-        val pageResult = transactions.toTransactionPage(address, page)
-        Log.i(TAG, "Etherscan transactions succeeded for $network count=${pageResult.transactions.size}")
-        pageResult
-    }
-
-    companion object {
-        private const val TAG = "EtherscanTxRemote"
+        transactions.toTransactionPage(address, page)
     }
 }

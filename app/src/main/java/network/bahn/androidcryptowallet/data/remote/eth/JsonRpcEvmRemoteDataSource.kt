@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.data.remote.eth
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -39,7 +38,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
         network: EvmNetwork,
         address: String,
     ): EvmAddressBalance = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Requesting eth_getBalance for $network")
         val hexWei = callHexResult(
             network = network,
             method = "eth_getBalance",
@@ -49,7 +47,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
             },
         )
         val balanceWei = parseHexQuantity(hexWei)
-        Log.i(TAG, "eth_getBalance succeeded for $network wei=$balanceWei")
         EvmAddressBalance(balanceWei = balanceWei)
     }
 
@@ -57,7 +54,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
         network: EvmNetwork,
         address: String,
     ): Long = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Requesting eth_getTransactionCount for $network")
         val hex = callHexResult(
             network = network,
             method = "eth_getTransactionCount",
@@ -75,7 +71,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
         to: String,
         valueWei: BigInteger,
     ): Long = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Requesting eth_estimateGas for $network")
         val callObject = buildJsonObject {
             put("from", from)
             put("to", to)
@@ -91,7 +86,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
 
     override suspend fun getFeeData(network: EvmNetwork): EvmFeeData =
         withContext(Dispatchers.IO) {
-            Log.d(TAG, "Requesting fee data for $network")
             val block = callJsonResult(
                 network = network,
                 method = "eth_getBlockByNumber",
@@ -117,7 +111,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
         network: EvmNetwork,
         signedRawHex: String,
     ): String = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Requesting eth_sendRawTransaction for $network")
         val hex = signedRawHex.let { if (it.startsWith("0x")) it else "0x$it" }
         callHexResult(
             network = network,
@@ -181,7 +174,6 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
     )
 
     companion object {
-        private const val TAG = "EthRemote"
         private val JSON_MEDIA_TYPE = "application/json".toMediaType()
 
         internal fun parseHexQuantity(hex: String): String {

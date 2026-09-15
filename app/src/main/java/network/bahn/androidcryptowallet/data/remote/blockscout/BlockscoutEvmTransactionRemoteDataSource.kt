@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.data.remote.blockscout
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -25,7 +24,6 @@ class BlockscoutEvmTransactionRemoteDataSource @Inject constructor(
         address: String,
         afterCursor: EvmTransactionPaginationCursor?,
     ): EvmTransactionPage = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Requesting Blockscout transactions for $network afterCursor=${afterCursor != null}")
         val urlBuilder = "${catalog.explorerBaseUrl(network)}/addresses/$address/transactions"
             .toHttpUrl()
             .newBuilder()
@@ -38,7 +36,6 @@ class BlockscoutEvmTransactionRemoteDataSource @Inject constructor(
             .build()
         val responseBody = client.newCall(request).execute().use { response ->
             if (response.code == 404) {
-                Log.i(TAG, "address not found on $network; treating as empty transactions")
                 return@withContext EvmTransactionPage(
                     transactions = emptyList(),
                     nextCursor = null,
@@ -51,12 +48,6 @@ class BlockscoutEvmTransactionRemoteDataSource @Inject constructor(
             response.body.string()
         }
         val pageResponse = json.decodeFromString<BlockscoutTxPageResponse>(responseBody)
-        val page = pageResponse.toTransactionPage(address)
-        Log.i(TAG, "Blockscout transactions succeeded for $network count=${page.transactions.size}")
-        page
-    }
-
-    companion object {
-        private const val TAG = "BlockscoutTxRemote"
+        pageResponse.toTransactionPage(address)
     }
 }

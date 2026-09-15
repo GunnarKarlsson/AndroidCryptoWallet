@@ -1,7 +1,6 @@
 package network.bahn.androidcryptowallet.di
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
@@ -33,7 +32,6 @@ import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
 import network.bahn.androidcryptowallet.data.wallet.MockBitcoinWalletConfig
 import network.bahn.androidcryptowallet.domain.TimeProvider
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -107,22 +105,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val builder = OkHttpClient.Builder()
+    fun provideOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
-
-        if (BuildConfig.DEBUG) {
-            val logging = HttpLoggingInterceptor { message ->
-                Log.d("OkHttp", message)
-            }.apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-            builder.addInterceptor(logging)
-        }
-        return builder.build()
-    }
+            .build()
 
     @Provides
     @Singleton

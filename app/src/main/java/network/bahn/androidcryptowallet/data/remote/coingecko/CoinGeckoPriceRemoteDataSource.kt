@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.data.remote.coingecko
 
-import android.util.Log
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -17,16 +16,11 @@ class CoinGeckoPriceRemoteDataSource @Inject constructor(
 ) : AssetPriceRemoteDataSource {
     override suspend fun fetchUsdMicros(): Map<NativeAssetId, Long> {
         val idParam = NativeAssetId.entries.joinToString(",") { geckoIdFor(it) }
-        Log.d(TAG, "Requesting simple/price ids=$idParam")
         val response = api.getSimplePrice(ids = idParam)
-        val prices = parseUsdMicros(response)
-        Log.i(TAG, "simple/price succeeded count=${prices.size}")
-        return prices
+        return parseUsdMicros(response)
     }
 
     companion object {
-        private const val TAG = "CoinGecko"
-
         fun parseUsdMicros(response: JsonObject): Map<NativeAssetId, Long> = buildMap {
             for ((geckoId, quotesElement) in response) {
                 val asset = assetForGeckoId(geckoId) ?: continue

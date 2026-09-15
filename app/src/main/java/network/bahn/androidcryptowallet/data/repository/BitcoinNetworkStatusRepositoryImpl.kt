@@ -1,6 +1,5 @@
 package network.bahn.androidcryptowallet.data.repository
 
-import android.util.Log
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -48,10 +47,5 @@ class BitcoinNetworkStatusRepositoryImpl @Inject constructor(
                 updatedAtMillis = timeProvider.nowMillis(),
             ),
         )
-        Log.i(TAG, "Stored block height $height for $network")
-    }
-
-    private companion object {
-        const val TAG = "NetworkStatus"
     }
 }

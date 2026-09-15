@@ -48,7 +48,6 @@ class AssetPriceRepositoryImpl @Inject constructor(
                         )
                     },
                 )
-                Log.i(TAG, "Stored ${fetched.size} asset prices")
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

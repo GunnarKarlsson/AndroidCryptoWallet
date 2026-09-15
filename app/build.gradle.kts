@@ -122,7 +122,6 @@ dependencies {
     implementation(libs.web3j.crypto)
 
     implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)
