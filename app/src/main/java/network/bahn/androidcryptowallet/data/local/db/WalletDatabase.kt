@@ -12,8 +12,9 @@ import androidx.room.RoomDatabase
         EvmWalletEntity::class,
         EvmTransactionEntity::class,
         EvmWalletTxCacheEntity::class,
+        AssetPriceEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
 )
 abstract class WalletDatabase : RoomDatabase() {
@@ -22,4 +23,5 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun bitcoinTransactionDao(): BitcoinTransactionDao
     abstract fun evmWalletDao(): EvmWalletDao
     abstract fun evmTransactionDao(): EvmTransactionDao
+    abstract fun assetPriceDao(): AssetPriceDao
 }

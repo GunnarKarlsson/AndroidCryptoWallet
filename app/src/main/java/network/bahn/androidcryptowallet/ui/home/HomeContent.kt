@@ -137,10 +137,11 @@ fun HomeContent(
                     }
                 }
             }
-            itemsIndexed(uiState.holdings, key = { _, holding -> holding.headline }) { index, holding ->
+            itemsIndexed(uiState.holdings, key = { _, row -> row.holding.headline }) { index, row ->
                 PortfolioHoldingRow(
-                    holding = holding,
-                    onClick = { onHoldingClick(holding.destination) },
+                    holding = row.holding,
+                    fiatFormatted = row.fiatFormatted,
+                    onClick = { onHoldingClick(row.holding.destination) },
                     showDivider = index > 0,
                 )
             }
@@ -163,21 +164,28 @@ private fun HomeContentPreview() {
         HomeContent(
             uiState = HomeUiState(
                 holdings = listOf(
-                    PortfolioHolding(
-                        destination = PortfolioHoldingDestination.Evm(EvmFamily.ARBITRUM),
-                        headline = "Arbitrum (ETH)",
-                        nativeSymbol = "ETH",
-                        balanceWei = BigInteger("120000000000000000"),
+                    HomeHoldingRow(
+                        holding = PortfolioHolding(
+                            destination = PortfolioHoldingDestination.Evm(EvmFamily.ARBITRUM),
+                            headline = "Arbitrum (ETH)",
+                            nativeSymbol = "ETH",
+                            balanceWei = BigInteger("120000000000000000"),
+                        ),
+                        fiatFormatted = "$420.00",
                     ),
-                    PortfolioHolding(
-                        destination = PortfolioHoldingDestination.Bitcoin,
-                        headline = "Bitcoin (BTC)",
-                        nativeSymbol = "BTC",
-                        balanceSatoshis = 100_000L,
+                    HomeHoldingRow(
+                        holding = PortfolioHolding(
+                            destination = PortfolioHoldingDestination.Bitcoin,
+                            headline = "Bitcoin (BTC)",
+                            nativeSymbol = "BTC",
+                            balanceSatoshis = 100_000L,
+                        ),
+                        fiatFormatted = "$111.23",
                     ),
                 ),
                 assetCount = 2,
-                isTotalLoading = true,
+                totalFiatFormatted = "$531.23",
+                isTotalLoading = false,
                 isHoldingsLoading = false,
             ),
             onRefresh = {},

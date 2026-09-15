@@ -138,7 +138,7 @@ private fun TotalBalanceCardRefreshingPreview() {
 private fun TotalBalanceCardLoadedPreview() {
     WalletTheme {
         TotalBalanceCard(
-            totalFiatFormatted = null,
+            totalFiatFormatted = "$12,345.67",
             assetCount = 3,
             isLoading = false,
             modifier = Modifier.padding(20.dp),

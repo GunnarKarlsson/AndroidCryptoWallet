@@ -19,10 +19,14 @@ import network.bahn.androidcryptowallet.data.local.db.BitcoinTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.BitcoinWalletDao
 import network.bahn.androidcryptowallet.data.local.db.EvmTransactionDao
 import network.bahn.androidcryptowallet.data.local.db.EvmWalletDao
+import network.bahn.androidcryptowallet.data.local.db.AssetPriceDao
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_8_9
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_9_10
 import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_10_11
+import network.bahn.androidcryptowallet.data.local.db.WALLET_MIGRATION_11_12
 import network.bahn.androidcryptowallet.data.local.db.WalletDatabase
+import network.bahn.androidcryptowallet.data.remote.coingecko.CoinGeckoApi
+import network.bahn.androidcryptowallet.data.remote.coingecko.CoinGeckoApiFactory
 import network.bahn.androidcryptowallet.data.remote.evm.EvmChainCatalog
 import network.bahn.androidcryptowallet.data.repository.DefaultProviderCatalog
 import network.bahn.androidcryptowallet.data.remote.ms.MsBitcoinConfig
@@ -40,7 +44,12 @@ object AppModule {
     @Singleton
     fun provideWalletDatabase(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, "wallet.db")
-            .addMigrations(WALLET_MIGRATION_8_9, WALLET_MIGRATION_9_10, WALLET_MIGRATION_10_11)
+            .addMigrations(
+                WALLET_MIGRATION_8_9,
+                WALLET_MIGRATION_9_10,
+                WALLET_MIGRATION_10_11,
+                WALLET_MIGRATION_11_12,
+            )
             .build()
 
     @Provides
@@ -62,6 +71,14 @@ object AppModule {
     @Provides
     fun provideEvmTransactionDao(database: WalletDatabase): EvmTransactionDao =
         database.evmTransactionDao()
+
+    @Provides
+    fun provideAssetPriceDao(database: WalletDatabase): AssetPriceDao =
+        database.assetPriceDao()
+
+    @Provides
+    @Singleton
+    fun provideCoinGeckoApi(factory: CoinGeckoApiFactory): CoinGeckoApi = factory.create()
 
     @Provides
     @Singleton

@@ -250,6 +250,7 @@ private fun EvmWalletDetailsContent(
                     ),
                     valueStyle = MaterialTheme.typography.headlineMedium,
                     valueFontFamily = FontFamily.Monospace,
+                    secondaryValue = uiState.fiatFormatted,
                     caption = StringUtils.formatLastUpdated(
                         updatedAtMillis = uiState.balanceUpdatedAtMillis,
                         neverRefreshed = stringResource(R.string.last_updated_never),
@@ -532,6 +533,7 @@ private fun DetailCard(
     caption: String? = null,
     errorMessage: String? = null,
     valueFontFamily: FontFamily? = null,
+    secondaryValue: String? = null,
     trailing: @Composable (() -> Unit)? = null,
 ) {
     Card(
@@ -571,6 +573,14 @@ private fun DetailCard(
                 fontFamily = valueFontFamily,
                 color = MaterialTheme.colorScheme.onBackground,
             )
+            if (secondaryValue != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = secondaryValue,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (caption != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -615,6 +625,7 @@ private fun EvmWalletDetailsWithTransactionsPreview() {
         EvmWalletDetailsContent(
             uiState = EvmWalletDetailsUiState(
                 wallet = previewWallet(),
+                fiatFormatted = "$3,500.00",
                 transactions = listOf(
                     EvmTransactionSummary(
                         hash = "0x1bf67e8fd7f28df862dd8c0adf023a0e836c051802f4682c9f15c0e9bf7d722e",

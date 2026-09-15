@@ -20,14 +20,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.HoldingsValueCalculator
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.BitcoinWalletDetailsRoute
+import network.bahn.androidcryptowallet.ui.util.StringUtils
 import javax.inject.Inject
 
 @HiltViewModel
 class BitcoinWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: BitcoinWalletRepository,
+    private val assetPriceRepository: AssetPriceRepository,
 ) : ViewModel() {
     private val routeHandle = savedStateHandle
     private val walletId: String =
@@ -47,14 +51,22 @@ class BitcoinWalletDetailsViewModel @Inject constructor(
     val events = eventsChannel.receiveAsFlow()
 
     val uiState: StateFlow<BitcoinWalletDetailsUiState> = combine(
-        walletRepository.observeWallet(walletId),
+        combine(
+            walletRepository.observeWallet(walletId),
+            assetPriceRepository.observePrices(),
+        ) { wallet, prices -> wallet to prices },
         isRefreshing,
         deleteState,
         errorMessage,
         txLoadState,
-    ) { wallet, refreshing, delete, error, txs ->
+    ) { walletAndPrices, refreshing, delete, error, txs ->
+        val (wallet, prices) = walletAndPrices
         BitcoinWalletDetailsUiState(
             wallet = wallet,
+            fiatFormatted = HoldingsValueCalculator.bitcoinUsdMicros(
+                satoshis = wallet?.confirmedBalanceSatoshis,
+                prices = prices,
+            )?.let(StringUtils::formatUsdMicros),
             isRefreshing = refreshing,
             showDeleteConfirmDialog = delete.showConfirmDialog,
             isDeleting = delete.isDeleting,

@@ -16,6 +16,8 @@ import network.bahn.androidcryptowallet.data.local.secure.EncryptedEvmMnemonicSt
 import network.bahn.androidcryptowallet.data.local.secure.EvmMnemonicStore
 import network.bahn.androidcryptowallet.data.remote.BitcoinRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.EvmRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.AssetPriceRemoteDataSource
+import network.bahn.androidcryptowallet.data.remote.coingecko.CoinGeckoPriceRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.RoutingEvmTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.blockscout.EvmTransactionRemoteDataSource
 import network.bahn.androidcryptowallet.data.remote.eth.JsonRpcEvmRemoteDataSource
@@ -26,6 +28,7 @@ import network.bahn.androidcryptowallet.data.repository.BitcoinNetworkStatusRepo
 import network.bahn.androidcryptowallet.data.repository.BitcoinWalletRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.ConsolidatedTransactionRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.EvmWalletRepositoryImpl
+import network.bahn.androidcryptowallet.data.repository.AssetPriceRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.PortfolioRepositoryImpl
 import network.bahn.androidcryptowallet.data.repository.ProviderSettingsRepositoryImpl
 import network.bahn.androidcryptowallet.data.wallet.BdkBitcoinKeyEngine
@@ -37,6 +40,7 @@ import network.bahn.androidcryptowallet.domain.repository.BitcoinNetworkStatusRe
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import network.bahn.androidcryptowallet.domain.repository.ConsolidatedTransactionRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
 import network.bahn.androidcryptowallet.domain.repository.ProviderSettingsRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
@@ -136,6 +140,18 @@ abstract class DataBindsModule {
     abstract fun bindPortfolioRepository(
         impl: PortfolioRepositoryImpl,
     ): PortfolioRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAssetPriceRemoteDataSource(
+        impl: CoinGeckoPriceRemoteDataSource,
+    ): AssetPriceRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindAssetPriceRepository(
+        impl: AssetPriceRepositoryImpl,
+    ): AssetPriceRepository
 
     @Binds
     @Singleton

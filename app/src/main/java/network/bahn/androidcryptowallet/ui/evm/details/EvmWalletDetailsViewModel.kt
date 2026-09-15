@@ -21,14 +21,18 @@ import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionSummary
+import network.bahn.androidcryptowallet.domain.model.HoldingsValueCalculator
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import network.bahn.androidcryptowallet.ui.navigation.EvmWalletDetailsRoute
+import network.bahn.androidcryptowallet.ui.util.StringUtils
 import javax.inject.Inject
 
 @HiltViewModel
 class EvmWalletDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val walletRepository: EvmWalletRepository,
+    private val assetPriceRepository: AssetPriceRepository,
 ) : ViewModel() {
     private val routeHandle = savedStateHandle
     private val walletId: String =
@@ -48,14 +52,23 @@ class EvmWalletDetailsViewModel @Inject constructor(
     val events = eventsChannel.receiveAsFlow()
 
     val uiState: StateFlow<EvmWalletDetailsUiState> = combine(
-        walletRepository.observeWallet(walletId),
+        combine(
+            walletRepository.observeWallet(walletId),
+            assetPriceRepository.observePrices(),
+        ) { wallet, prices -> wallet to prices },
         isRefreshing,
         deleteState,
         errorMessage,
         txLoadState,
-    ) { wallet, refreshing, delete, error, txs ->
+    ) { walletAndPrices, refreshing, delete, error, txs ->
+        val (wallet, prices) = walletAndPrices
         EvmWalletDetailsUiState(
             wallet = wallet,
+            fiatFormatted = HoldingsValueCalculator.evmUsdMicros(
+                wei = wallet?.balanceWei,
+                family = wallet?.network?.family,
+                prices = prices,
+            )?.let(StringUtils::formatUsdMicros),
             isRefreshing = refreshing,
             showDeleteConfirmDialog = delete.showConfirmDialog,
             isDeleting = delete.isDeleting,

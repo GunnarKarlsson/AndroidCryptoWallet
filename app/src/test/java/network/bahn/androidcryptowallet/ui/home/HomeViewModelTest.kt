@@ -12,15 +12,19 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeStore
+import network.bahn.androidcryptowallet.domain.model.AssetPrice
+import network.bahn.androidcryptowallet.domain.model.NativeAssetId
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
 import network.bahn.androidcryptowallet.domain.model.PortfolioHoldingDestination
-import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeStore
 import network.bahn.androidcryptowallet.domain.model.WalletNetworkMode
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -63,7 +67,7 @@ class HomeViewModelTest {
 
         assertFalse(viewModel.uiState.value.isHoldingsLoading)
         assertEquals(1, viewModel.uiState.value.assetCount)
-        assertEquals("Bitcoin (BTC)", viewModel.uiState.value.holdings.single().headline)
+        assertEquals("Bitcoin (BTC)", viewModel.uiState.value.holdings.single().holding.headline)
     }
 
     @Test
@@ -117,22 +121,31 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun refreshCallsRepository() = runTest {
+    fun refreshCallsBalanceAndPriceRepositories() = runTest {
         val portfolioRepository = FakePortfolioRepository()
-        val viewModel = createViewModel(portfolioRepository = portfolioRepository, ready = MutableStateFlow(true))
+        val assetPriceRepository = FakeAssetPriceRepository()
+        val viewModel = createViewModel(
+            portfolioRepository = portfolioRepository,
+            assetPriceRepository = assetPriceRepository,
+            ready = MutableStateFlow(true),
+        )
         backgroundScope.launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
 
         viewModel.refresh()
+        advanceUntilIdle()
 
         assertEquals(1, portfolioRepository.refreshCalls)
+        assertEquals(1, assetPriceRepository.refreshCalls)
     }
 
     @Test
     fun onEnterDoesNotAutoRefreshAgainAfterFirstVisit() = runTest {
         val portfolioRepository = FakePortfolioRepository()
+        val assetPriceRepository = FakeAssetPriceRepository()
         val viewModel = createViewModel(
             portfolioRepository = portfolioRepository,
+            assetPriceRepository = assetPriceRepository,
             ready = MutableStateFlow(true),
         )
         backgroundScope.launch { viewModel.uiState.collect { } }
@@ -144,14 +157,64 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         assertEquals(1, portfolioRepository.refreshCalls)
+        assertEquals(1, assetPriceRepository.refreshCalls)
+    }
+
+    @Test
+    fun totalFiatIsNullWhenPricesMissing() = runTest {
+        val holdings = listOf(
+            PortfolioHolding(
+                destination = PortfolioHoldingDestination.Bitcoin,
+                headline = "Bitcoin (BTC)",
+                nativeSymbol = "BTC",
+                balanceSatoshis = 100_000_000L,
+            ),
+        )
+        val viewModel = createViewModel(holdings = holdings, ready = MutableStateFlow(true))
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.totalFiatFormatted)
+        assertNull(viewModel.uiState.value.holdings.single().fiatFormatted)
+    }
+
+    @Test
+    fun totalFiatFormattedWhenPricesPresent() = runTest {
+        val holdings = listOf(
+            PortfolioHolding(
+                destination = PortfolioHoldingDestination.Bitcoin,
+                headline = "Bitcoin (BTC)",
+                nativeSymbol = "BTC",
+                balanceSatoshis = 100_000_000L,
+            ),
+        )
+        val prices = mapOf(
+            NativeAssetId.BITCOIN to AssetPrice(
+                assetId = NativeAssetId.BITCOIN,
+                priceUsdMicros = 65_000_000_000L,
+                updatedAtMillis = 1L,
+            ),
+        )
+        val viewModel = createViewModel(
+            holdings = holdings,
+            assetPriceRepository = FakeAssetPriceRepository(prices),
+            ready = MutableStateFlow(true),
+        )
+        backgroundScope.launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        assertEquals("$65,000.00", viewModel.uiState.value.totalFiatFormatted)
+        assertEquals("$65,000.00", viewModel.uiState.value.holdings.single().fiatFormatted)
     }
 
     private fun createViewModel(
         holdings: List<PortfolioHolding> = emptyList(),
         ready: MutableStateFlow<Boolean> = MutableStateFlow(true),
         portfolioRepository: PortfolioRepository = FakePortfolioRepository(holdings),
+        assetPriceRepository: AssetPriceRepository = FakeAssetPriceRepository(),
     ): HomeViewModel = HomeViewModel(
         portfolioRepository = portfolioRepository,
+        assetPriceRepository = assetPriceRepository,
         walletNetworkModeStore = FakeWalletNetworkModeStore(),
         catalogReadiness = FakeWalletCatalogReadiness(ready),
     )
@@ -175,6 +238,19 @@ private class FakePortfolioRepository(
     override fun observeHoldings(): Flow<List<PortfolioHolding>> = flowOf(holdings)
 
     override suspend fun refreshAllBalances() {
+        refreshCalls++
+    }
+}
+
+private class FakeAssetPriceRepository(
+    prices: Map<NativeAssetId, AssetPrice> = emptyMap(),
+) : AssetPriceRepository {
+    var refreshCalls = 0
+    private val pricesFlow = MutableStateFlow(prices)
+
+    override fun observePrices(): Flow<Map<NativeAssetId, AssetPrice>> = pricesFlow
+
+    override suspend fun refreshPrices() {
         refreshCalls++
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,14 +13,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import network.bahn.androidcryptowallet.data.local.prefs.WalletNetworkModeStore
+import network.bahn.androidcryptowallet.domain.model.HoldingsValueCalculator
 import network.bahn.androidcryptowallet.domain.model.WalletNetworkMode
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.PortfolioRepository
 import network.bahn.androidcryptowallet.domain.repository.WalletCatalogReadiness
+import network.bahn.androidcryptowallet.ui.util.StringUtils
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val portfolioRepository: PortfolioRepository,
+    private val assetPriceRepository: AssetPriceRepository,
     private val walletNetworkModeStore: WalletNetworkModeStore,
     catalogReadiness: WalletCatalogReadiness,
 ) : ViewModel() {
@@ -28,15 +33,27 @@ class HomeViewModel @Inject constructor(
     private var hasAutoRefreshedThisSession = false
 
     val uiState: StateFlow<HomeUiState> = combine(
-        portfolioRepository.observeHoldings(),
+        combine(
+            portfolioRepository.observeHoldings(),
+            assetPriceRepository.observePrices(),
+        ) { holdings, prices -> holdings to prices },
         catalogReadiness.observeReady(),
         walletNetworkModeStore.observeMode(),
         isRefreshing,
-    ) { holdings, ready, networkMode, refreshing ->
+    ) { holdingsAndPrices, ready, networkMode, refreshing ->
+        val (holdings, prices) = holdingsAndPrices
+        val rows = holdings.map { holding ->
+            HomeHoldingRow(
+                holding = holding,
+                fiatFormatted = HoldingsValueCalculator.holdingUsdMicros(holding, prices)
+                    ?.let(StringUtils::formatUsdMicros),
+            )
+        }
         HomeUiState(
-            holdings = holdings,
-            assetCount = holdings.size,
-            totalFiatFormatted = null,
+            holdings = rows,
+            assetCount = rows.size,
+            totalFiatFormatted = HoldingsValueCalculator.totalUsdMicros(holdings, prices)
+                ?.let(StringUtils::formatUsdMicros),
             networkMode = networkMode,
             isTotalLoading = refreshing,
             isHoldingsLoading = holdings.isEmpty() && (!ready || refreshing),
@@ -65,11 +82,14 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             isRefreshing.update { true }
             try {
-                portfolioRepository.refreshAllBalances()
+                coroutineScope {
+                    launch { portfolioRepository.refreshAllBalances() }
+                    launch { assetPriceRepository.refreshPrices() }
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // Keep cached balances visible; refresh is best-effort on home.
+                // Keep cached balances and prices visible; refresh is best-effort on home.
             } finally {
                 isRefreshing.update { false }
             }

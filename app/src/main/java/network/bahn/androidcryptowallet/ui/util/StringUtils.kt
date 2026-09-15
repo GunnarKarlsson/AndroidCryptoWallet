@@ -54,6 +54,11 @@ object StringUtils {
             .setScale(18, java.math.RoundingMode.UNNECESSARY)
             .toPlainString()
 
+    fun formatUsdMicros(micros: Long): String {
+        val amount = micros.toBigDecimal().movePointLeft(6)
+        return NumberFormat.getCurrencyInstance(Locale.US).format(amount)
+    }
+
     fun parseBitcoinAmountToSatoshis(amount: String): Long? {
         val trimmed = amount.trim()
         if (trimmed.isEmpty() || trimmed == ".") return null

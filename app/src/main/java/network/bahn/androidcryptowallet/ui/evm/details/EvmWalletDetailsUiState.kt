@@ -17,6 +17,7 @@ data class EvmWalletDetailsUiState(
     val isLoadingMoreTransactions: Boolean = false,
     val hasMoreTransactions: Boolean = false,
     val transactionsErrorMessage: String? = null,
+    val fiatFormatted: String? = null,
 ) {
     val network: EvmNetwork? get() = wallet?.network
     val address: String? get() = wallet?.address

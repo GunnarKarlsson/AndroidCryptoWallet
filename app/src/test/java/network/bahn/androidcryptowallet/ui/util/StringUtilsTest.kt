@@ -50,6 +50,13 @@ class StringUtilsTest {
     }
 
     @Test
+    fun formatUsdMicrosUsesUsCurrency() {
+        assertEquals("$0.00", StringUtils.formatUsdMicros(0))
+        assertEquals("$0.33", StringUtils.formatUsdMicros(328_250))
+        assertEquals("$1,234.56", StringUtils.formatUsdMicros(1_234_560_000))
+    }
+
+    @Test
     fun formatBitcoinAmountAlwaysShowsEightFractionalDigits() {
         assertEquals("0.00000000", StringUtils.formatBitcoinAmount(0))
         assertEquals("0.00000001", StringUtils.formatBitcoinAmount(1))

@@ -255,6 +255,7 @@ private fun BitcoinWalletDetailsContent(
                     ),
                     valueStyle = MaterialTheme.typography.headlineMedium,
                     valueFontFamily = FontFamily.Monospace,
+                    secondaryValue = uiState.fiatFormatted,
                     caption = when {
                         unconfirmed != 0L -> stringResource(
                             R.string.unconfirmed_balance,
@@ -537,6 +538,7 @@ private fun DetailCard(
     caption: String? = null,
     errorMessage: String? = null,
     valueFontFamily: FontFamily? = null,
+    secondaryValue: String? = null,
     trailing: @Composable (() -> Unit)? = null,
 ) {
     Card(
@@ -576,6 +578,14 @@ private fun DetailCard(
                 fontFamily = valueFontFamily,
                 color = MaterialTheme.colorScheme.onBackground,
             )
+            if (secondaryValue != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = secondaryValue,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (caption != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -645,6 +655,7 @@ private fun BitcoinWalletDetailsScreenPreview() {
         BitcoinWalletDetailsContent(
             uiState = BitcoinWalletDetailsUiState(
                 wallet = previewWallet(),
+                fiatFormatted = "$4,712.34",
                 isLoadingTransactions = true,
                 isRefreshing = true,
             ),

@@ -11,11 +11,14 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import network.bahn.androidcryptowallet.domain.model.AssetPrice
 import network.bahn.androidcryptowallet.domain.model.EvmFamily
 import network.bahn.androidcryptowallet.domain.model.EvmNetwork
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPage
 import network.bahn.androidcryptowallet.domain.model.EvmTransactionPaginationCursor
 import network.bahn.androidcryptowallet.domain.model.EvmWallet
+import network.bahn.androidcryptowallet.domain.model.NativeAssetId
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.EvmWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -220,12 +223,35 @@ class EvmWalletDetailsViewModelTest {
         eventsJob.cancel()
     }
 
+    @Test
+    fun fiatFormattedWhenEthereumPricePresent() = runTest {
+        val viewModel = createViewModel(
+            assetPriceRepository = FakeEthAssetPriceRepository(
+                mapOf(
+                    NativeAssetId.ETHEREUM to AssetPrice(
+                        assetId = NativeAssetId.ETHEREUM,
+                        priceUsdMicros = 3_500_000_000L,
+                        updatedAtMillis = 1L,
+                    ),
+                ),
+            ),
+        )
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertEquals("$3,500.00", viewModel.uiState.value.fiatFormatted)
+        job.cancel()
+    }
+
     private fun createViewModel(
         repo: FakeEthDetailsWalletRepository = FakeEthDetailsWalletRepository(),
         savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
+        assetPriceRepository: AssetPriceRepository = FakeEthAssetPriceRepository(),
     ) = EvmWalletDetailsViewModel(
         savedStateHandle = savedStateHandle,
         walletRepository = repo,
+        assetPriceRepository = assetPriceRepository,
     )
 }
 
@@ -307,4 +333,14 @@ private class FakeEthDetailsWalletRepository(
         amountWei: java.math.BigInteger,
         gasPreset: network.bahn.androidcryptowallet.domain.model.EvmGasPreset,
     ) = error("unused")
+}
+
+private class FakeEthAssetPriceRepository(
+    prices: Map<NativeAssetId, AssetPrice> = emptyMap(),
+) : AssetPriceRepository {
+    private val pricesFlow = MutableStateFlow(prices)
+
+    override fun observePrices(): Flow<Map<NativeAssetId, AssetPrice>> = pricesFlow
+
+    override suspend fun refreshPrices() = Unit
 }

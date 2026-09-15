@@ -67,3 +67,21 @@ val WALLET_MIGRATION_10_11 = object : Migration(10, 11) {
         )
     }
 }
+
+/**
+ * Additive only: native-asset USD price cache ([AssetPriceEntity]).
+ * Must not alter wallet or transaction tables.
+ */
+val WALLET_MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS asset_price (
+              assetId TEXT NOT NULL PRIMARY KEY,
+              priceUsdMicros INTEGER NOT NULL,
+              updatedAtMillis INTEGER NOT NULL
+            )
+            """.trimIndent(),
+        )
+    }
+}

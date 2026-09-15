@@ -17,6 +17,7 @@ data class BitcoinWalletDetailsUiState(
     val isLoadingMoreTransactions: Boolean = false,
     val hasMoreTransactions: Boolean = false,
     val transactionsErrorMessage: String? = null,
+    val fiatFormatted: String? = null,
 ) {
     val network: BitcoinNetwork? get() = wallet?.network
     val receiveAddress: String? get() = wallet?.receiveAddress

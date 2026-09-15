@@ -11,10 +11,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import network.bahn.androidcryptowallet.domain.model.AssetPrice
 import network.bahn.androidcryptowallet.domain.model.BitcoinNetwork
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionPage
 import network.bahn.androidcryptowallet.domain.model.BitcoinTransactionSummary
 import network.bahn.androidcryptowallet.domain.model.BitcoinWallet
+import network.bahn.androidcryptowallet.domain.model.NativeAssetId
+import network.bahn.androidcryptowallet.domain.repository.AssetPriceRepository
 import network.bahn.androidcryptowallet.domain.repository.BitcoinWalletRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -359,12 +362,39 @@ class BitcoinWalletDetailsViewModelTest {
         eventsJob.cancel()
     }
 
+    @Test
+    fun fiatFormattedWhenBitcoinPricePresent() = runTest {
+        val repo = FakeDetailsWalletRepository(
+            wallet = MutableStateFlow(WALLET.copy(confirmedBalanceSatoshis = 100_000_000L)),
+        )
+        val viewModel = createViewModel(
+            repo = repo,
+            assetPriceRepository = FakeAssetPriceRepository(
+                mapOf(
+                    NativeAssetId.BITCOIN to AssetPrice(
+                        assetId = NativeAssetId.BITCOIN,
+                        priceUsdMicros = 65_000_000_000L,
+                        updatedAtMillis = 1L,
+                    ),
+                ),
+            ),
+        )
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
+
+        assertEquals("$65,000.00", viewModel.uiState.value.fiatFormatted)
+        job.cancel()
+    }
+
     private fun createViewModel(
         repo: FakeDetailsWalletRepository = FakeDetailsWalletRepository(),
         savedStateHandle: SavedStateHandle = SavedStateHandle(mapOf("walletId" to WALLET.id)),
+        assetPriceRepository: AssetPriceRepository = FakeAssetPriceRepository(),
     ) = BitcoinWalletDetailsViewModel(
         savedStateHandle = savedStateHandle,
         walletRepository = repo,
+        assetPriceRepository = assetPriceRepository,
     )
 }
 
@@ -468,4 +498,14 @@ private class FakeDetailsWalletRepository(
         amountSatoshis: Long,
         feeRateSatPerVbyte: Long,
     ) = error("unused")
+}
+
+private class FakeAssetPriceRepository(
+    prices: Map<NativeAssetId, AssetPrice> = emptyMap(),
+) : AssetPriceRepository {
+    private val pricesFlow = MutableStateFlow(prices)
+
+    override fun observePrices(): Flow<Map<NativeAssetId, AssetPrice>> = pricesFlow
+
+    override suspend fun refreshPrices() = Unit
 }

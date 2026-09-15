@@ -3,8 +3,13 @@ package network.bahn.androidcryptowallet.ui.home
 import network.bahn.androidcryptowallet.domain.model.PortfolioHolding
 import network.bahn.androidcryptowallet.domain.model.WalletNetworkMode
 
+data class HomeHoldingRow(
+    val holding: PortfolioHolding,
+    val fiatFormatted: String?,
+)
+
 data class HomeUiState(
-    val holdings: List<PortfolioHolding> = emptyList(),
+    val holdings: List<HomeHoldingRow> = emptyList(),
     val assetCount: Int = 0,
     val totalFiatFormatted: String? = null,
     val networkMode: WalletNetworkMode = WalletNetworkMode.TESTNET,
