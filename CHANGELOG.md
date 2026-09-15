@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- GitHub Actions CI (`.github/workflows/ci.yml`) running `./gradlew :app:testDebugUnitTest`; README CI badge wired to that workflow
+- GitHub Actions CI (`.github/workflows/ci.yml`) running JVM unit tests, Android Lint, and `assembleDebug` (no emulator instrumentation); README CI badge wired to that workflow
+- Gradle Wrapper validation workflow (`.github/workflows/gradle-wrapper-validation.yml`)
+- Dependabot `open-pull-requests-limit: 5` for Gradle updates
 
 ## [0.1.0] - 2026-09-15
 

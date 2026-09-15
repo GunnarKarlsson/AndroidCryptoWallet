@@ -1,0 +1,18 @@
+# Cheap checksum check on wrapper files. Main CI also validates via setup-gradle.
+name: Validate Gradle Wrapper
+
+on:
+  push:
+    paths: ["gradle/wrapper/**", "gradlew", "gradlew.bat"]
+  pull_request:
+    paths: ["gradle/wrapper/**", "gradlew", "gradlew.bat"]
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gradle/actions/wrapper-validation@v6

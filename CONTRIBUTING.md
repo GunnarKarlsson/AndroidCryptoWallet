@@ -67,7 +67,7 @@ Run tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
-That is the check contributors should pass before review. GitHub Actions runs the same command on pushes to `main` and on pull requests (see `.github/workflows/ci.yml`). Do **not** run `connectedAndroidTest`, `connectedDebugAndroidTest`, or `connectedCheck` unless a maintainer has explicitly accepted that it will wipe emulator wallet data.
+That is the check contributors should pass before review. GitHub Actions also runs `./gradlew :app:lintDebug` and `./gradlew :app:assembleDebug` on pushes to `main` and on pull requests (see `.github/workflows/ci.yml`). Instrumented tests such as `BdkBitcoinKeyEngineInstrumentedTest` stay local for now. Do **not** run `connectedAndroidTest`, `connectedDebugAndroidTest`, or `connectedCheck` unless a maintainer has explicitly accepted that it will wipe emulator wallet data.
 
 Do not submit with failing unit tests.
 

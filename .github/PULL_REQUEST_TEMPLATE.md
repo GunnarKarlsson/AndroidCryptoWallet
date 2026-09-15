@@ -7,6 +7,7 @@
 <!-- How you verified this. JVM unit tests, and manual steps if UI or chain behavior changed. -->
 
 - [ ] `./gradlew :app:testDebugUnitTest` passes
+- [ ] `./gradlew :app:lintDebug` passes (CI also assembles debug; no instrumented / emulator tests)
 
 ## Checklist
 
