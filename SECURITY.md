@@ -27,7 +27,7 @@ In scope:
 - Signing or derivation bugs that could spend funds the user did not confirm, sign for the wrong chain, or reuse keys unsafely
 - Secrets, keystores, or credentials committed to this repository
 - Supply-chain issues in this repo’s Gradle dependencies that affect the built APK
-- Compromised or unexpected behavior in this repo’s CI workflows (when present)
+- Compromised or unexpected behavior in this repo’s CI workflows
 
 Out of scope:
 

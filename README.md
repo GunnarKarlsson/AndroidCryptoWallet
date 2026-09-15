@@ -1,5 +1,6 @@
 # AndroidCryptoWallet
 
+[![CI](https://github.com/GunnarKarlsson/AndroidCryptoWallet/actions/workflows/ci.yml/badge.svg)](https://github.com/GunnarKarlsson/AndroidCryptoWallet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/github/license/GunnarKarlsson/AndroidCryptoWallet)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Min SDK](https://img.shields.io/badge/minSdk-26-green)](app/build.gradle.kts)
@@ -21,7 +22,6 @@ AndroidCryptoWallet is a non-custodial Android wallet for Bitcoin and several EV
 - Non-custodial; seed encrypted with Android Keystore + EncryptedSharedPreferences
 - Bitcoin native SegWit (BIP-84), testnet4 + mainnet
 - EVM: Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche
-- Watch-only Bitcoin
 - Compose + Hilt + Room + BDK + Web3j
 
 ## Non-features
@@ -30,7 +30,7 @@ AndroidCryptoWallet is a non-custodial Android wallet for Bitcoin and several EV
 - No ERC-20 / NFT portfolio yet
 - No hardware wallets
 - Not audited
-- Not on Play / F-Droid yet
+- Not on Play yet
 
 ## Security model
 

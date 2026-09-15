@@ -67,7 +67,7 @@ Run tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
-That is the check contributors should pass before review. Do **not** run `connectedAndroidTest`, `connectedDebugAndroidTest`, or `connectedCheck` unless a maintainer has explicitly accepted that it will wipe emulator wallet data.
+That is the check contributors should pass before review. GitHub Actions runs the same command on pushes to `main` and on pull requests (see `.github/workflows/ci.yml`). Do **not** run `connectedAndroidTest`, `connectedDebugAndroidTest`, or `connectedCheck` unless a maintainer has explicitly accepted that it will wipe emulator wallet data.
 
 Do not submit with failing unit tests.
 

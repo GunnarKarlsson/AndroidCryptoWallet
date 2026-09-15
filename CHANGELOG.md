@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Actions CI (`.github/workflows/ci.yml`) running `./gradlew :app:testDebugUnitTest`; README CI badge wired to that workflow
+
 ## [0.1.0] - 2026-09-15
 
 First documented version of this in-progress wallet.
