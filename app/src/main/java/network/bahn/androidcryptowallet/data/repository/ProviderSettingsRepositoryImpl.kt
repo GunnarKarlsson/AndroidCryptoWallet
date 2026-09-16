@@ -46,6 +46,9 @@ class ProviderSettingsRepositoryImpl @Inject constructor(
         defaultProviderCatalog.definition(providerId)
         val trimmed = url.trim()
         require(trimmed.isNotEmpty()) { "Provider URL cannot be blank" }
+        require(trimmed.startsWith("https://", ignoreCase = true)) {
+            "Provider URL must use HTTPS"
+        }
         dataStore.edit { prefs ->
             prefs[urlKey(providerId)] = trimmed
         }

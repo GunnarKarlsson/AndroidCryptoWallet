@@ -111,6 +111,7 @@ class JsonRpcEvmRemoteDataSource @Inject constructor(
         network: EvmNetwork,
         signedRawHex: String,
     ): String = withContext(Dispatchers.IO) {
+        // Never log [signedRawHex]: it is a signed transaction (spendable if leaked).
         val hex = signedRawHex.let { if (it.startsWith("0x")) it else "0x$it" }
         callHexResult(
             network = network,

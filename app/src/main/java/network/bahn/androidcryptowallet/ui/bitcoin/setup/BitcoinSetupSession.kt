@@ -35,7 +35,8 @@ internal class BitcoinSetupSession(
             try {
                 block()
             } catch (e: Exception) {
-                Log.e(logTag, failureLog, e)
+                // Do not log the throwable: BDK/Web3j messages can include seed material.
+                Log.e(logTag, "$failureLog (${e.javaClass.simpleName})")
                 errorMessage.value = e.message?.takeIf { it.isNotBlank() } ?: fallbackError
             } finally {
                 submitting.value = false

@@ -36,5 +36,15 @@ class Bip39ExceptionMessageTest {
         )
     }
 
+    @Test
+    fun doesNotEchoRecoveryPhrase() {
+        assertEquals(
+            "Invalid BIP-39 mnemonic",
+            formatBip39ExceptionMessage(
+                RuntimeException("abandon ability able about above absent invalid phrase"),
+            ),
+        )
+    }
+
     private class InvalidChecksum : RuntimeException()
 }

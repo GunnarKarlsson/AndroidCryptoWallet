@@ -34,7 +34,7 @@ class CoinGeckoApiFactory @Inject constructor(
 
     private companion object {
         const val BASE_URL = "https://api.coingecko.com/api/v3/"
-        const val USER_AGENT = "AndroidCryptoWallet/1.0"
+        const val USER_AGENT = "AndroidCryptoWallet/0.1.0"
         val JSON_MEDIA_TYPE = "application/json".toMediaType()
     }
 }

@@ -197,7 +197,7 @@ internal fun formatBip39ExceptionMessage(error: Throwable): String {
     if (isChecksumError(error)) {
         return "Recovery phrase checksum is invalid"
     }
-    return error.message?.takeIf { it.isNotBlank() } ?: "Invalid BIP-39 mnemonic"
+    return "Invalid BIP-39 mnemonic"
 }
 
 private fun isChecksumError(error: Throwable): Boolean =

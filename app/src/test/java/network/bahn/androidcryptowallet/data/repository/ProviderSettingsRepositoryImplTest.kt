@@ -48,6 +48,17 @@ class ProviderSettingsRepositoryImplTest {
         assertFalse(resetProvider.isOverridden)
     }
 
+    @Test
+    fun setUrl_rejectsCleartextHttp() = runTest {
+        val repository = createRepository()
+        try {
+            repository.setUrl(ProviderIds.BITCOIN_TESTNET4, "http://127.0.0.1:3000")
+            error("expected failure")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message!!.contains("HTTPS"))
+        }
+    }
+
     private fun createRepository(): ProviderSettingsRepositoryImpl {
         val dataStore = createTestDataStore()
         return ProviderSettingsRepositoryImpl(

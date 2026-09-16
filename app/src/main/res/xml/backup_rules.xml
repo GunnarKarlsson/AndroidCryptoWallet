@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
+    <!--
+      allowBackup is false; these excludes still apply if a device or tool
+      ignores that flag. Encrypted mnemonic stores:
+      bitcoin_mnemonic, ethereum_mnemonic.
+    -->
+    <exclude domain="sharedpref" path="bitcoin_mnemonic" />
+    <exclude domain="sharedpref" path="ethereum_mnemonic" />
     <exclude domain="sharedpref" path="." />
+    <exclude domain="database" path="wallet.db" />
     <exclude domain="database" path="." />
     <exclude domain="file" path="." />
     <exclude domain="root" path="." />

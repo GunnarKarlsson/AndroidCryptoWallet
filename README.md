@@ -34,11 +34,38 @@ AndroidCryptoWallet is a non-custodial Android wallet for Bitcoin and several EV
 
 ## Security model
 
-Keys never leave the device. The secret at rest is the **seed** (BIP-39 mnemonic plus optional passphrase), stored in `EncryptedSharedPreferences` under an Android Keystore `MasterKey` (AES-256). Android backup is disabled (`allowBackup="false"`). Public data (receive address, network, derivation index) lives in Room. Secrets never go in Room, DataStore, or logs.
+Keys never leave the device. The secret at rest is the **seed** (BIP-39 mnemonic plus optional passphrase), stored in `EncryptedSharedPreferences` (`bitcoin_mnemonic` / `ethereum_mnemonic`) under an Android Keystore `MasterKey` (AES-256). Android backup is disabled (`allowBackup="false"`). `backup_rules.xml` and `data_extraction_rules.xml` also exclude those prefs files, Room (`wallet.db`), and the rest of app data so cloud backup and device-to-device transfer cannot copy the seed. Public data (receive address, network, derivation index) lives in Room. Secrets never go in Room, DataStore, or logs.
 
-Signing does not persist private keys. On send, the app decrypts the seed, rebuilds keys in memory, signs, and drops the seed. Watch-only Bitcoin wallets have no seed and cannot send.
+Signing does not persist private keys. On send, the app decrypts the seed, rebuilds keys in memory, signs, and drops the seed. Watch-only Bitcoin wallets have no seed and cannot send. Logcat does not record the seed, passphrase, or signed raw transaction hex. OkHttp BODY logging is not used; the logging interceptor is `debugImplementation` only.
+
+HTTPS is required (`usesCleartextTraffic="false"` plus a [network security config](app/src/main/res/xml/network_security_config.xml)). RPC and explorer endpoints are **not authenticated** and are **not certificate-pinned** — Settings lets you point each provider at your own URL. A malicious or compromised node can lie about balances, fees, and history, or refuse to broadcast; it never receives the seed. Prefer a node you run or trust, especially on mainnet.
 
 This project has **not** been audited. Report vulnerabilities **privately** — see [SECURITY.md](SECURITY.md). Do not open a public GitHub issue for security findings.
+
+## Network security
+
+The app talks to third-party HTTPS hosts for chain data and USD prices. Defaults (overridable in Settings, except CoinGecko):
+
+| Purpose | Default hosts |
+|---------|----------------|
+| Bitcoin (Esplora) | `mempool.space` (`/api/`, `/testnet4/api/`) |
+| USD prices | `api.coingecko.com` |
+| Ethereum RPC | `ethereum.publicnode.com`, `ethereum-sepolia-rpc.publicnode.com` |
+| Ethereum explorer | `eth.blockscout.com`, `eth-sepolia.blockscout.com` |
+| BSC RPC | `bsc-dataseed.bnbchain.org`, `data-seed-prebsc-1-s1.bnbchain.org` |
+| BSC explorer | `api.bscscan.com`, `api-testnet.bscscan.com` |
+| Polygon RPC | `polygon-bor-rpc.publicnode.com`, `polygon-amoy-bor-rpc.publicnode.com` |
+| Polygon explorer | `api.polygonscan.com`, `api-amoy.polygonscan.com` |
+| Arbitrum RPC | `arb1.arbitrum.io`, `sepolia-rollup.arbitrum.io` |
+| Arbitrum explorer | `api.arbiscan.io`, `api-sepolia.arbiscan.io` |
+| Base RPC | `mainnet.base.org`, `sepolia.base.org` |
+| Base explorer | `api.basescan.org`, `api-sepolia.basescan.org` |
+| Optimism RPC | `mainnet.optimism.io`, `sepolia.optimism.io` |
+| Optimism explorer | `api-optimistic.etherscan.io`, `api-sepolia-optimistic.etherscan.io` |
+| Avalanche RPC | `api.avax.network`, `api.avax-test.network` |
+| Avalanche explorer | `api.snowtrace.io`, `api-testnet.snowtrace.io` |
+
+Cleartext `http://` is blocked. Custom provider URLs in Settings must be `https://`. There is no API key on these public endpoints; operators can see the addresses you query.
 
 ## Supported chains
 
@@ -123,10 +150,10 @@ Each **family** (Ethereum, BSC, …) is a chain-select entry. Users pick a **net
 
 What you get for free:
 
-- JSON-RPC balance/send and EIP-1559 signing (`JsonRpcEthereumRemoteDataSource`, `Web3jEthereumKeyEngine`)
+- JSON-RPC balance/send and EIP-1559 signing (`JsonRpcEvmRemoteDataSource`, `Web3jEvmKeyEngine`)
 - BIP-44 coin type `60'` (MetaMask-compatible addresses)
 - Room `ethereum_wallet` / tx cache and encrypted `ethereum_mnemonic` prefs (names unchanged)
-- Shared screens under `app/src/main/java/.../ui/ethereum/**`, filtered by `EvmFamily`
+- Shared screens under `app/src/main/java/.../ui/evm/**`, filtered by `EvmFamily`
 - Receive QR: EIP-681 `ethereum:address@chainId`
 - Amount labels from `network.nativeSymbol`
 
@@ -155,7 +182,7 @@ Tests: extend `app/src/test/java/.../domain/model/EvmNetworkTest.kt`.
 
 | Task | File |
 |------|------|
-| RPC URL per network | `app/src/main/java/network/bahn/androidcryptowallet/di/AppModule.kt` → `provideEvmChainCatalog()` |
+| RPC URL per network | `app/src/main/java/network/bahn/androidcryptowallet/data/repository/DefaultProviderCatalog.kt` |
 | Explorer URL + kind per network | same |
 
 ```kotlin
@@ -168,12 +195,12 @@ explorerEndpoints = mapOf(
 )
 ```
 
-Tx history adapters (picked automatically by `RoutingEthereumTransactionRemoteDataSource`):
+Tx history adapters (picked automatically by `RoutingEvmTransactionRemoteDataSource`):
 
 | Kind | API | Class |
 |------|-----|-------|
-| `BLOCKSCOUT` | Blockscout REST v2 | `BlockscoutEthereumTransactionRemoteDataSource` |
-| `ETHERSCAN` | Etherscan-compatible `txlist` | `EtherscanEthereumTransactionRemoteDataSource` |
+| `BLOCKSCOUT` | Blockscout REST v2 | `BlockscoutEvmTransactionRemoteDataSource` |
+| `ETHERSCAN` | Etherscan-compatible `txlist` | `EtherscanEvmTransactionRemoteDataSource` |
 
 If the explorer is neither format, add a new `EvmExplorerKind`, adapter, and routing branch.
 
@@ -230,7 +257,7 @@ Manual smoke (do not clear emulator app data):
 
 ### Do not
 
-- Add new screen packages — reuse `ui/ethereum/**`
+- Add new screen packages — reuse `ui/evm/**`
 - Merge EVM with the Bitcoin stack
 - Rename/drop `ethereum_*` tables or `ethereum_mnemonic` prefs
 - Run destructive migrations or reinstall/clear app data to test
@@ -241,8 +268,8 @@ Manual smoke (do not clear emulator app data):
 | Area | Files |
 |------|-------|
 | Domain | `EvmFamily.kt`, `EvmNetwork.kt` |
-| Catalog | `AppModule.kt` |
-| Tx history | `EtherscanTx.kt`, `EtherscanEthereumTransactionRemoteDataSource.kt`, `RoutingEthereumTransactionRemoteDataSource.kt` |
+| Catalog | `DefaultProviderCatalog.kt` |
+| Tx history | `EtherscanTx.kt`, `EtherscanEvmTransactionRemoteDataSource.kt`, `RoutingEvmTransactionRemoteDataSource.kt` |
 | Chain select | `SupportedChain.kt`, `ChainSelectScreen.kt`, `EvmFamilyUi.kt`, `strings.xml`, `ic_chain_bsc.xml` |
 | Nav | `WalletNavHost.kt` |
 | Defaults | `SelectedEvmNetworkDataStore.kt` |

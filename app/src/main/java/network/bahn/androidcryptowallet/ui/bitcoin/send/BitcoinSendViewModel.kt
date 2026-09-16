@@ -121,7 +121,8 @@ class BitcoinSendViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e(TAG, "Send failed", e)
+                // Do not log the throwable: it may include signed raw hex.
+                Log.e(TAG, "Send failed (${e.javaClass.simpleName})")
                 form.update {
                     it.copy(
                         isSubmitting = false,

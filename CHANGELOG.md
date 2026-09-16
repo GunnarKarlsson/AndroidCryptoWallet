@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI (`.github/workflows/ci.yml`) running JVM unit tests, Android Lint, and `assembleDebug` (no emulator instrumentation); README CI badge wired to that workflow
 - Gradle Wrapper validation workflow (`.github/workflows/gradle-wrapper-validation.yml`)
 - Dependabot `open-pull-requests-limit: 5` for Gradle updates
+- Release R8 (`optimization { enable = true }`, resource shrinking, keep rules for BDK / Web3j / Retrofit / Kotlinx Serialization / Hilt); OkHttp logging interceptor is debug-only
+- Network security config with cleartext disabled; Settings rejects `http://` provider URLs; backup/data-extraction rules name the mnemonic prefs files
+- App `versionName` `0.1.0` (aligned with the tagged changelog until a 1.0 release)
+
+### Changed
+
+- README security model and Network security hosts; EVM class names (`JsonRpcEvmRemoteDataSource`, `ui/evm/**`)
+
+### Fixed
+
+- Lint `NewApi` on `BigInteger.TWO` (API 33) so `lintDebug` passes on minSdk 26
+- BIP-39 parse errors no longer echo raw BDK messages that could contain recovery words
 
 ## [0.1.0] - 2026-09-15
 

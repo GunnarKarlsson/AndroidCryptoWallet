@@ -1,0 +1,2 @@
+# AGP 9.3 optimization DSL reads this source set. Canonical rules: app/proguard-rules.pro
+-include ../../../proguard-rules.pro

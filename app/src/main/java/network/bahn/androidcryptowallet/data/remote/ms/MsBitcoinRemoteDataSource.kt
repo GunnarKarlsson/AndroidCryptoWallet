@@ -114,6 +114,7 @@ class MsBitcoinRemoteDataSource @Inject constructor(
         network: BitcoinNetwork,
         rawTxHex: String,
     ): String {
+        // Never log [rawTxHex]: it is a signed Bitcoin transaction.
         val body = rawTxHex.toRequestBody(TX_HEX_MEDIA_TYPE)
         try {
             val txid = apiProvider.get(network).broadcastTransaction(body).string().trim()
@@ -121,10 +122,10 @@ class MsBitcoinRemoteDataSource @Inject constructor(
             return txid
         } catch (e: HttpException) {
             val detail = e.response()?.errorBody()?.string()?.trim().orEmpty()
-            Log.e(TAG, "broadcast failed for $network: ${detail.ifEmpty { e.message }}", e)
+            Log.e(TAG, "broadcast failed for $network (${e.code()})")
             error(detail.ifEmpty { "Could not broadcast transaction" })
         } catch (e: Exception) {
-            Log.e(TAG, "broadcast failed for $network: ${e.message}", e)
+            Log.e(TAG, "broadcast failed for $network (${e.javaClass.simpleName})")
             throw e
         }
     }

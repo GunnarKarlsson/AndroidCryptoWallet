@@ -20,7 +20,7 @@ object EvmGasQuotes {
             .toBigInteger()
             .max(BigInteger.ONE)
         val base = BigInteger(feeData.baseFeePerGasWei)
-        val maxFee = base.multiply(BigInteger.TWO).add(priority)
+        val maxFee = base.multiply(BigInteger.valueOf(2)).add(priority)
         val estimated = BigInteger.valueOf(gasLimit).multiply(maxFee)
         return EvmGasQuote(
             gasLimit = gasLimit,

@@ -41,7 +41,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -74,8 +74,11 @@ android {
 
     buildTypes {
         release {
+            // AGP 9.3: R8 + optimized resource shrinking (covers isMinifyEnabled +
+            // isShrinkResources). Canonical keep rules: app/proguard-rules.pro
+            // (also included from src/main/keepRules/).
             optimization {
-                enable = false
+                enable = true
             }
         }
     }
@@ -122,6 +125,7 @@ dependencies {
     implementation(libs.web3j.crypto)
 
     implementation(libs.okhttp)
+    debugImplementation(libs.okhttp.logging)
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)
